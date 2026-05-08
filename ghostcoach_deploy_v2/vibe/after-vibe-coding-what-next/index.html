@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>What to Do After Vibe Coding — From App to Business | GhostCoach</title>
+<meta name="description" content="You shipped a vibe-coded app. Here's what comes next: pricing, customers, and turning a working product into a real business. Start with Marcus free.">
+<link rel="canonical" href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink:       #0F1117;
+    --amber:     #C8861E;
+    --amber-lt:  #E8A832;
+    --cream:     #F7F5F0;
+    --teal:      #0B7A60;
+    --muted:     #8B8A98;
+    --border:    #E2DFD8;
+    --serif:     'Playfair Display', Georgia, serif;
+    --sans:      'DM Sans', system-ui, sans-serif;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--cream);
+    color: var(--ink);
+    font-size: 17px;
+    line-height: 1.7;
+  }
+
+  /* ── NAV ── */
+  nav {
+    background: var(--ink);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    color: var(--cream);
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .nav-tag {
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: none;
+  }
+  @media (min-width: 640px) { .nav-tag { display: block; } }
+  .nav-cta {
+    background: var(--amber);
+    color: var(--ink);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.45rem 1.1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+  .nav-cta:hover { background: var(--amber-lt); }
+
+  /* ── HERO ── */
+  .hero {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 5rem 2rem 4rem;
+    text-align: center;
+  }
+  .eyebrow {
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    line-height: 1.2;
+    max-width: 780px;
+    margin: 0 auto 1.25rem;
+    font-weight: 700;
+  }
+  .hero h1 em {
+    font-style: italic;
+    color: var(--amber-lt);
+  }
+  .hero-sub {
+    font-size: 1.1rem;
+    color: rgba(247,245,240,0.72);
+    max-width: 560px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── ARTICLE LAYOUT ── */
+  .article {
+    max-width: 740px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: white;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--amber);
+    border-radius: 6px;
+    padding: 1.5rem 1.75rem;
+    margin-bottom: 3rem;
+  }
+  .toc-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 0.85rem;
+  }
+  .toc ol {
+    padding-left: 1.2rem;
+  }
+  .toc li {
+    margin-bottom: 0.35rem;
+    font-size: 0.92rem;
+  }
+  .toc a {
+    color: var(--ink);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .toc a:hover { color: var(--amber); border-bottom-color: var(--amber); }
+
+  /* ── BODY COPY ── */
+  .article h2 {
+    font-family: var(--serif);
+    font-size: 1.65rem;
+    font-weight: 700;
+    margin: 3rem 0 1rem;
+    line-height: 1.3;
+    scroll-margin-top: 80px;
+  }
+  .article h3 {
+    font-family: var(--sans);
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin: 2rem 0 0.6rem;
+    color: var(--ink);
+  }
+  .article p {
+    margin-bottom: 1.15rem;
+    color: #2a2930;
+  }
+  .article a {
+    color: var(--amber);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(200,134,30,0.35);
+    transition: border-color 0.15s;
+  }
+  .article a:hover { border-bottom-color: var(--amber); }
+
+  /* ── MARCUS QUOTE BLOCK ── */
+  .marcus-says {
+    background: var(--ink);
+    border-radius: 8px;
+    padding: 2rem 2.25rem;
+    margin: 2.5rem 0;
+  }
+  .ml {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--amber);
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+  }
+  .mq {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1.15rem;
+    color: var(--cream);
+    line-height: 1.65;
+  }
+
+  /* ── CALLOUT BOX ── */
+  .callout {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem 1.75rem;
+    margin: 2rem 0;
+  }
+  .callout-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--teal);
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+  }
+  .callout p {
+    font-size: 0.95rem;
+    color: var(--ink);
+    margin-bottom: 0;
+    font-style: italic;
+  }
+
+  /* ── NUMBERED LIST STYLING ── */
+  .article ol, .article ul {
+    padding-left: 1.4rem;
+    margin-bottom: 1.25rem;
+  }
+  .article li {
+    margin-bottom: 0.55rem;
+    color: #2a2930;
+  }
+
+  /* ── CTA BOX ── */
+  .cta-box {
+    background: var(--ink);
+    border-radius: 10px;
+    padding: 2.5rem 2.25rem;
+    margin: 3.5rem 0 2.5rem;
+    text-align: center;
+  }
+  .cta-box h3 {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    color: var(--cream);
+    margin-bottom: 0.75rem;
+    line-height: 1.3;
+    font-weight: 700;
+  }
+  .cta-box p {
+    color: rgba(247,245,240,0.7);
+    font-size: 0.97rem;
+    margin-bottom: 1.5rem;
+  }
+  .cta-btn {
+    display: inline-block;
+    background: var(--amber);
+    color: var(--ink);
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.85rem 2rem;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.15s;
+    margin-bottom: 0.85rem;
+  }
+  .cta-btn:hover { background: var(--amber-lt); }
+  .cta-note {
+    display: block;
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 0.65rem;
+  }
+
+  /* ── RELATED LINKS BOX ── */
+  .related-box {
+    border-top: 1px solid var(--border);
+    padding-top: 2rem;
+    margin-top: 1rem;
+  }
+  .related-title {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+  }
+  @media (max-width: 540px) { .related-grid { grid-template-columns: 1fr; } }
+  .related-link {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    text-decoration: none;
+    color: var(--ink);
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: border-color 0.15s, color 0.15s;
+    display: block;
+  }
+  .related-link:hover { border-color: var(--amber); color: var(--amber); }
+  .related-link span {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 0.2rem;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--ink);
+    color: var(--muted);
+    text-align: center;
+    padding: 2.5rem 1.5rem;
+    font-size: 0.83rem;
+  }
+  footer a { color: var(--muted); text-decoration: none; }
+  footer a:hover { color: var(--cream); }
+  .footer-brand {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+    color: var(--cream);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ── DIVIDER ── */
+  .section-rule {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2.5rem 0;
+  }
+.corp-footer{background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);padding:56px 40px 36px;}.corp-footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;gap:40px;margin-bottom:44px;}.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}.cf-link:hover{color:#F7F5F0;}.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}.cf-nl-row{display:flex;gap:6px;}.cf-nl-input{flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:10px 12px;font-size:12px;color:#F7F5F0;outline:none;}.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}.cf-nl-btn{background:#C8861E;color:#0F1117;font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;}.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}.corp-footer-bottom{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);}.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}.cfb-links{display:flex;gap:20px;}.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;}@media(max-width:900px){.corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}}@media(max-width:520px){.corp-footer{padding:40px 20px 28px;}.corp-footer-grid{grid-template-columns:1fr;gap:24px;}}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230F1117'/><text x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='bold' fill='%23E8A832' text-anchor='middle'>G</text></svg>">
+</head>
+<body>
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" style="display:flex;align-items:baseline;text-decoration:none;flex-shrink:0;">
+    <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span>
+  </a>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;">← Back to home</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">Vibe Coding · After You Ship</div>
+  <h1>You Shipped Your Vibe-Coded App.<br><em>Now What?</em></h1>
+  <p class="hero-sub">The tools that helped you build won't help you grow. Here's the exact business layer you need next.</p>
+</section>
+
+<section class="article">
+
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <ol>
+      <li><a href="#the-gap">The gap vibe coding tools don't tell you about</a></li>
+      <li><a href="#what-breaks">What breaks after you ship</a></li>
+      <li><a href="#five-decisions">The five decisions that determine if your app becomes a business</a></li>
+      <li><a href="#vibe-coding-coach">What a "vibe coding coach" actually means</a></li>
+      <li><a href="#first-week">What to do in your first week post-ship</a></li>
+      <li><a href="#ghostcoach">How GhostCoach fits in</a></li>
+    </ol>
+  </div>
+
+  <p>Cursor helped you build it. Bolt.new made it fast. Lovable made it look real. You shipped. You posted on Product Hunt, got upvotes, maybe a few hundred visitors.</p>
+  <p>And then — nothing. Or almost nothing. A handful of signups. Two or three paying customers if you were lucky. The spike fades. The MRR sits flat. You're staring at the dashboard wondering what to do next.</p>
+  <p>This is not a product problem. It's a business problem. And no vibe coding tool has a solution for it.</p>
+
+  <h2 id="the-gap">The Gap Vibe Coding Tools Don't Tell You About</h2>
+
+  <p>Cursor, Bolt.new, Lovable, and every other vibe coding tool are extraordinarily good at one thing: collapsing the time between idea and working product. What used to take months now takes a weekend.</p>
+  <p>That's a genuine revolution. It's also created a new problem nobody prepared you for.</p>
+  <p>Building speed has outpaced business-building knowledge. You can ship a SaaS in 48 hours, but pricing strategy, customer acquisition, churn reduction, and offer architecture don't compress the same way. Those still require thinking, testing, and structured decision-making.</p>
+  <p>The tools gave you a product. Nobody gave you the business.</p>
+
+  <div class="marcus-says">
+    <div class="ml">Marcus · GhostCoach AI</div>
+    <div class="mq">"The moment your app works is the moment the hard part starts. Vibe coding solves the build problem. What comes next is an entirely different category of problem — and it requires an entirely different kind of thinking."</div>
+  </div>
+
+  <h2 id="what-breaks">What Breaks After You Ship</h2>
+
+  <p>Founders who vibe-code their way to launch tend to hit the same walls in the same order. Knowing which wall you're at is the first step to getting past it.</p>
+
+  <h3>Wall 1: No one knows your pricing is wrong</h3>
+  <p>Most vibe-coded apps ship with either no pricing at all ("free for now"), or pricing that was copied from a competitor without understanding what it signals. Wrong pricing doesn't just cost you revenue — it attracts the wrong customers and repels the right ones. You may not discover this for months.</p>
+
+  <h3>Wall 2: Traffic without conversion</h3>
+  <p>You get visitors from the launch spike. Then you watch them leave without signing up, or sign up without paying. The conversion rate problem is almost always a positioning and onboarding problem in disguise. You're not explaining what you do for whom in a way that makes paying feel obvious.</p>
+
+  <h3>Wall 3: Acquisition dries up after launch</h3>
+  <p>Product Hunt, Reddit, a Twitter post — these are launch events, not acquisition channels. After the spike, most solo founders have no repeatable way to get new users. Building one from scratch is the work that most founders avoid longest and need most urgently.</p>
+
+  <h3>Wall 4: Churn before you understand why</h3>
+  <p>Early customers leave and you don't know why. You didn't build any feedback loop. You don't have a churned-user interview process. The data you need to fix retention doesn't exist yet. See our guide on <a href="/guides/how-to-reduce-saas-churn/">how to reduce SaaS churn</a> for what to build first.</p>
+
+  <h2 id="five-decisions">The Five Decisions That Determine If Your App Becomes a Business</h2>
+
+  <p>These aren't the only decisions you'll make. They're the ones that matter most in the first 90 days after launch. Get them right and everything else becomes easier. Get them wrong and you'll be rebuilding on a broken foundation.</p>
+
+  <ol>
+    <li><strong>Pricing and packaging.</strong> Who is this for, exactly? What do they pay? What does each tier include? Most founders under-price by 40–60% on their first attempt. See our <a href="/guides/how-to-price-saas-product/">SaaS pricing guide</a> for the specific method.</li>
+    <li><strong>Positioning.</strong> Who is your product for, and what does it replace? If you can't say it in one sentence that makes a specific person say "that's for me," your positioning isn't done.</li>
+    <li><strong>Onboarding.</strong> What happens between sign-up and first value? The trial-to-paid conversion rate is almost always a function of how fast users reach a moment where the product feels indispensable.</li>
+    <li><strong>First acquisition channel.</strong> Not channels — channel. Pick one. Build it until it works repeatably before adding a second. Most solo founders spread across four and master none.</li>
+    <li><strong>Churn threshold.</strong> What monthly churn rate means your business is viable? If you don't know this number, you can't make good decisions about where to invest.</li>
+  </ol>
+
+  <div class="callout">
+    <div class="callout-label">Example prompt for Marcus</div>
+    <p>"I launched 3 weeks ago. I have 8 paying customers at $29/mo. My churn last month was 2 customers. I don't know if I should be worried about churn or focused on acquisition. What should I work on first?"</p>
+  </div>
+
+  <h2 id="vibe-coding-coach">What a "Vibe Coding Coach" Actually Means</h2>
+
+  <p>If you search "vibe coding coach," you'll find people who help you get better at building with AI tools. That's useful if your problem is building. It's the wrong solution if your problem is growing.</p>
+  <p>The coaching you need after you ship is not technical. It's strategic. Pricing, positioning, acquisition, churn, and revenue architecture — that's the curriculum. A vibe coding coach who helps you write better prompts won't help you get to $5k MRR.</p>
+  <p>What you're actually looking for is a business coach who understands what you built and how to turn it into a subscription business. That's a different thing — and almost no one was offering it until now.</p>
+  <p>GhostCoach is built specifically for this moment. Not the build. What comes after.</p>
+
+  <h2 id="first-week">What to Do in Your First Week Post-Ship</h2>
+
+  <p>This is the specific sequence Marcus recommends for founders in the first seven days after launch. Not a menu of options — a sequence.</p>
+
+  <ol>
+    <li><strong>Day 1–2:</strong> Talk to every paying customer you have. Not a survey — a 20-minute conversation. Ask what they expected, what surprised them, what they almost didn't pay for. This is your positioning data.</li>
+    <li><strong>Day 3:</strong> Audit your pricing page against what you learned. Does the price reflect the value your paying customers described? Does the tier structure match the jobs they're hiring it for?</li>
+    <li><strong>Day 4–5:</strong> Map your onboarding. Draw exactly what happens between sign-up and first value moment. Find the step where most people stop. Fix that one step before touching anything else.</li>
+    <li><strong>Day 6–7:</strong> Commit to one acquisition channel for the next 30 days. Write it down. Define what "working" looks like for that channel. Start executing.</li>
+  </ol>
+
+  <p>If you're not sure how to do any of these things, that's exactly what <a href="/vibe/make-money/">making money from a vibe-coded app</a> covers — with specific tactics, not general advice.</p>
+
+  <h2 id="ghostcoach">How GhostCoach Fits In</h2>
+
+  <p>GhostCoach is an AI business coach built specifically for solo founders building subscription software products. The AI coaching intelligence is called Marcus. Every session is structured around the Ghost OS framework — five pillars that cover offer architecture, acquisition, automation, and revenue protection.</p>
+  <p>What makes it different from using Claude or ChatGPT for the same purpose: Marcus knows your product, your stage, your biggest bottleneck, and your 90-day goal before you type your first message. That context is injected into every session. You don't re-explain yourself. You get straight to the recommendation.</p>
+  <p>Marcus opens every recommendation with "I recommend." Not "you might consider" or "one option could be." A single, specific next action — the one most likely to move your number in the next 30 days.</p>
+  <p>If you've shipped a vibe-coded app and you're not sure what to do next, start there. Seven-day free trial. No commitment. One conversation with Marcus is usually enough to know whether this is useful for you.</p>
+
+  <p>Also worth reading: <a href="/vibe/get-customers/">how to get your first customers for a vibe-coded app</a> and the full <a href="/guides/solopreneur-saas-pricing-strategy/">solopreneur SaaS pricing strategy guide</a>.</p>
+
+  <div class="cta-box">
+    <h3>Your app is built. Now build the business.</h3>
+    <p>Marcus gives you one specific recommendation per session, structured around the Ghost OS framework for solo SaaS founders.</p>
+    <a href="https://claude.ai/project/019d85e3-e7e7-7364-b031-234e78b0691a" class="cta-btn">Talk to Marcus free →</a>
+    <span class="cta-note">14-day free trial · Builder plan from $79/mo · cancel anytime</span>
+  </div>
+
+  <div class="related-box">
+    <div class="related-title">Related guides</div>
+    <div class="related-grid">
+      <a href="/vibe/get-customers/" class="related-link">How to Get Customers for a Vibe-Coded App<span>Acquisition strategy for solo founders</span></a>
+      <a href="/vibe/make-money/" class="related-link">How to Make Money From Your Vibe-Coded App<span>Pricing, packaging, and first revenue</span></a>
+      <a href="/vibe/saas-pricing/" class="related-link">Vibe-Coded SaaS Pricing<span>What to charge and why</span></a>
+      <a href="/guides/how-to-price-saas-product/" class="related-link">How to Price a SaaS Product<span>The complete framework</span></a>
+    </div>
+  </div>
+
+</section>
+
+<footer class="corp-footer">
+  <div class="corp-footer-grid">
+    <div><a href="https://getghostcoach.com/" class="cfl-logo"><span class="cfl-ghost">Ghost</span><span class="cfl-coach">Coach</span></a><div class="cfl-tagline">AI business coaching for solopreneurs building subscription software.</div></div>
+    <div><div class="cf-col-title">Product</div><a class="cf-link" href="https://getghostcoach.com/#howitworks">How it works</a><a class="cf-link" href="https://getghostcoach.com/#ghost-os">The Framework</a><a class="cf-link" href="https://getghostcoach.com/#pricing">Pricing</a><a class="cf-link" href="https://getghostcoach.com/chat/">Start free trial</a></div>
+    <div><div class="cf-col-title">Guides</div><a class="cf-link" href="https://getghostcoach.com/guides/how-to-price-saas-product/">How to price a SaaS</a><a class="cf-link" href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/">How to reduce churn</a><a class="cf-link" href="https://getghostcoach.com/guides/first-10-paying-customers-saas/">First 10 customers</a><a class="cf-link" href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/">MRR plateau</a><a class="cf-link" href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/">Vibe coding SaaS</a></div>
+    <div><div class="cf-col-title">Company</div><a class="cf-link" href="https://getghostcoach.com/about/">About</a><a class="cf-link" href="https://getghostcoach.com/contact/">Contact</a><a class="cf-link" href="https://getghostcoach.com/privacy/">Privacy</a><a class="cf-link" href="https://getghostcoach.com/terms/">Terms</a></div>
+    <div><div class="cf-col-title">Stay in the loop</div><div class="cf-nl-label">Founder insights — no fluff.</div><div class="cf-nl-row"><input class="cf-nl-input" type="email" placeholder="your@email.com"><button class="cf-nl-btn">Subscribe</button></div><div class="cf-nl-note">No spam. Unsubscribe any time.</div></div>
+  </div>
+  <div class="corp-footer-bottom"><span class="cfb-copy">© 2025 GhostCoach</span><div class="cfb-links"><a href="https://getghostcoach.com/privacy/" class="cfb-link">Privacy</a><a href="https://getghostcoach.com/terms/" class="cfb-link">Terms</a></div></div>
+</footer>
+
+</body>
+</html>

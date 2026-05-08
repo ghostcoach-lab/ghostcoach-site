@@ -1,0 +1,13 @@
+# GhostCoach redirects
+/chat     /chat/index.html     200
+/chat/    /chat/index.html     200
+/about    /about/index.html    200
+/about/   /about/index.html    200
+/contact  /contact/index.html  200
+/contact/ /contact/index.html  200
+/how-it-works  /how-it-works/index.html  200
+/how-it-works/ /how-it-works/index.html  200
+/signup     /signup/index.html     200
+/signup/    /signup/index.html     200
+/dashboard     /dashboard/index.html     200
+/dashboard/    /dashboard/index.html     200

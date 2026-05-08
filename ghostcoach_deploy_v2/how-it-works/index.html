@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>How GhostCoach Works — The Ghost OS Framework</title>
+<meta name="description" content="How GhostCoach works: the Ghost OS framework, how Marcus diagnoses your situation, and what a real session looks like from first message to recap email.">
+<link rel="canonical" href="https://getghostcoach.com/how-it-works/">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;overflow-x:hidden;background:#0F1117;}
+:root{
+  --ink:#0F1117;--ink-soft:#1A1D27;--amber:#C8861E;--amber-l:#E8A832;
+  --amber-lt:#E8A832;--cream:#F7F5F0;--cream-dk:#EAE7E0;--muted:#8B8A98;
+  --teal:#0B7A60;--teal-lt:#0DD4A8;
+}
+
+/* ── SP-NAV: Standard sub-page nav ─────────────────────────── */
+.sp-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);
+  border-bottom:0.5px solid rgba(247,245,240,0.06);
+  height:58px;display:flex;align-items:center;
+  padding:0 28px;gap:20px;
+}
+.sp-nav-home{
+  font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;
+  display:flex;align-items:center;gap:4px;transition:color .2s;
+  white-space:nowrap;flex-shrink:0;
+}
+.sp-nav-home:hover{color:#F7F5F0;}
+.sp-nav-divider{width:1px;height:16px;background:rgba(247,245,240,0.1);flex-shrink:0;}
+.sp-nav-logo{display:flex;align-items:baseline;text-decoration:none;flex-shrink:0;}
+.sp-nav-ghost{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:#F7F5F0;}
+.sp-nav-coach{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;font-style:italic;color:#E8A832;}
+.sp-nav-links{display:flex;align-items:center;gap:28px;flex:1;justify-content:center;}
+.sp-nav-link{font-size:13px;color:rgba(247,245,240,0.55);text-decoration:none;transition:color .2s;}
+.sp-nav-link:hover{color:#F7F5F0;}
+.sp-nav-link.active{color:#E8A832;}
+.sp-nav-cta{
+  background:#C8861E;color:#0F1117;font-size:13px;font-weight:600;
+  padding:9px 20px;border-radius:8px;text-decoration:none;
+  transition:background .2s;white-space:nowrap;flex-shrink:0;
+}
+.sp-nav-cta:hover{background:#E8A832;}
+@media(max-width:680px){
+  .sp-nav{padding:0 18px;}
+  .sp-nav-links{display:none;}
+  .sp-nav-home{font-size:11px;}
+}
+
+/* ── CORP-FOOTER: 5-column corporate footer ─────────────────── */
+.corp-footer{
+  background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);
+  padding:56px 40px 36px;
+}
+.corp-footer-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;
+  gap:40px;margin-bottom:44px;
+}
+.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}
+.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}
+.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}
+.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}
+.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}
+.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}
+.cf-link:hover{color:#F7F5F0;}
+.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}
+.cf-nl-row{display:flex;gap:6px;}
+.cf-nl-input{
+  flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);
+  border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;
+  font-size:12px;color:#F7F5F0;outline:none;transition:border-color .2s;
+}
+.cf-nl-input:focus{border-color:rgba(200,134,30,0.4);}
+.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}
+.cf-nl-btn{
+  background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;
+  border:none;cursor:pointer;white-space:nowrap;transition:background .2s;
+}
+.cf-nl-btn:hover{background:#E8A832;}
+.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}
+.corp-footer-bottom{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);
+}
+.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}
+.cfb-links{display:flex;gap:20px;}
+.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;transition:color .2s;}
+.cfb-link:hover{color:rgba(247,245,240,0.55);}
+@media(max-width:900px){
+  .corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
+}
+@media(max-width:520px){
+  .corp-footer{padding:40px 20px 28px;}
+  .corp-footer-grid{grid-template-columns:1fr;gap:24px;}
+}
+
+
+.hiw-page{background:var(--ink);min-height:100vh;}
+.hiw-nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(15,17,23,0.97);
+  backdrop-filter:blur(12px);
+  border-bottom:0.5px solid rgba(247,245,240,0.07);
+  padding:0 40px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.hiw-back{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--muted);
+  background:none;border:none;cursor:pointer;
+  transition:color .2s;padding:0;
+}
+.hiw-back:hover{color:#F7F5F0;}
+.hiw-brand{display:flex;align-items:baseline;}
+.hiw-ghost{font-family:'Playfair Display',serif;font-size:18px;color:#F7F5F0;}
+.hiw-coach{font-family:'Playfair Display',serif;font-size:18px;font-style:italic;color:var(--amber-lt);}
+
+/* Sections */
+.hiw-hero{
+  padding:96px 0 80px;
+  text-align:center;
+  position:relative;overflow:hidden;
+}
+.hiw-hero::before{
+  content:'';position:absolute;
+  top:-200px;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(200,134,30,0.07) 0%,transparent 65%);
+  pointer-events:none;
+}
+.hiw-steps{padding:0 0 96px;}
+.step-grid{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:0;max-width:960px;margin:64px auto 0;
+}
+.step-item{
+  padding:40px;
+  border-bottom:0.5px solid rgba(247,245,240,0.06);
+  position:relative;
+}
+.step-item:nth-child(odd){border-right:0.5px solid rgba(247,245,240,0.06);}
+.step-num{
+  font-family:'Playfair Display',serif;
+  font-size:48px;font-weight:400;
+  color:rgba(200,134,30,0.15);
+  line-height:1;margin-bottom:16px;
+}
+.step-title{
+  font-family:'Playfair Display',serif;
+  font-size:20px;font-weight:500;color:#F7F5F0;
+  margin-bottom:10px;line-height:1.3;
+}
+.step-title em{font-style:italic;color:var(--amber-lt);}
+.step-desc{font-size:14px;color:var(--muted);line-height:1.7;}
+.step-tag{
+  display:inline-block;margin-top:14px;
+  font-size:11px;font-weight:500;letter-spacing:.06em;
+  padding:4px 10px;border-radius:20px;
+  background:rgba(200,134,30,0.08);
+  border:0.5px solid rgba(200,134,30,0.15);
+  color:var(--amber-lt);
+}
+
+/* Demo conversation */
+.hiw-demo{
+  background:var(--cream-dk);
+  padding:96px 0;
+}
+.hiw-demo-inner{max-width:700px;margin:0 auto;padding:0 40px;}
+.demo-window{
+  background:var(--ink-soft);
+  border:0.5px solid rgba(247,245,240,0.08);
+  border-radius:16px;overflow:hidden;
+  margin-top:0;
+  display:flex;flex-direction:column;
+}
+.demo-bar{
+  background:rgba(15,17,23,0.8);
+  padding:14px 20px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:0.5px solid rgba(247,245,240,0.06);
+}
+.demo-dot{width:10px;height:10px;border-radius:50%;}
+.demo-title{font-size:13px;font-weight:500;color:rgba(247,245,240,0.6);margin-left:6px;}
+.demo-status{font-size:11px;color:#0DD4A8;margin-left:auto;display:flex;align-items:center;gap:5px;}
+.demo-msgs{padding:24px 20px;display:flex;flex-direction:column;gap:16px;}
+.dm-u{
+  background:rgba(247,245,240,0.07);
+  color:rgba(247,245,240,0.8);
+  font-size:13px;line-height:1.6;
+  padding:11px 14px;border-radius:12px 12px 4px 12px;
+  align-self:flex-end;max-width:80%;
+}
+.dm-a{
+  background:#1C2030;
+  border:0.5px solid rgba(247,245,240,0.07);
+  color:#F7F5F0;font-size:13px;line-height:1.7;
+  padding:11px 14px;border-radius:4px 12px 12px 12px;
+  align-self:flex-start;max-width:90%;
+}
+.dm-a strong{color:var(--amber-lt);}
+.dm-sender{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:rgba(139,138,152,0.5);margin-bottom:4px;}
+.dm-sender-r{text-align:right;}
+
+/* Pillars overview */
+.hiw-pillars{padding:96px 0;background:var(--cream);}
+.pillar-list{
+  max-width:720px;margin:48px auto 0;
+  display:flex;flex-direction:column;gap:0;
+}
+.pillar-row{
+  display:flex;gap:24px;align-items:flex-start;
+  padding:24px 0;
+  border-bottom:0.5px solid rgba(15,17,23,0.08);
+}
+.pillar-row:last-child{border-bottom:none;}
+.pillar-n{
+  font-family:'Playfair Display',serif;
+  font-size:32px;font-weight:400;
+  color:rgba(200,134,30,0.25);
+  flex-shrink:0;width:44px;line-height:1;
+}
+.pillar-body{}
+.pillar-name{
+  font-family:'Playfair Display',serif;
+  font-size:17px;font-weight:500;color:var(--ink);
+  margin-bottom:5px;
+}
+.pillar-desc{font-size:13px;color:var(--muted);line-height:1.65;}
+
+/* Mobile */
+@media(max-width:768px){
+  .hiw-nav{padding:0 20px;height:56px;}
+  .hiw-hero{padding:72px 0 56px;}
+  .step-grid{grid-template-columns:1fr;}
+  .step-item:nth-child(odd){border-right:none;}
+  .step-item{padding:28px 20px;}
+  .hiw-demo-inner{padding:0 20px;}
+  .hiw-pillars{padding:64px 0;}
+  .pillar-list{padding:0 20px;}
+  .hiw-cta{padding:64px 0;}
+}
+
+.hiw-page{padding-top:58px;min-height:100vh;}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230F1117'/><text x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='bold' fill='%23E8A832' text-anchor='middle'>G</text></svg>">
+</head>
+<body>
+<div class="hiw-page">
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" style="display:flex;align-items:baseline;text-decoration:none;flex-shrink:0;">
+    <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span>
+  </a>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;">← Back to home</a>
+</nav>
+
+<!-- Hero -->
+  <section class="hiw-hero dark">
+    <div class="container" style="position:relative;z-index:1;">
+      <span class="section-eyebrow">How it works</span>
+      <h1 class="section-title section-title-lt" style="max-width:600px;margin:0 auto 16px;">
+        Four steps from<br>your first question to<br>a <em>real recommendation</em>.
+      </h1>
+      <p class="section-sub section-sub-lt" style="max-width:480px;margin:0 auto;">
+        No intake forms. No generic advice. Marcus knows your product and gives you a specific recommendation from the first message.
+      </p>
+    </div>
+  </section>
+
+  <!-- Steps -->
+  <section class="hiw-steps dark">
+    <div class="container">
+      <div class="step-grid">
+        <div class="step-item">
+          <div class="step-num">01</div>
+          <div class="step-title">Tell Marcus what you're <em>working on</em></div>
+          <div class="step-desc">Open the chat and describe your product and your situation in plain language. What you built, where you are, and the one thing most in the way. No structured form — just talk.</div>
+          <div class="step-tag">Takes 2 minutes</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">02</div>
+          <div class="step-title">Marcus <em>diagnoses</em> before it advises</div>
+          <div class="step-desc">Marcus asks the one question that changes the recommendation — not five generic questions. For pricing, it asks what your product replaces. For churn, it asks when in the lifecycle users are leaving. The diagnosis comes before the advice.</div>
+          <div class="step-tag">Sharp, specific questions</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">03</div>
+          <div class="step-title">You get a <em>specific recommendation</em></div>
+          <div class="step-desc">Not a list of options with pros and cons. Marcus picks one, explains why, and tells you when the alternative would be better. "Set your annual plan at 2 months free — that is 8x1 pricing" not "consider annual discounts."</div>
+          <div class="step-tag">One answer, not a menu</div>
+        </div>
+        <div class="step-item">
+          <div class="step-num">04</div>
+          <div class="step-title">Every session ends with <em>one action</em></div>
+          <div class="step-desc">Marcus closes every response with exactly one concrete action you can take today — or one clarifying question if it needs more context first. No homework lists. No vague next steps. One thing, done today.</div>
+          <div class="step-tag">Action, not advice</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Demo conversation -->
+  <section class="hiw-demo">
+    <div class="hiw-demo-inner">
+      <div class="center">
+        <span class="section-eyebrow" style="color:var(--amber-dk);">Real sessions</span>
+        <h2 class="section-title section-title-dk">
+          What a conversation<br>with Marcus actually <em>looks like</em>.
+        </h2>
+        <p class="section-sub section-sub-dk">Two different problems. Same approach — diagnose before advising.</p>
+      </div>
+
+      <!-- Tab selector -->
+      <div style="display:flex;gap:8px;justify-content:center;margin:24px 0 16px;">
+        <button id="demo-tab-1" onclick="showDemo(1)" style="background:var(--amber);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;padding:7px 16px;border-radius:8px;border:none;cursor:pointer;transition:all .2s;">Pricing question</button>
+        <button id="demo-tab-2" onclick="showDemo(2)" style="background:rgba(247,245,240,0.08);color:rgba(247,245,240,0.6);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;padding:7px 16px;border-radius:8px;border:0.5px solid rgba(247,245,240,0.1);cursor:pointer;transition:all .2s;">Churn diagnostic</button>
+      </div>
+
+      <!-- Demo 1: Pricing -->
+      <div id="demo-1" class="demo-window">
+        <div class="demo-bar">
+          <div class="demo-dot" style="background:#FF5F56;"></div>
+          <div class="demo-dot" style="background:#FFBD2E;"></div>
+          <div class="demo-dot" style="background:#27C93F;"></div>
+          <div class="demo-title">GhostCoach — Marcus</div>
+          <div class="demo-status"><span style="width:6px;height:6px;background:#0DD4A8;border-radius:50%;display:inline-block;"></span> Online</div>
+        </div>
+        <div class="demo-msgs">
+          <div>
+            <div class="dm-sender dm-sender-r">You</div>
+            <div class="dm-u">I'm about to launch next week. I haven't decided on pricing. I'm thinking of starting free to get users.</div>
+          </div>
+          <div>
+            <div class="dm-sender">Marcus</div>
+            <div class="dm-a">The instinct to start free makes sense — it feels like the lowest-friction path to first users. I want to push back on it though, because <strong>free-to-paid migration is consistently harder than it looks.</strong><br><br>Before I give you a specific number: what does your product replace — time, money, or another tool? And what does that alternative currently cost your customer? That answer determines the right price — without it, any number I suggest is a guess.</div>
+          </div>
+          <div>
+            <div class="dm-sender dm-sender-r">You</div>
+            <div class="dm-u">It replaces a human business coach. They typically pay $200–$300 per session.</div>
+          </div>
+          <div>
+            <div class="dm-sender">Marcus</div>
+            <div class="dm-a"><strong>That is a strong anchor.</strong> Someone paying $300 per session sees $79/mo and thinks "obvious." Launch paid from day one. Monthly: $79/mo. Annual: $632/yr — two months free.<br><br>What channel are you planning to use to reach your first customers?</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Demo 2: Churn diagnostic -->
+      <div id="demo-2" class="demo-window" style="display:none;">
+        <div class="demo-bar">
+          <div class="demo-dot" style="background:#FF5F56;"></div>
+          <div class="demo-dot" style="background:#FFBD2E;"></div>
+          <div class="demo-dot" style="background:#27C93F;"></div>
+          <div class="demo-title">GhostCoach — Marcus</div>
+          <div class="demo-status"><span style="width:6px;height:6px;background:#0DD4A8;border-radius:50%;display:inline-block;"></span> Online</div>
+        </div>
+        <div class="demo-msgs">
+          <div>
+            <div class="dm-sender dm-sender-r">You</div>
+            <div class="dm-u">My churn is around 8% monthly. I've been flat for 6 months. I don't know if it's an onboarding problem, a product gap, or if I'm just attracting the wrong customers.</div>
+          </div>
+          <div>
+            <div class="dm-sender">Marcus</div>
+            <div class="dm-a">Those are three completely different problems with three different fixes — so the diagnosis matters before we touch anything else.<br><br><strong>One question first:</strong> when in the customer lifecycle are you losing people? Roughly — first 14 days, weeks 2–8, or after 2+ months of active use?</div>
+          </div>
+          <div>
+            <div class="dm-sender dm-sender-r">You</div>
+            <div class="dm-u">Mostly in the first two weeks I think. After that people tend to stick.</div>
+          </div>
+          <div>
+            <div class="dm-sender">Marcus</div>
+            <div class="dm-a"><strong>That is an onboarding problem, not a product problem.</strong> Users are leaving before they reach the moment where your product proves its value.<br><br>The fix is not better email sequences. It is engineering one specific moment — the thing a retained user does in session one that a churned user does not — and making it happen for everyone. Do you know what that moment is for your product?</div>
+          </div>
+        </div>
+      </div>
+
+      <script>
+      function showDemo(n){
+        document.getElementById('demo-1').style.display = n===1 ? 'flex' : 'none';
+        document.getElementById('demo-2').style.display = n===2 ? 'flex' : 'none';
+        document.getElementById('demo-tab-1').style.background = n===1 ? 'var(--amber)' : 'rgba(247,245,240,0.08)';
+        document.getElementById('demo-tab-1').style.color = n===1 ? 'var(--ink)' : 'rgba(247,245,240,0.6)';
+        document.getElementById('demo-tab-1').style.fontWeight = n===1 ? '600' : '500';
+        document.getElementById('demo-tab-2').style.background = n===2 ? 'var(--amber)' : 'rgba(247,245,240,0.08)';
+        document.getElementById('demo-tab-2').style.color = n===2 ? 'var(--ink)' : 'rgba(247,245,240,0.6)';
+        document.getElementById('demo-tab-2').style.fontWeight = n===2 ? '600' : '500';
+        document.getElementById('demo-tab-1').style.border = n===1 ? 'none' : '0.5px solid rgba(247,245,240,0.1)';
+        document.getElementById('demo-tab-2').style.border = n===2 ? 'none' : '0.5px solid rgba(247,245,240,0.1)';
+      }
+      </script>
+
+    </div>
+  </section>
+
+  <!-- Pillars -->
+  <section class="hiw-pillars">
+    <div class="container">
+      <div class="center">
+        <span class="section-eyebrow" style="color:var(--amber-dk);">The framework</span>
+        <h2 class="section-title section-title-dk">
+          Every recommendation maps to<br>one of <em>five pillars</em>.
+        </h2>
+        <p class="section-sub section-sub-dk" style="margin:0 auto;">Marcus built the Ghost OS from working with 50+ solopreneur product businesses. When you bring a problem, Marcus tells you which pillar it belongs to — and sometimes, which pillar the real problem belongs to.</p>
+      </div>
+      <div class="pillar-list">
+        <div class="pillar-row">
+          <div class="pillar-n">1</div>
+          <div class="pillar-body">
+            <div class="pillar-name">Offer Architecture</div>
+            <div class="pillar-desc">How your product is packaged, priced, and positioned. Freemium or paid? Monthly or annual? One plan or three? This pillar sets your revenue ceiling before a single customer signs up.</div>
+          </div>
+        </div>
+        <div class="pillar-row">
+          <div class="pillar-n">2</div>
+          <div class="pillar-body">
+            <div class="pillar-name">AI Delivery Stack</div>
+            <div class="pillar-desc">How AI runs your operations — customer onboarding, support, renewals — so you are never the bottleneck in your own product. As a solo operator this gives you leverage that most teams cannot match.</div>
+          </div>
+        </div>
+        <div class="pillar-row">
+          <div class="pillar-n">3</div>
+          <div class="pillar-body">
+            <div class="pillar-name">Acquisition System</div>
+            <div class="pillar-desc">Repeatable, owned channels that compound. Not launch events. A system that brings in strangers every week without paid ads or a sales team.</div>
+          </div>
+        </div>
+        <div class="pillar-row">
+          <div class="pillar-n">4</div>
+          <div class="pillar-body">
+            <div class="pillar-name">Automation Layer</div>
+            <div class="pillar-desc">Billing flows, churn alerts, trial follow-up, onboarding sequences. The connective tissue that lets the business run while you keep building.</div>
+          </div>
+        </div>
+        <div class="pillar-row">
+          <div class="pillar-n">5</div>
+          <div class="pillar-body">
+            <div class="pillar-name">Revenue Protection</div>
+            <div class="pillar-desc">Trial-to-paid conversion, churn reduction, expansion revenue. The highest-leverage growth lever most solo builders ignore until it's too late.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing + CTA -->
+  <section style="background:var(--ink);padding:80px 0;">
+    <div class="container">
+      <div class="center">
+        <span class="section-eyebrow">Pricing</span>
+        <h2 class="section-title section-title-lt">
+          Stop figuring it out<br>the <em>long way.</em>
+        </h2>
+        <p class="section-sub section-sub-lt">A human business coach costs $200–$500 per session. GhostCoach gives you the same strategic clarity — available 24/7, with memory — starting at $79/mo.</p>
+      </div>
+
+      <div class="pricing-grid" style="grid-template-columns:repeat(2,1fr);max-width:780px;margin:40px auto 0;">
+
+        <!-- BUILDER -->
+        <div class="pricing-card">
+          <div class="pricing-tier">Builder</div>
+          <div class="pricing-price">$79<span>/mo</span></div>
+          <div class="pricing-per">or $632/yr — 2 months free</div>
+          <div class="pricing-desc">For founders who want consistent, compounding clarity on their business — not one-off answers. Marcus knows your situation and every session gets more specific than the last.</div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><div class="feat-check">✓</div><div class="feat-text">Unlimited sessions — available whenever you need clarity</div></div>
+            <div class="pricing-feature"><div class="feat-check">✓</div><div class="feat-text">Full business profile — your product, stage and bottleneck known before you say a word</div></div>
+            <div class="pricing-feature"><div class="feat-check">✓</div><div class="feat-text">Session context — every session builds on the last</div></div>
+            <div class="pricing-feature"><div class="feat-check">✓</div><div class="feat-text">90-day goal — every conversation moves toward one outcome</div></div>
+            <div class="pricing-feature"><div class="feat-check">✓</div><div class="feat-text">Session recap email — what was decided and one action, in your inbox after every session</div></div>
+          </div>
+          <a href="/chat/" class="pricing-cta pricing-cta-primary">Start 14-day trial →</a>
+          <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px;">Free for 14 days · then $79/mo · cancel anytime</div>
+        </div>
+
+        <!-- OPERATOR -->
+        <div class="pricing-card featured">
+          <div class="pricing-badge" style="background:var(--amber);color:var(--ink);">Most popular</div>
+          <div class="pricing-tier" style="color:var(--amber);">Operator</div>
+          <div class="pricing-price" style="color:var(--amber-lt);">$149<span>/mo</span></div>
+          <div class="pricing-per">or $1,192/yr — 2 months free</div>
+          <div class="pricing-desc">For founders who want Marcus working on their business between sessions — not just when they ask. The difference between reactive advice and a strategic partner.</div>
+          <div class="pricing-features">
+            <div class="pricing-feature"><div class="feat-check" style="color:var(--amber-lt);">✓</div><div class="feat-text">Everything in Builder</div></div>
+            <div class="pricing-feature"><div class="feat-check" style="color:var(--amber-lt);">✓</div><div class="feat-text">Weekly digest — 3 specific actions every Monday, based on your recent sessions</div></div>
+            <div class="pricing-feature"><div class="feat-check" style="color:var(--amber-lt);">✓</div><div class="feat-text">Session recaps referenced by name — specific decisions recalled across sessions</div></div>
+            <div class="pricing-feature"><div class="feat-check" style="color:var(--amber-lt);">✓</div><div class="feat-text">Pricing audit — one focused session, a specific verdict, 20–30 minutes</div></div>
+          </div>
+          <a href="/chat/" class="pricing-cta pricing-cta-ghost">Start 14-day trial →</a>
+          <div style="font-size:11px;color:rgba(247,245,240,0.4);text-align:center;margin-top:8px;">Free for 14 days · then $149/mo · cancel anytime</div>
+        </div>
+      </div>
+
+      <!-- LIFETIME DEAL -->
+      <div style="background:rgba(200,134,30,0.07);border:0.5px solid rgba(200,134,30,0.2);border-radius:14px;padding:22px 28px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:flex-start;gap:14px;">
+          <div style="font-size:24px;flex-shrink:0;">♾️</div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--amber-lt);margin-bottom:3px;">Lifetime deal — <span style="color:rgba(247,245,240,0.4);font-weight:400;">limited availability at the lifetime price</span></div>
+            <div style="font-size:13px;color:rgba(247,245,240,0.65);line-height:1.55;">Full Builder access for life. <strong style="color:#F7F5F0;">$499 one-time payment</strong> — no monthly fees, ever.</div>
+          </div>
+        </div>
+        <a href="/chat/" style="background:var(--amber);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:11px 22px;border-radius:9px;text-decoration:none;white-space:nowrap;flex-shrink:0;transition:background .2s;" onmouseover="this.style.background='var(--amber-lt)'" onmouseout="this.style.background='var(--amber)'">Get lifetime access →</a>
+      </div>
+
+      <!-- GUARANTEE -->
+      <div style="display:flex;align-items:center;gap:14px;margin-top:12px;padding:18px 22px;background:rgba(11,122,96,0.06);border:0.5px solid rgba(11,122,96,0.18);border-radius:12px;">
+        <div style="font-size:28px;flex-shrink:0;">🛡️</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:#F7F5F0;margin-bottom:2px;">14-day free trial · cancel before day 14 and pay nothing</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.5;">Start today with full Builder access. If Marcus doesn't give you something genuinely useful in your first week, cancel before day 14 and you won't be charged a cent.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+    <!-- Footer -->
+
+</div>
+
+<footer class="corp-footer">
+  <div class="corp-footer-grid">
+
+    <!-- Brand -->
+    <div>
+      <a href="/" class="cfl-logo"><span class="cfl-ghost">Ghost</span><span class="cfl-coach">Coach</span></a>
+      <div class="cfl-tagline">AI business coaching for solopreneurs building subscription software.</div>
+    </div>
+
+    <!-- Product -->
+    <div>
+      <div class="cf-col-title">Product</div>
+      <a href="/#howitworks" class="cf-link">How it works</a>
+      <a href="/#ghost-os" class="cf-link">The Framework</a>
+      <a href="/#pricing" class="cf-link">Pricing</a>
+      <a href="/#pricing" class="cf-link">Builder plan</a>
+      <a href="/#pricing" class="cf-link">Operator plan</a>
+      <a href="/#pricing" class="cf-link">Lifetime deal</a>
+    </div>
+
+    <!-- Guides -->
+    <div>
+      <div class="cf-col-title">Guides</div>
+      <a href="/guides/how-to-price-saas-product/" class="cf-link">How to price a SaaS</a>
+      <a href="/guides/how-to-reduce-saas-churn/" class="cf-link">How to reduce churn</a>
+      <a href="/guides/first-10-paying-customers-saas/" class="cf-link">First 10 customers</a>
+      <a href="/guides/mrr-plateau-how-to-grow-saas/" class="cf-link">MRR plateau guide</a>
+      <a href="/vibe/after-vibe-coding-what-next/" class="cf-link">Vibe coding SaaS</a>
+      <a href="/guides/saas-revenue-metrics-beginners/" class="cf-link">All guides →</a>
+    </div>
+
+    <!-- Company -->
+    <div>
+      <div class="cf-col-title">Company</div>
+      <a href="/about/" class="cf-link">About</a>
+      <a href="/contact/" class="cf-link">Contact</a>
+      <a href="/privacy/" class="cf-link">Privacy Policy</a>
+      <a href="/terms/" class="cf-link">Terms of Service</a>
+    </div>
+
+    <!-- Newsletter -->
+    <div>
+      <div class="cf-col-title">Stay in the loop</div>
+      <div class="cf-nl-label">Founder insights and GhostCoach updates — no fluff.</div>
+      <div class="cf-nl-row">
+        <input class="cf-nl-input" type="email" placeholder="your@email.com">
+        <button class="cf-nl-btn">Subscribe</button>
+      </div>
+      <div class="cf-nl-note">No spam. Unsubscribe any time.</div>
+    </div>
+
+  </div>
+  <div class="corp-footer-bottom">
+    <span class="cfb-copy">© 2025 GhostCoach · AI business coaching for solo product builders</span>
+    <div class="cfb-links">
+      <a href="/privacy/" class="cfb-link">Privacy</a>
+      <a href="/terms/" class="cfb-link">Terms</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

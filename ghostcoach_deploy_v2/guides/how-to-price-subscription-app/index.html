@@ -1,0 +1,104 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>How to Price a Subscription App — A Practical Guide for Solo Founders | GhostCoach</title>
+<meta name="description" content="How to price a subscription app as a solo founder. Value-based pricing, anchoring, freemium vs paid — and the one question that changes everything about what you should charge.">
+<link rel="canonical" href="https://getghostcoach.com/guides/how-to-price-subscription-app/">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:wght@0,400;0,500;0,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:#F7F5F0;color:#0F1117;line-height:1.7;}
+a{color:#C8861E;text-decoration:none;}a:hover{text-decoration:underline;}
+nav{background:#0F1117;padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nl{display:flex;flex-direction:column;gap:2px;}
+.ng{font-family:'Playfair Display',serif;font-size:19px;color:#F7F5F0;}
+.nc{font-family:'Playfair Display',serif;font-size:19px;font-style:italic;color:#E8A832;}
+.ntag{font-size:9px;color:rgba(139,138,152,0.6);letter-spacing:.06em;}
+.nav-cta{background:#C8861E;color:#0F1117;font-size:13px;font-weight:600;padding:9px 18px;border-radius:8px;text-decoration:none;}
+.hero{background:#0F1117;padding:72px 0 56px;position:relative;overflow:hidden;}
+.hg{position:absolute;right:-10%;top:-30%;width:50%;height:160%;background:radial-gradient(ellipse,rgba(200,134,30,0.07) 0%,transparent 65%);pointer-events:none;}
+.container{max-width:780px;margin:0 auto;padding:0 32px;}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#E8A832;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:'';display:block;width:24px;height:2px;background:#C8861E;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,48px);font-weight:500;color:#F7F5F0;line-height:1.1;letter-spacing:-.3px;margin-bottom:16px;}
+h1 em{font-style:italic;color:#E8A832;}
+.hero-sub{font-size:17px;color:rgba(247,245,240,0.62);max-width:560px;line-height:1.65;}
+.article{padding:56px 0 80px;background:#F7F5F0;}
+h2{font-family:'Playfair Display',serif;font-size:25px;font-weight:500;color:#0F1117;margin:48px 0 14px;line-height:1.2;}
+h2:first-child{margin-top:0;}
+h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#0F1117;margin:28px 0 10px;}
+p{font-size:16px;color:#2E3140;margin-bottom:20px;line-height:1.75;}
+ul,ol{margin:0 0 20px 24px;}li{font-size:16px;color:#2E3140;margin-bottom:8px;line-height:1.65;}
+strong{font-weight:600;color:#0F1117;}
+.callout{background:#fff;border-left:3px solid #C8861E;border-radius:0 10px 10px 0;padding:18px 22px;margin:28px 0;}
+.callout p{margin:0;font-size:15px;font-style:italic;}
+.marcus-says{background:#1A1D27;border-radius:14px;padding:22px 26px;margin:32px 0;}
+.ml{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E8A832;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.ml::after{content:'';flex:1;height:0.5px;background:rgba(247,245,240,0.1);}
+.mq{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#F7F5F0;line-height:1.65;}
+.cta-box{background:#0F1117;border-radius:16px;padding:32px 36px;margin:44px 0;text-align:center;}
+.cta-box h3{font-family:'Playfair Display',serif;font-size:21px;color:#F7F5F0;margin:0 0 10px;font-weight:500;}
+.cta-box p{color:#8B8A98;font-size:14px;margin:0 0 22px;}
+.cta-btn{display:inline-block;background:#C8861E;color:#0F1117;font-size:14px;font-weight:600;padding:13px 28px;border-radius:10px;text-decoration:none;}
+.toc{background:#EDE9E1;border-radius:12px;padding:18px 22px;margin-bottom:36px;}
+.toc-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8B8A98;margin-bottom:10px;}
+.toc a{color:#0F1117;font-size:13px;display:block;padding:4px 0;border-bottom:0.5px solid rgba(15,17,23,0.1);}
+.toc a:last-child{border-bottom:none;}.toc a:hover{color:#C8861E;text-decoration:none;}
+table{width:100%;border-collapse:collapse;margin:22px 0;}
+th{background:#0F1117;color:#F7F5F0;font-size:12px;font-weight:500;padding:11px 14px;text-align:left;}
+td{border-bottom:0.5px solid rgba(15,17,23,0.1);padding:10px 14px;font-size:13px;vertical-align:top;}
+tr:nth-child(even) td{background:rgba(15,17,23,0.03);}
+.win{color:#0B7A60;font-weight:500;}.lose{color:#8B8A98;}
+.related-box{background:#EDE9E1;border-radius:12px;padding:18px 22px;margin:36px 0;}
+.related-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8B8A98;margin-bottom:10px;}
+.related-links{display:flex;flex-direction:column;gap:5px;}
+.related-links a{font-size:13px;color:#0F1117;padding:4px 0;border-bottom:0.5px solid rgba(15,17,23,0.1);}
+.related-links a:last-child{border-bottom:none;}.related-links a:hover{color:#C8861E;text-decoration:none;}
+footer{background:#0F1117;padding:32px 0;}
+.fi{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+.fc{font-size:11px;color:#8B8A98;}
+.fl{display:flex;gap:18px;}.fl a{font-size:12px;color:#8B8A98;}.fl a:hover{color:#F7F5F0;text-decoration:none;}
+@media(max-width:768px){nav{padding:0 20px;}.container{padding:0 20px;}h1{font-size:24px;}.hero{padding:48px 0 36px;}.article{padding:36px 0 52px;}.cta-box{padding:22px 18px;}}
+.corp-footer{background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);padding:56px 40px 36px;}.corp-footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;gap:40px;margin-bottom:44px;}.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}.cf-link:hover{color:#F7F5F0;}.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}.cf-nl-row{display:flex;gap:6px;}.cf-nl-input{flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:10px 12px;font-size:12px;color:#F7F5F0;outline:none;}.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}.cf-nl-btn{background:#C8861E;color:#0F1117;font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;}.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}.corp-footer-bottom{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);}.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}.cfb-links{display:flex;gap:20px;}.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;}@media(max-width:900px){.corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}}@media(max-width:520px){.corp-footer{padding:40px 20px 28px;}.corp-footer-grid{grid-template-columns:1fr;gap:24px;}}
+</style><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230F1117'/><text x='16' y='23' font-family='Georgia,serif' font-size='20' font-weight='bold' fill='%23E8A832' text-anchor='middle'>G</text></svg>">
+</head><body>
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" style="display:flex;align-items:baseline;text-decoration:none;flex-shrink:0;">
+    <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span>
+  </a>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;">← Back to home</a>
+</nav>
+<section class="hero"><div class="hg"></div><div class="container" style="position:relative;z-index:1;">
+<div class="eyebrow">Pricing · Subscription Software</div><h1>How to Price a <em>Subscription App</em></h1><p class="hero-sub">Pricing a subscription app is not about finding a number that feels fair. It is about understanding what your product replaces and pricing against that. Here is how to do it in one session.</p>
+</div></section>
+<section class="article"><div class="container"><div class="toc"><div class="toc-title">In this guide</div><a href="#wrong">Why most subscription app pricing is wrong</a><a href="#question">The one question that changes everything</a><a href="#models">Freemium, trial, or paid from day one</a><a href="#anchoring">Anchoring and packaging</a><a href="#raise">When and how to raise your price</a></div>
+<p>Most solo founders price their subscription app by looking at competitors, picking a number slightly below the market average, and hoping it works. This produces a price that is simultaneously too low to attract serious customers and too high to convert casual ones.</p>
+<p>The correct approach starts one step earlier: understanding what your product replaces, not what your competitors charge.</p>
+<h2 id="wrong">Why most subscription app pricing is wrong</h2>
+<p>Competitor-based pricing has one fatal flaw: your competitors probably priced wrong too. If you're pricing against tools that themselves priced against their competitors, you're anchoring to a number that may have no relationship to the actual value your product delivers.</p>
+<p>The founder who priced at $19/month because "all the tools in this space are $15–$25" may be leaving $60/month on the table. The founder who priced at $99/month because "enterprise tools cost $300+" may be losing pre-launch customers who would have converted at $49.</p>
+<h2 id="question">The one question that changes everything</h2>
+<p>Before setting any price, answer this: what does your product replace, and what does that alternative cost your customer per month?</p>
+<p>If your product replaces 3 hours of manual work per week for a consultant billing $150/hour, that's $1,800/month in time saved. Charging $49/month is not just defensible — it's an obvious bargain. The customer who understands the math will not negotiate.</p>
+<p>If your product replaces a $200/month tool, your price floor is clear. If it replaces a free spreadsheet, you need to price against the cost of the founder's time — which is still a strong argument, just a different one.</p>
+<div class="marcus-says"><div class="ml">Marcus</div><div class="mq">"I recommend answering the replacement question before touching the pricing page. The number that comes out of that question is almost always higher than the number you were going to pick."</div></div>
+<h2 id="models">Freemium, trial, or paid from day one</h2>
+<p><strong>Freemium</strong> works when: your product has a natural viral loop (users invite others), the free tier demonstrates value without delivering it fully, and you have the infrastructure to convert free users at scale. Most solo-founder subscription apps have none of these. Freemium is a distribution strategy, not a pricing strategy.</p>
+<p><strong>Free trial</strong> (7 days, card required) is the correct default for most subscription apps. It removes the purchase risk without creating a permanent free tier. Card required from day one creates a commitment signal that filters for serious customers.</p>
+<p><strong>Paid from day one</strong> is correct when your product solves a clear, urgent problem and the customer already knows they need it. If your product replaces something they're currently paying for, go straight to paid.</p>
+<h2 id="anchoring">Anchoring and packaging</h2>
+<p>The most reliable way to increase average revenue per user is not to raise prices — it's to add a second tier that makes the first tier look like a bargain. A product with one $49/month plan has no anchor. A product with a $49/month plan and a $149/month plan converts more customers to the $49 plan because the comparison makes it feel reasonable.</p>
+<p>The annual discount is the highest-leverage pricing change most solo founders can make. Offering 2 months free on an annual plan (equivalent to a 17% discount) consistently increases LTV while reducing churn — annual customers cancel significantly less often than monthly customers.</p>
+<h2 id="raise">When and how to raise your price</h2>
+<p>Raise your price when: more than 40% of people you pitch say yes immediately (a sign you are underpriced), your churn is below 5% monthly (customers are getting clear value), or you are attracting customers who are too price-sensitive to stay.</p>
+<p>How to raise: announce it to existing customers with 30 days notice and grandfather them at their current rate. New customers pay the new price. This approach generates goodwill from existing customers and validates the new price with the market simultaneously.</p>
+<div class="cta-box"><h3>Get your specific price recommendation</h3><p>Tell Marcus what your product replaces and who your customer is. You'll get a specific price recommendation with the reasoning in session one.</p><a href="https://claude.ai/project/019d85e3-e7e7-7364-b031-234e78b0691a" class="cta-btn">Talk to Marcus free →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · cancel anytime</p></div><div class="related-box"><div class="related-label">Related guides</div><div class="related-links"><a href="/guides/solopreneur-saas-pricing-strategy/">Solopreneur SaaS pricing strategy →</a><a href="/guides/annual-vs-monthly-saas-pricing/">Annual vs monthly SaaS pricing →</a><a href="/vibe/monetization-strategy/">Vibe coding monetization strategy →</a><a href="/guides/saas-trial-to-paid-conversion/">Trial to paid conversion →</a></div></div></div></section>
+<footer class="corp-footer">
+  <div class="corp-footer-grid">
+    <div><a href="https://getghostcoach.com/" class="cfl-logo"><span class="cfl-ghost">Ghost</span><span class="cfl-coach">Coach</span></a><div class="cfl-tagline">AI business coaching for solopreneurs building subscription software.</div></div>
+    <div><div class="cf-col-title">Product</div><a class="cf-link" href="https://getghostcoach.com/#howitworks">How it works</a><a class="cf-link" href="https://getghostcoach.com/#ghost-os">The Framework</a><a class="cf-link" href="https://getghostcoach.com/#pricing">Pricing</a><a class="cf-link" href="https://getghostcoach.com/chat/">Start free trial</a></div>
+    <div><div class="cf-col-title">Guides</div><a class="cf-link" href="https://getghostcoach.com/guides/how-to-price-saas-product/">How to price a SaaS</a><a class="cf-link" href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/">How to reduce churn</a><a class="cf-link" href="https://getghostcoach.com/guides/first-10-paying-customers-saas/">First 10 customers</a><a class="cf-link" href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/">MRR plateau</a><a class="cf-link" href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/">Vibe coding SaaS</a></div>
+    <div><div class="cf-col-title">Company</div><a class="cf-link" href="https://getghostcoach.com/about/">About</a><a class="cf-link" href="https://getghostcoach.com/contact/">Contact</a><a class="cf-link" href="https://getghostcoach.com/privacy/">Privacy</a><a class="cf-link" href="https://getghostcoach.com/terms/">Terms</a></div>
+    <div><div class="cf-col-title">Stay in the loop</div><div class="cf-nl-label">Founder insights — no fluff.</div><div class="cf-nl-row"><input class="cf-nl-input" type="email" placeholder="your@email.com"><button class="cf-nl-btn">Subscribe</button></div><div class="cf-nl-note">No spam. Unsubscribe any time.</div></div>
+  </div>
+  <div class="corp-footer-bottom"><span class="cfb-copy">© 2025 GhostCoach</span><div class="cfb-links"><a href="https://getghostcoach.com/privacy/" class="cfb-link">Privacy</a><a href="https://getghostcoach.com/terms/" class="cfb-link">Terms</a></div></div>
+</footer></body></html>
