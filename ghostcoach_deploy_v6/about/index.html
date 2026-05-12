@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>About GhostCoach — Why We Built It</title>
+<meta name="description" content="Why GhostCoach exists. The business layer problem, the Ghost OS framework, and the honest story of what GhostCoach is — and isn't.">
+<link rel="canonical" href="https://getghostcoach.com/about/">
+<meta property="og:title" content="About GhostCoach — Why We Built It">
+<meta property="og:description" content="The business layer problem, the Ghost OS framework, and the honest story behind GhostCoach.">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:#F7F5F0;color:#0F1117;overflow-x:hidden;}
+
+:root{
+  --ink:#0F1117;
+  --ink-soft:#1A1D27;
+  --amber:#C8861E;
+  --amber-lt:#E8A832;
+  --cream:#F7F5F0;
+  --cream-dk:#EAE7E0;
+  --muted:#8B8A98;
+  --teal:#0B7A60;
+  --teal-lt:#0DD4A8;
+  --border:rgba(15,17,23,0.08);
+}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;}
+.nav-logo{display:flex;align-items:baseline;gap:0;text-decoration:none;}
+.nav-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;}
+.nav-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-link{font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;transition:color .2s;}
+.nav-link:hover{color:#F7F5F0;}
+.nav-cta{background:var(--amber);color:var(--ink);font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;text-decoration:none;transition:background .2s;}
+.nav-cta:hover{background:var(--amber-lt);}
+
+/* ── HERO ── */
+.about-hero{background:var(--ink);padding:128px 40px 100px;text-align:center;position:relative;overflow:hidden;}
+.about-hero::before{content:'';position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(200,134,30,0.06) 0%,transparent 70%);pointer-events:none;}
+.hero-eyebrow{font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:24px;}
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(38px,5vw,60px);font-weight:400;color:#F7F5F0;line-height:1.2;margin-bottom:28px;max-width:760px;margin-left:auto;margin-right:auto;}
+.hero-h1 em{font-style:italic;color:var(--amber-lt);}
+.hero-sub{font-size:17px;color:rgba(247,245,240,0.55);line-height:1.75;max-width:580px;margin:0 auto;}
+
+/* ── SECTIONS ── */
+.section{padding:80px 40px;}
+.section-inner{max-width:720px;margin:0 auto;}
+.section-inner.wide{max-width:900px;}
+.section-dark{background:var(--ink);}
+.section-ink2{background:#1A1D27;}
+.section-cream{background:var(--cream);}
+.section-cream-dk{background:var(--cream-dk);}
+
+/* Typography */
+.section-label{font-size:11px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.section-label::before{content:'';display:inline-block;width:24px;height:1.5px;background:var(--amber);}
+.section-h2{font-family:'Playfair Display',serif;font-size:clamp(28px,4vw,42px);font-weight:400;line-height:1.25;margin-bottom:28px;}
+.section-h2.light{color:#F7F5F0;}
+.section-h2.light em{font-style:italic;color:var(--amber-lt);}
+.section-h2 em{font-style:italic;color:var(--amber);}
+.body-text{font-size:16px;line-height:1.85;color:#2E3140;margin-bottom:20px;}
+.body-text.light{color:rgba(247,245,240,0.65);}
+.body-text:last-child{margin-bottom:0;}
+.body-text strong{font-weight:500;color:#0F1117;}
+.body-text.light strong{color:#F7F5F0;}
+
+/* ── AMBER DIVIDER ── */
+.amber-rule{width:40px;height:2px;background:var(--amber);border-radius:1px;margin-bottom:28px;}
+
+/* ── STAT ROW ── */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(247,245,240,0.06);border-radius:12px;overflow:hidden;margin:48px 0;}
+.stat-cell{background:var(--ink-soft);padding:32px 24px;text-align:center;}
+.stat-num{font-family:'Playfair Display',serif;font-size:38px;font-weight:400;color:var(--amber-lt);line-height:1;margin-bottom:8px;}
+.stat-label{font-size:12px;color:rgba(247,245,240,0.4);line-height:1.5;}
+
+/* ── PILLARS ── */
+.pillars{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:40px 0;}
+.pillar{background:#1A1D27;border:0.5px solid rgba(247,245,240,0.06);border-radius:12px;padding:24px 26px;}
+.pillar-num{font-size:11px;font-weight:600;color:var(--amber);letter-spacing:.1em;margin-bottom:10px;}
+.pillar-name{font-family:'Playfair Display',serif;font-size:18px;color:#F7F5F0;margin-bottom:8px;}
+.pillar-desc{font-size:13px;color:rgba(247,245,240,0.45);line-height:1.65;}
+
+/* ── ADMISSION BOX ── */
+.admission{background:rgba(200,134,30,0.06);border:0.5px solid rgba(200,134,30,0.2);border-radius:12px;padding:28px 32px;margin:40px 0;}
+.admission-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);margin-bottom:14px;}
+.admission-text{font-size:15px;color:rgba(247,245,240,0.75);line-height:1.75;}
+.admission-text strong{color:#F7F5F0;font-weight:500;}
+
+/* ── FOR / NOT FOR ── */
+.for-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:40px 0;}
+.for-card{border-radius:12px;padding:28px 28px;}
+.for-yes{background:#E1F5EE;border:0.5px solid rgba(29,158,117,0.2);}
+.for-no{background:#FAECE7;border:0.5px solid rgba(152,60,29,0.2);}
+.for-title{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:16px;}
+.for-yes .for-title{color:#085041;}
+.for-no .for-title{color:#993C1D;}
+.for-item{font-size:14px;line-height:1.7;padding:6px 0;border-bottom:0.5px solid rgba(15,17,23,0.06);display:flex;align-items:flex-start;gap:10px;}
+.for-item:last-child{border-bottom:none;}
+.for-icon{font-size:12px;margin-top:3px;flex-shrink:0;}
+.for-yes .for-icon{color:#0F6E56;}
+.for-no .for-icon{color:#993C1D;}
+.for-text{color:#0F1117;}
+
+/* ── QUOTE ── */
+.founder-quote{border-left:2px solid var(--amber);padding:24px 32px;margin:48px 0;}
+.quote-mark{font-family:'Playfair Display',serif;font-size:42px;color:var(--amber);line-height:0.7;margin-bottom:16px;display:block;}
+.quote-body{font-family:'Playfair Display',serif;font-size:20px;font-style:italic;color:#F7F5F0;line-height:1.6;margin-bottom:16px;}
+.quote-attr{font-size:12px;color:rgba(247,245,240,0.4);letter-spacing:.04em;}
+
+/* ── CTA SECTION ── */
+.cta-section{background:var(--ink);padding:100px 40px;text-align:center;}
+.cta-inner{max-width:560px;margin:0 auto;}
+.cta-h2{font-family:'Playfair Display',serif;font-size:36px;font-weight:400;color:#F7F5F0;line-height:1.3;margin-bottom:16px;}
+.cta-h2 em{font-style:italic;color:var(--amber-lt);}
+.cta-sub{font-size:15px;color:rgba(247,245,240,0.5);margin-bottom:36px;line-height:1.7;}
+.cta-btn{display:inline-block;background:var(--amber);color:var(--ink);font-size:15px;font-weight:600;padding:16px 36px;border-radius:10px;text-decoration:none;transition:background .2s;}
+.cta-btn:hover{background:var(--amber-lt);}
+.cta-note{font-size:12px;color:rgba(247,245,240,0.3);margin-top:14px;}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);padding:40px;}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+.footer-logo{display:flex;align-items:baseline;gap:0;}
+.footer-copy{font-size:12px;color:rgba(247,245,240,0.3);}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{font-size:12px;color:rgba(247,245,240,0.35);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:#F7F5F0;}
+
+@media(max-width:640px){
+  nav{padding:0 20px;}
+  .about-hero{padding:120px 24px 80px;}
+  .section{padding:60px 24px;}
+  .pillars,.for-grid,.stat-row{grid-template-columns:1fr;}
+  .stat-row{background:transparent;gap:12px;}
+  .stat-cell{border-radius:10px;}
+  .nav-links{display:none;}
+}
+
+/* ── SP-NAV: Standard sub-page nav ─────────────────────────── */
+.sp-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);
+  border-bottom:0.5px solid rgba(247,245,240,0.06);
+  height:58px;display:flex;align-items:center;
+  padding:0 28px;gap:20px;
+}
+.sp-nav-home{
+  font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;
+  display:flex;align-items:center;gap:4px;transition:color .2s;
+  white-space:nowrap;flex-shrink:0;
+}
+.sp-nav-home:hover{color:#F7F5F0;}
+.sp-nav-divider{width:1px;height:16px;background:rgba(247,245,240,0.1);flex-shrink:0;}
+.sp-nav-logo{display:flex;align-items:baseline;text-decoration:none;flex-shrink:0;}
+.sp-nav-ghost{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:#F7F5F0;}
+.sp-nav-coach{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;font-style:italic;color:#E8A832;}
+.sp-nav-links{display:flex;align-items:center;gap:28px;flex:1;justify-content:center;}
+.sp-nav-link{font-size:13px;color:rgba(247,245,240,0.55);text-decoration:none;transition:color .2s;}
+.sp-nav-link:hover{color:#F7F5F0;}
+.sp-nav-link.active{color:#E8A832;}
+.sp-nav-cta{
+  background:#C8861E;color:#0F1117;font-size:13px;font-weight:600;
+  padding:9px 20px;border-radius:8px;text-decoration:none;
+  transition:background .2s;white-space:nowrap;flex-shrink:0;
+}
+.sp-nav-cta:hover{background:#E8A832;}
+@media(max-width:680px){
+  .sp-nav{padding:0 18px;}
+  .sp-nav-links{display:none;}
+  .sp-nav-home{font-size:11px;}
+}
+
+/* ── CORP-FOOTER: 5-column corporate footer ─────────────────── */
+.corp-footer{
+  background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);
+  padding:56px 40px 36px;
+}
+.corp-footer-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;
+  gap:40px;margin-bottom:44px;
+}
+.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}
+.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}
+.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}
+.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}
+.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}
+.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}
+.cf-link:hover{color:#F7F5F0;}
+.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}
+.cf-nl-row{display:flex;gap:6px;}
+.cf-nl-input{
+  flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);
+  border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;
+  font-size:12px;color:#F7F5F0;outline:none;transition:border-color .2s;
+}
+.cf-nl-input:focus{border-color:rgba(200,134,30,0.4);}
+.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}
+.cf-nl-btn{
+  background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;
+  border:none;cursor:pointer;white-space:nowrap;transition:background .2s;
+}
+.cf-nl-btn:hover{background:#E8A832;}
+.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}
+.corp-footer-bottom{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);
+}
+.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}
+.cfb-links{display:flex;gap:20px;}
+.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;transition:color .2s;}
+.cfb-link:hover{color:rgba(247,245,240,0.55);}
+@media(max-width:900px){
+  .corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
+}
+@media(max-width:520px){
+  .corp-footer{padding:40px 20px 28px;}
+  .corp-footer-grid{grid-template-columns:1fr;gap:24px;}
+}
+
+</style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+</head>
+<body>
+
+<!-- NAV -->
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <div style="display:flex;flex-direction:column;gap:1px;">
+    <a href="https://getghostcoach.com/" style="display:flex;align-items:baseline;text-decoration:none;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></a>
+    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+  </div>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
+</nav>
+
+<!-- HERO -->
+<section class="about-hero">
+  <div class="hero-eyebrow">About GhostCoach</div>
+  <h1 class="hero-h1">Building the product is the easy part. We built the <em>business layer</em>.</h1>
+  <p class="hero-sub">The tools that help you ship a SaaS in a weekend stop exactly where the hard part begins. GhostCoach is what comes next.</p>
+</section>
+
+<!-- THE PROBLEM -->
+<section class="section section-cream">
+  <div class="section-inner">
+    <div class="section-label">The problem we saw</div>
+    <div class="amber-rule"></div>
+    <h2 class="section-h2">You can vibe code a SaaS now. <em>Building the business around it is still the hard part.</em></h2>
+    <p class="body-text">Cursor, Lovable, Bolt, Replit — they changed what's possible for a solo founder. A working product in a weekend is no longer unusual. A subscription product with a real database, a real UI, and real functionality. Shipped. Deployed. Live.</p>
+    <p class="body-text">And then the product has four users. Two of them are the founder's test accounts. The other two churned in week one.</p>
+    <p class="body-text">Because the vibe coding tools solved the build problem. They didn't touch the business problem: what to charge, who to sell to, how to explain what the product does, how to know if 8% monthly churn is a product failure or an onboarding failure.</p>
+    <p class="body-text"><strong>That gap is why GhostCoach exists.</strong> Not as another AI tool. As the business layer that should have come with the build tools.</p>
+  </div>
+</section>
+
+<!-- WHAT WE'RE NOT -->
+<section class="section section-dark">
+  <div class="section-inner">
+    <div class="section-label" style="color:var(--amber);">The honest version</div>
+    <div class="amber-rule"></div>
+    <h2 class="section-h2 light">What GhostCoach is — <em>and isn't.</em></h2>
+
+    <div class="admission">
+      <div class="admission-label">On how it's built</div>
+      <p class="admission-text">GhostCoach is built on the same underlying AI model as Claude, with a <strong>coaching expertise framework built on top of it</strong> — the Ghost OS. That framework isn't AI training data. It's filled with human expertise: the accumulated pattern recognition of SaaS founders, operators, and advisors who made the actual mistakes. Pricing wrong. Building for the wrong customer. Mistaking Product Hunt upvotes for acquisition. Fixing features when the problem was onboarding.</p>
+      <p class="admission-text" style="margin-top:14px;">The result is an AI that gives you advice specific to your situation rather than balanced and generic — because it has decades of real founder experience encoded into how it diagnoses and responds.</p>
+    </div>
+
+    <div class="admission">
+      <div class="admission-label">On what it doesn't do</div>
+      <p class="admission-text">GhostCoach doesn't give legal advice, tax advice, or financial advice. It doesn't tell you what to build. <strong>It tells you what's most likely wrong with the business you've already built</strong> — based on your specific churn rate, your specific customer, your specific 90-day goal — and gives you specific recommendations on how to improve your business layer. That's the scope. It's deliberately narrow.</p>
+    </div>
+
+    <div class="admission">
+      <div class="admission-label">On how it improves</div>
+      <p class="admission-text">Marcus doesn't always get it right first session. The product gets sharper with context. <strong>By session five, Marcus understands your business better than most advisors you've met twice</strong> — because the context compounds. Session one is a diagnosis. Session five is a pattern. The founding cohort of users who use it weekly get meaningfully better advice than the ones who open it once a month.</p>
+    </div>
+  </div>
+</section>
+
+<!-- THE GHOST OS -->
+<section class="section section-ink2">
+  <div class="section-inner">
+    <div class="section-label" style="color:var(--amber);">The framework</div>
+    <div class="amber-rule"></div>
+    <h2 class="section-h2 light">Every session maps to <em>one of five pillars.</em></h2>
+    <p class="body-text light">The Ghost OS framework is how Marcus structures every diagnosis. When you bring a problem, Marcus identifies which pillar it belongs to — and sometimes, which pillar the real problem belongs to. The problem you describe and the problem you have are often different things.</p>
+
+    <div class="pillars">
+      <div class="pillar">
+        <div class="pillar-num">01</div>
+        <div class="pillar-name">Offer Architecture</div>
+        <div class="pillar-desc">Pricing, packaging, positioning. What you charge, how you structure it, and what the price signals to the customer who sees it.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">02</div>
+        <div class="pillar-name">AI Delivery Stack</div>
+        <div class="pillar-desc">AI-powered ops, onboarding design, and support infrastructure. How the product delivers its core value, reliably, for every new customer.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">03</div>
+        <div class="pillar-name">Acquisition System</div>
+        <div class="pillar-desc">Repeatable owned channels. Not a Product Hunt launch. A channel that works the same week in week two as it did in week one.</div>
+      </div>
+      <div class="pillar">
+        <div class="pillar-num">04</div>
+        <div class="pillar-name">Automation Layer</div>
+        <div class="pillar-desc">Billing, churn alerts, trial follow-up, and the operational infrastructure that makes a solo business feel like it has a team.</div>
+      </div>
+      <div class="pillar" style="grid-column:1/-1;">
+        <div class="pillar-num">05</div>
+        <div class="pillar-name">Revenue Protection</div>
+        <div class="pillar-desc">Trial-to-paid conversion, churn reduction, and expansion revenue. The systems that keep the revenue you've already earned — and grow it from within the existing customer base.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS -->
+<section class="section section-dark">
+  <div class="section-inner">
+    <div class="stat-row">
+      <div class="stat-cell">
+        <div class="stat-num">50+</div>
+        <div class="stat-label">Solo founder situations<br>encoded in the Ghost OS</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">$28k</div>
+        <div class="stat-label">MRR reached by one of<br>the founders behind it<br>Solo · No team · No funding</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-num">1</div>
+        <div class="stat-label">Recommendation per session.<br>Not a list. Not a framework<br>to explore. One thing to do.</div>
+      </div>
+    </div>
+
+    <div class="founder-quote">
+      <span class="quote-mark">"</span>
+      <p class="quote-body">The first product failed. Six months building something nobody paid for because I got pricing and positioning completely wrong. The second one reached $28k MRR in 18 months. Solo. No team. No funding. The distance between the two was not better code. It was understanding what was actually wrong at each stage — and knowing which fix applied.</p>
+      <p class="quote-attr">— A founder whose experience is encoded in GhostCoach</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHO IT'S FOR -->
+<section class="section section-cream-dk">
+  <div class="section-inner">
+    <div class="section-label">Who it's for</div>
+    <div class="amber-rule"></div>
+    <h2 class="section-h2">Built for one type of founder. <em>Deliberately.</em></h2>
+    <p class="body-text">A product that tries to be useful to everyone is usually not very useful to anyone. GhostCoach is built for a specific person at a specific stage with a specific kind of problem.</p>
+
+    <div class="for-grid">
+      <div class="for-card for-yes">
+        <div class="for-title">GhostCoach is for you if</div>
+        <div class="for-item"><span class="for-icon">✓</span><span class="for-text">You're a solo founder building a subscription software product — SaaS, app, or recurring-revenue tool</span></div>
+        <div class="for-item"><span class="for-icon">✓</span><span class="for-text">You're pre-launch, just launched, or stuck at a plateau and not sure which lever to pull</span></div>
+        <div class="for-item"><span class="for-icon">✓</span><span class="for-text">You want one specific recommendation — not a framework to explore or a list of things to consider</span></div>
+        <div class="for-item"><span class="for-icon">✓</span><span class="for-text">You built it with vibe coding tools and now need to build the business around it</span></div>
+        <div class="for-item"><span class="for-icon">✓</span><span class="for-text">You've read the playbooks and understood them — but still don't know what to do this week</span></div>
+      </div>
+      <div class="for-card for-no">
+        <div class="for-title">GhostCoach is not for you if</div>
+        <div class="for-item"><span class="for-icon">✗</span><span class="for-text">You need investor introductions or fundraising support</span></div>
+        <div class="for-item"><span class="for-icon">✗</span><span class="for-text">You need legal, tax, financial, or HR advice</span></div>
+        <div class="for-item"><span class="for-icon">✗</span><span class="for-text">You have a team and need leadership or management coaching</span></div>
+        <div class="for-item"><span class="for-icon">✗</span><span class="for-text">You're building a non-subscription product (services, physical goods, one-off software)</span></div>
+        <div class="for-item"><span class="for-icon">✗</span><span class="for-text">You want motivation or accountability without strategy — we're not motivational speakers</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE PHILOSOPHY -->
+<section class="section section-dark">
+  <div class="section-inner">
+    <div class="section-label" style="color:var(--amber);">The philosophy</div>
+    <div class="amber-rule"></div>
+    <h2 class="section-h2 light">Diagnosis before advice. <em>Every time.</em></h2>
+    <p class="body-text light">Most coaching tools — AI or human — give you the answer to the question you asked. GhostCoach asks a question before giving you one.</p>
+    <p class="body-text light">Because the problem you describe and the problem you have are often different. An 8% monthly churn rate is not one problem. It is three completely different problems depending on when the churn is happening — and each one has a different fix. A founder who is told to "improve onboarding" when their churn is late-stage is fixing the wrong thing for six months.</p>
+    <p class="body-text light">The Ghost OS framework is built around one rule: <strong style="color:#F7F5F0;">diagnosis before advice.</strong> Marcus asks one question. The answer to that question changes what advice is given. Then one recommendation. Not a list. One thing to do this week, with the reasoning.</p>
+    <p class="body-text light">That's the product. Simple in principle. The difficulty is doing it consistently, for your specific situation, session after session, as the context compounds.</p>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <h2 class="cta-h2">The business layer is <em>the hard part.</em> You shouldn't have to figure it out alone.</h2>
+    <p class="cta-sub">14-day free trial. Full Builder access. One session tells you whether it works for your situation.</p>
+    <a href="https://getghostcoach.com/#pricing" class="cta-btn">Talk to Marcus free →</a>
+    <p class="cta-note">14-day free trial · cancel anytime</p>
+  </div>
+</section>
+
+<footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
+  <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
+    <div>
+      <div style="display:flex;align-items:baseline;">
+        <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#F7F5F0;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:#E8A832;">Coach</span>
+      </div>
+      <div style="font-size:12px;color:rgba(247,245,240,0.4);margin-top:10px;line-height:1.6;max-width:210px;">AI business coaching for solopreneurs building digital products.</div>
+      <div style="margin-top:18px;display:flex;gap:14px;">
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">𝕏 Twitter</a>
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">in LinkedIn</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
+      <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
+      <form onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('.gc-nl-ok').style.display='block';" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'">Subscribe →</button>
+      </form>
+      <div class="gc-nl-ok" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+    </div>
+  </div>
+  <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
+    <div style="font-size:12px;color:rgba(247,245,240,0.4);">© 2025 GhostCoach. All rights reserved.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:rgba(247,245,240,0.45);">"The product is the easy part."</div>
+  </div>
+  <style>
+    @media(max-width:900px){.gc-footer-grid{grid-template-columns:1fr 1fr !important;gap:28px !important;}}
+    @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
+  </style>
+</footer>
+
+</body>
+</html>
