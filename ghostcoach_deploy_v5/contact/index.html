@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Contact GhostCoach — Get in Touch</title>
+<meta name="description" content="Get in touch with GhostCoach. We respond to every message within 24 hours.">
+<link rel="canonical" href="https://getghostcoach.com/contact/">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:#F7F5F0;color:#0F1117;overflow-x:hidden;}
+
+:root{
+  --ink:#0F1117;--ink-soft:#1A1D27;--amber:#C8861E;--amber-lt:#E8A832;
+  --cream:#F7F5F0;--cream-dk:#EAE7E0;--muted:#8B8A98;
+  --border:rgba(15,17,23,0.08);
+}
+
+/* ── NAV ── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;}
+.nav-logo{display:flex;align-items:baseline;text-decoration:none;}
+.nav-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}
+.nav-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}
+.nav-links{display:flex;align-items:center;gap:32px;}
+.nav-link{font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;transition:color .2s;}
+.nav-link:hover,.nav-link.active{color:#F7F5F0;}
+.nav-link.active{color:#E8A832;}
+.nav-cta{background:var(--amber);color:var(--ink);font-size:13px;font-weight:600;padding:9px 20px;border-radius:8px;text-decoration:none;transition:background .2s;}
+.nav-cta:hover{background:var(--amber-lt);}
+
+/* ── HERO ── */
+.contact-hero{background:var(--ink);padding:128px 40px 80px;text-align:center;position:relative;overflow:hidden;}
+.contact-hero::before{content:'';position:absolute;top:-100px;left:50%;transform:translateX(-50%);width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(200,134,30,0.06),transparent 70%);pointer-events:none;}
+.hero-eyebrow{font-size:11px;font-weight:500;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);margin-bottom:20px;}
+.hero-h1{font-family:'Playfair Display',serif;font-size:clamp(32px,4.5vw,50px);font-weight:400;color:#F7F5F0;line-height:1.25;margin-bottom:16px;}
+.hero-h1 em{font-style:italic;color:var(--amber-lt);}
+.hero-sub{font-size:16px;color:rgba(247,245,240,0.5);line-height:1.7;max-width:460px;margin:0 auto;}
+
+/* ── BODY ── */
+.contact-body{padding:60px 40px 80px;max-width:980px;margin:0 auto;}
+.contact-grid{display:grid;grid-template-columns:260px 1fr;gap:28px;}
+
+/* ── INFO CARDS ── */
+.info-col{display:flex;flex-direction:column;gap:14px;}
+.info-card{background:#fff;border:0.5px solid var(--border);border-radius:12px;padding:20px;}
+.info-icon{font-size:20px;margin-bottom:8px;}
+.info-label{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:8px;}
+.info-text{font-size:13px;color:#2E3140;line-height:1.7;}
+.info-text strong{font-weight:500;color:#0F1117;}
+
+/* ── FORM CARD ── */
+.form-card{background:#fff;border:0.5px solid var(--border);border-radius:14px;padding:32px;}
+.form-title{font-family:'Playfair Display',serif;font-size:22px;color:#0F1117;margin-bottom:24px;}
+
+/* ── LOGIN GATE ── */
+.login-gate{background:rgba(200,134,30,0.06);border:0.5px solid rgba(200,134,30,0.2);border-radius:10px;padding:20px 22px;margin-bottom:24px;display:flex;gap:14px;align-items:flex-start;}
+.gate-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
+.gate-title{font-size:14px;font-weight:500;color:#0F1117;margin-bottom:6px;}
+.gate-text{font-size:13px;color:#2E3140;line-height:1.6;margin-bottom:14px;}
+.gate-btns{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-amber{display:inline-block;background:var(--amber);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:10px 22px;border-radius:8px;border:none;cursor:pointer;text-decoration:none;transition:background .2s;}
+.btn-amber:hover{background:var(--amber-lt);}
+.btn-outline{display:inline-block;background:transparent;color:var(--amber);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:10px 22px;border-radius:8px;border:1px solid rgba(200,134,30,0.3);cursor:pointer;text-decoration:none;transition:border-color .2s;}
+.btn-outline:hover{border-color:var(--amber);}
+
+/* ── FORM FIELDS ── */
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.field{margin-bottom:16px;}
+.field label{font-size:12px;font-weight:500;color:rgba(15,17,23,0.55);display:block;margin-bottom:6px;}
+.field label .req{color:var(--amber);}
+.field input,.field select,.field textarea{width:100%;background:#F7F5F0;border:0.5px solid rgba(15,17,23,0.14);border-radius:9px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:13px;color:#0F1117;outline:none;transition:border-color .2s;box-sizing:border-box;}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:rgba(200,134,30,0.4);}
+.field input:disabled,.field select:disabled,.field textarea:disabled{opacity:0.45;cursor:not-allowed;}
+.field textarea{resize:none;line-height:1.6;}
+.char-count{font-size:11px;color:var(--muted);text-align:right;margin-top:4px;}
+
+/* ── SUBMIT ── */
+.submit-btn{width:100%;background:var(--amber);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;padding:14px;border-radius:10px;border:none;cursor:pointer;transition:background .2s;margin-top:4px;}
+.submit-btn:hover:not(:disabled){background:var(--amber-lt);}
+.submit-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.privacy-note{font-size:11px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5;}
+
+/* ── SUCCESS STATE ── */
+.success-state{display:none;text-align:center;padding:40px 20px;}
+.success-icon{font-size:40px;margin-bottom:16px;}
+.success-title{font-family:'Playfair Display',serif;font-size:22px;color:#0F1117;margin-bottom:10px;}
+.success-text{font-size:14px;color:var(--muted);line-height:1.7;}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);padding:40px;}
+.footer-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;}
+.footer-logo{text-decoration:none;display:flex;align-items:baseline;}
+.fg{font-family:'Playfair Display',serif;font-size:16px;font-weight:500;color:#F7F5F0;}
+.fc{font-family:'Playfair Display',serif;font-size:16px;font-weight:500;font-style:italic;color:#E8A832;}
+.footer-copy{font-size:12px;color:rgba(247,245,240,0.3);}
+.footer-links{display:flex;gap:24px;}
+.footer-links a{font-size:12px;color:rgba(247,245,240,0.35);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:#F7F5F0;}
+.footer-links a.active{color:#E8A832;}
+
+@media(max-width:680px){
+  nav{padding:0 20px;}
+  .nav-links{display:none;}
+  .contact-hero{padding:110px 24px 60px;}
+  .contact-body{padding:40px 20px 60px;}
+  .contact-grid{grid-template-columns:1fr;}
+  .field-row{grid-template-columns:1fr;}
+}
+
+/* ── SP-NAV: Standard sub-page nav ─────────────────────────── */
+.sp-nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);
+  border-bottom:0.5px solid rgba(247,245,240,0.06);
+  height:58px;display:flex;align-items:center;
+  padding:0 28px;gap:20px;
+}
+.sp-nav-home{
+  font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;
+  display:flex;align-items:center;gap:4px;transition:color .2s;
+  white-space:nowrap;flex-shrink:0;
+}
+.sp-nav-home:hover{color:#F7F5F0;}
+.sp-nav-divider{width:1px;height:16px;background:rgba(247,245,240,0.1);flex-shrink:0;}
+.sp-nav-logo{display:flex;align-items:baseline;text-decoration:none;flex-shrink:0;}
+.sp-nav-ghost{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;color:#F7F5F0;}
+.sp-nav-coach{font-family:'Playfair Display',serif;font-size:17px;font-weight:500;font-style:italic;color:#E8A832;}
+.sp-nav-links{display:flex;align-items:center;gap:28px;flex:1;justify-content:center;}
+.sp-nav-link{font-size:13px;color:rgba(247,245,240,0.55);text-decoration:none;transition:color .2s;}
+.sp-nav-link:hover{color:#F7F5F0;}
+.sp-nav-link.active{color:#E8A832;}
+.sp-nav-cta{
+  background:#C8861E;color:#0F1117;font-size:13px;font-weight:600;
+  padding:9px 20px;border-radius:8px;text-decoration:none;
+  transition:background .2s;white-space:nowrap;flex-shrink:0;
+}
+.sp-nav-cta:hover{background:#E8A832;}
+@media(max-width:680px){
+  .sp-nav{padding:0 18px;}
+  .sp-nav-links{display:none;}
+  .sp-nav-home{font-size:11px;}
+}
+
+/* ── CORP-FOOTER: 5-column corporate footer ─────────────────── */
+.corp-footer{
+  background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);
+  padding:56px 40px 36px;
+}
+.corp-footer-grid{
+  max-width:1100px;margin:0 auto;
+  display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;
+  gap:40px;margin-bottom:44px;
+}
+.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}
+.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}
+.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}
+.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}
+.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}
+.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}
+.cf-link:hover{color:#F7F5F0;}
+.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}
+.cf-nl-row{display:flex;gap:6px;}
+.cf-nl-input{
+  flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);
+  border-radius:8px;padding:10px 12px;font-family:'DM Sans',sans-serif;
+  font-size:12px;color:#F7F5F0;outline:none;transition:border-color .2s;
+}
+.cf-nl-input:focus{border-color:rgba(200,134,30,0.4);}
+.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}
+.cf-nl-btn{
+  background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;
+  font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;
+  border:none;cursor:pointer;white-space:nowrap;transition:background .2s;
+}
+.cf-nl-btn:hover{background:#E8A832;}
+.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}
+.corp-footer-bottom{
+  max-width:1100px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);
+}
+.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}
+.cfb-links{display:flex;gap:20px;}
+.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;transition:color .2s;}
+.cfb-link:hover{color:rgba(247,245,240,0.55);}
+@media(max-width:900px){
+  .corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}
+}
+@media(max-width:520px){
+  .corp-footer{padding:40px 20px 28px;}
+  .corp-footer-grid{grid-template-columns:1fr;gap:24px;}
+}
+
+</style>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+</head>
+<body>
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <div style="display:flex;flex-direction:column;gap:1px;">
+    <a href="https://getghostcoach.com/" style="display:flex;align-items:baseline;text-decoration:none;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></a>
+    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+  </div>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
+</nav>
+
+<section class="contact-hero">
+  <div class="hero-eyebrow">Contact</div>
+  <h1 class="hero-h1">Get in touch — <em>we respond within 24 hours</em></h1>
+  <p class="hero-sub">A real person reads every message. Log in first so we know who you are before you do.</p>
+</section>
+
+<div class="contact-body">
+  <div class="contact-grid">
+
+    <!-- INFO COLUMN -->
+    <div class="info-col">
+      <div class="info-card">
+        <div class="info-icon">⏱</div>
+        <div class="info-label">Response time</div>
+        <div class="info-text"><strong>Within 24 hours.</strong> Every message is read personally.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">🔐</div>
+        <div class="info-label">Why log in first?</div>
+        <div class="info-text">Your plan and session history get attached to your message automatically — faster, more specific help.</div>
+      </div>
+      <div class="info-card">
+        <div class="info-icon">💡</div>
+        <div class="info-label">Common topics</div>
+        <div class="info-text">
+          Billing or plan changes<br>
+          Technical issues with the chat<br>
+          Account recovery<br>
+          Press or partnership enquiries<br>
+          General questions
+        </div>
+      </div>
+    </div>
+
+    <!-- FORM COLUMN -->
+    <div class="form-card">
+      <div class="form-title">Send us a message</div>
+
+      <!-- SUCCESS STATE (hidden until submitted) -->
+      <div class="success-state" id="success-state">
+        <div class="success-icon">✉️</div>
+        <div class="success-title">Message received</div>
+        <div class="success-text">We'll get back to you within 24 hours at the email on your account.<br>If it's urgent, you can also email us directly.</div>
+      </div>
+
+      <!-- FORM -->
+      <form id="contact-form" onsubmit="handleSubmit(event)">
+
+        <!-- Login gate — shown when not authenticated -->
+        <div class="login-gate" id="login-gate">
+          <div class="gate-icon">🔒</div>
+          <div>
+            <div class="gate-title">Log in to submit this form</div>
+            <div class="gate-text">We attach your account details to your message so we can help you faster and more specifically. You only need to do this once — your session stays active.</div>
+            <div class="gate-btns">
+              <a href="/login/" class="btn-amber">Log in →</a>
+              <a href="/chat/" class="btn-outline">Create account</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Name <span class="req">*</span></label>
+            <input type="text" id="f-name" placeholder="Your name" required disabled>
+          </div>
+          <div class="field">
+            <label>Email <span class="req">*</span></label>
+            <input type="email" id="f-email" placeholder="your@email.com" required disabled>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Category <span class="req">*</span></label>
+          <select id="f-category" required disabled>
+            <option value="">Select a category</option>
+            <option value="general">General question</option>
+            <option value="technical">Technical issue</option>
+            <option value="billing">Billing</option>
+            <option value="account">Account recovery</option>
+            <option value="press">Press</option>
+            <option value="partnership">Partnership</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>Subject</label>
+          <input type="text" id="f-subject" placeholder="Brief description of your question" disabled>
+        </div>
+
+        <div class="field">
+          <label>Message <span class="req">*</span></label>
+          <textarea id="f-message" rows="6" placeholder="Describe your question or issue in as much detail as you can. The more context you give us, the faster and more specific our reply." required disabled oninput="updateCount(this)"></textarea>
+          <div class="char-count" id="char-count">0 / 30 characters minimum</div>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submit-btn" disabled>Send message →</button>
+        <div class="privacy-note">Your message is private. We don't use it for marketing or share it with third parties.</div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
+  <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
+    <div>
+      <div style="display:flex;align-items:baseline;">
+        <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#F7F5F0;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:#E8A832;">Coach</span>
+      </div>
+      <div style="font-size:12px;color:rgba(247,245,240,0.4);margin-top:10px;line-height:1.6;max-width:210px;">AI business coaching for solopreneurs building digital products.</div>
+      <div style="margin-top:18px;display:flex;gap:14px;">
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">𝕏 Twitter</a>
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">in LinkedIn</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
+      <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
+      <form onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('.gc-nl-ok').style.display='block';" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'">Subscribe →</button>
+      </form>
+      <div class="gc-nl-ok" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+    </div>
+  </div>
+  <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
+    <div style="font-size:12px;color:rgba(247,245,240,0.4);">© 2025 GhostCoach. All rights reserved.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:rgba(247,245,240,0.45);">"The product is the easy part."</div>
+  </div>
+  <style>
+    @media(max-width:900px){.gc-footer-grid{grid-template-columns:1fr 1fr !important;gap:28px !important;}}
+    @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
+  </style>
+</footer>
+
+<script>
+// ── AUTH STATE ─────────────────────────────────────────────
+// In production: replace with Memberstack auth check
+// ms.getActiveMember().then(member => { if(member) unlockForm(member); })
+
+function unlockForm(member) {
+  document.getElementById('login-gate').style.display = 'none';
+  const fields = ['f-name','f-email','f-category','f-subject','f-message'];
+  fields.forEach(id => document.getElementById(id).disabled = false);
+  document.getElementById('submit-btn').disabled = false;
+  if(member) {
+    if(member.name) document.getElementById('f-name').value = member.name;
+    if(member.email) document.getElementById('f-email').value = member.email;
+  }
+}
+
+// Check for Memberstack on load
+window.addEventListener('load', () => {
+  if(typeof ms !== 'undefined') {
+    ms.getActiveMember().then(({ data: member }) => {
+      if(member) unlockForm(member);
+    }).catch(() => {});
+  }
+  // Dev/test: add ?unlocked=1 to URL to preview logged-in state
+  if(new URLSearchParams(window.location.search).get('unlocked') === '1') {
+    unlockForm({ name: '', email: '' });
+  }
+});
+
+// ── CHAR COUNT ─────────────────────────────────────────────
+function updateCount(el) {
+  const count = el.value.length;
+  const el2 = document.getElementById('char-count');
+  if(count < 30) {
+    el2.textContent = `${count} / 30 characters minimum`;
+    el2.style.color = '#D85A30';
+  } else {
+    el2.textContent = `${count} characters`;
+    el2.style.color = '#8B8A98';
+  }
+}
+
+// ── SUBMIT ─────────────────────────────────────────────────
+async function handleSubmit(e) {
+  e.preventDefault();
+  const name     = document.getElementById('f-name').value.trim();
+  const email    = document.getElementById('f-email').value.trim();
+  const category = document.getElementById('f-category').value;
+  const subject  = document.getElementById('f-subject').value.trim();
+  const message  = document.getElementById('f-message').value.trim();
+
+  if(!name || !email || !category || message.length < 30) {
+    if(message.length < 30) {
+      document.getElementById('f-message').focus();
+      document.getElementById('char-count').style.color = '#D85A30';
+    }
+    return;
+  }
+
+  const btn = document.getElementById('submit-btn');
+  btn.textContent = 'Sending...';
+  btn.disabled = true;
+
+  try {
+    await fetch('https://hook.eu1.make.com/z5h5nb592kd7xcmwb89qs51ct3q927f2', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'contact_form',
+        name, email, category, subject, message,
+        timestamp: new Date().toISOString(),
+        source: 'getghostcoach.com/contact/'
+      })
+    });
+  } catch(err) {
+    console.log('Webhook failed — continuing:', err);
+  }
+
+  // Show success state regardless of webhook result
+  document.getElementById('contact-form').style.display = 'none';
+  document.getElementById('success-state').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
