@@ -242,9 +242,31 @@ if(plan === 'lifetime'){
   document.getElementById('plan-price').textContent = '$499 one-time';
   document.getElementById('operator-feature').style.display = 'flex';
   document.getElementById('operator-pricing-audit').style.display = 'flex';
-  // Add founding member note
+
+  // Lifetime is a one-time purchase, not a trial — swap left-side copy
+  const lh = document.querySelector('.left-headline');
+  if(lh) lh.innerHTML = 'Lifetime access.<br><em>Operator for life.</em>';
+  const ls = document.querySelector('.left-sub');
+  if(ls) ls.textContent = "One-time $499 payment. Backed by our 30-day money-back guarantee — full refund within 30 days if it isn't for you.";
+
+  // Replace the "No charge until day 15" timeline item with the 30-day guarantee
+  const trialItems = document.querySelectorAll('.trial-item');
+  const last = trialItems[trialItems.length - 1];
+  if(last){
+    const cross = last.querySelector('.ti-cross');
+    if(cross){
+      const replacement = document.createElement('div');
+      replacement.className = 'ti-check';
+      replacement.innerHTML = '<svg viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F7F5F0" stroke-width="1.5" stroke-linecap="round"/></svg>';
+      cross.replaceWith(replacement);
+    }
+    const txt = last.querySelector('.ti-text');
+    if(txt){ txt.textContent = '30-day money-back guarantee'; txt.style.color = ''; }
+  }
+
+  // Price note for lifetime
   const note = document.querySelector('.price-note');
-  if(note) note.innerHTML = 'Founding member pricing. Your card is charged <strong>$499 once</strong> — no monthly fees, ever. All Operator features included for life. Closes at 50 members.<br><br>🛡️ <strong>30-day money-back guarantee.</strong> Full refund within 30 days, no questions asked.';
+  if(note) note.innerHTML = 'Founding member pricing. Your card is charged <strong>$499 once</strong> — no monthly fees, ever. All Operator features included for life. Closes at 50 members.<br><br>🛡️ <strong>30-day money-back guarantee.</strong> Full refund within 30 days.';
 }
 if(plan === 'operator'){
   document.getElementById('plan-label').textContent = 'Operator — $149/mo';
