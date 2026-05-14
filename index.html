@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="description" content="GhostCoach gives solopreneur product builders specific, framework-driven business advice. Pricing, acquisition, churn — Marcus knows your product and gives you one recommendation, not a list of options. 14-day free trial, cancel anytime.">
+<meta name="description" content="AI business coaching built for solo SaaS founders. One specific recommendation per session — not a menu of options. Free 14-day trial.">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="canonical" href="https://getghostcoach.com/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
@@ -646,13 +646,10 @@ footer{
     </div>
     <h1 class="hero-headline">
       You built the product.<br>
-      Now build the <em>business</em><br>
-      around it.
+      Meet <em>Marcus</em>, the coach who tells you how to build the business around it.
     </h1>
     <p class="hero-sub">
-      Most solopreneur product builders fail not because their product is bad —
-      but because they treat the business as an afterthought.
-      <strong>GhostCoach fixes that.</strong>
+      You're staring at five things you could do this week. Marcus tells you which one to do — and which four to ignore.
     </p>
     <div class="hero-ctas">
       <a href="#pricing" class="btn-primary-lg" onclick="event.preventDefault();smoothScroll('pricing')">Talk to Marcus free →</a>
@@ -760,7 +757,7 @@ footer{
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div style="display:flex;gap:12px;align-items:flex-start;">
             <div style="color:var(--amber-lt);font-size:16px;flex-shrink:0;">→</div>
-            <div style="font-size:14px;color:#F7F5F0;line-height:1.5;">Tell Marcus your situation in two minutes.</div>
+            <div style="font-size:14px;color:#F7F5F0;line-height:1.5;">Spend ten minutes telling Marcus about your product. Once.</div>
           </div>
           <div style="display:flex;gap:12px;align-items:flex-start;">
             <div style="color:var(--amber-lt);font-size:16px;flex-shrink:0;">→</div>
@@ -2515,9 +2512,9 @@ async function submitOnboarding(){
 
   sessionStorage.setItem('gc_profile', JSON.stringify(userProfile));
 
-  // Post to Make webhook (Scenario 2 & 3 — profile → Airtable)
+  // TODO: Replace with n8n webhook (Scenarios 1-3 — profile → Supabase)
   try {
-    await fetch('https://hook.eu1.make.com/z5h5nb592kd7xcmwb89qs51ct3q927f2', {
+    await fetch('DISABLED-pending-n8n-replacement', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2644,7 +2641,7 @@ async function endSession(){
   ).join('\n\n');
 
   const profile = userProfile || {};
-  const webhookUrl = 'https://hook.eu1.make.com/z5h5nb592kd7xcmwb89qs51ct3q927f2'; // Replace with your Make webhook URL
+  const webhookUrl = 'DISABLED-pending-n8n-replacement'; // Replace with your Make webhook URL
 
   const payload = {
     transcript,
