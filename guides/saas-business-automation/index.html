@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>What Is AI Business Coaching? A Founder's Guide | GhostCoach</title>
-<meta name="description" content="AI business coaching uses AI to help founders fix business problems. Three types exist, each for different stages. Here is how to pick yours.">
-<link rel="canonical" href="https://getghostcoach.com/guides/what-is-ai-business-coaching/">
+<title>SaaS Business Automation — The Order That Actually Matters | GhostCoach</title>
+<meta name="description" content="SaaS business automation works only if you automate in the right order. Billing first, support last. Here is the diagnostic sequence for solo founders.">
+<link rel="canonical" href="https://getghostcoach.com/guides/saas-business-automation/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -250,9 +250,9 @@ footer a:hover { color: var(--amber); }
 </nav>
 
 <section class="hero">
-  <div class="eyebrow">Guides · Definitions</div>
-  <h1>What is AI business coaching? <em>Three types</em>, three different jobs</h1>
-  <p class="hero-sub">AI business coaching is what happens when a large language model is wrapped in a product that holds context, applies a framework, and gives recommendations. But "AI business coaching" is not one thing. Three different categories of tool share the label, and picking the wrong one is the most common reason founders give up.</p>
+  <div class="eyebrow">Guides · Operations</div>
+  <h1>SaaS business automation: <em>the order matters</em> more than the tools</h1>
+  <p class="hero-sub">Most solo founders automate the wrong thing first. They build a fancy onboarding flow before fixing involuntary churn. They write Zapier chains before setting up dunning. The right order is not what the tool listicles tell you. It is what protects revenue first and saves time second.</p>
 </section>
 
 <section class="article">
@@ -260,149 +260,162 @@ footer a:hover { color: var(--amber); }
   <div class="toc">
     <div class="toc-title">In this guide</div>
     <ul>
-      <li><a href="#what-it-is">What AI business coaching actually is</a></li>
-      <li><a href="#three-types">The three types of AI business coaching tools</a></li>
-      <li><a href="#where-it-wins">Where AI business coaching beats a human coach</a></li>
-      <li><a href="#where-it-falls">Where AI business coaching falls short</a></li>
-      <li><a href="#what-to-look-for">What separates good AI coaching from bad</a></li>
-      <li><a href="#how-to-choose">How to choose the right type for your stage</a></li>
+      <li><a href="#wrong-order">Why most solo founders automate the wrong things first</a></li>
+      <li><a href="#the-five">The five automation priorities, in order</a></li>
+      <li><a href="#1-billing">1. Billing — the floor</a></li>
+      <li><a href="#2-dunning">2. Dunning — the biggest hidden win</a></li>
+      <li><a href="#3-onboarding">3. Onboarding — your activation event</a></li>
+      <li><a href="#4-trial">4. Trial follow-up — your conversion lever</a></li>
+      <li><a href="#5-churn-alerts">5. Churn alerts — your retention insurance</a></li>
+      <li><a href="#do-not">What not to automate yet</a></li>
+      <li><a href="#nocode">When to graduate from no-code to actual integration</a></li>
     </ul>
   </div>
 
-  <h2 id="what-it-is">What AI business coaching actually is</h2>
+  <h2 id="wrong-order">Why most solo founders automate the wrong things first</h2>
 
-  <p>AI business coaching is the use of large language models — usually GPT-4, Claude, or a fine-tuned variant — wrapped in a product that helps founders make business decisions. The "coaching" part is what separates these tools from generic chatbots. A coaching tool holds context about your specific business, applies a framework, and gives recommendations rather than menus of options.</p>
+  <p>Walk into any indie hacker community and you will see the same automation conversation: which Zapier alternative is fastest, what AI tools can write support replies, whether n8n is worth the setup time. These are real questions, but they are downstream questions. They assume the founder has already automated the things that actually decide whether the business survives.</p>
 
-  <p>That definition matters because most things sold as "AI coaching" are not coaching. They are chat interfaces with no memory, no framework, and no diagnostic structure. You ask a question, they give you a balanced overview of four possible answers, and you walk away no clearer than before. That is research, not coaching.</p>
+  <p>Most solo founders have not. They are spending an afternoon building a Zap that saves them ninety seconds per signup while losing $400 per month to failed payments they have not addressed. They are building AI support replies before their billing flow charges the right amount. The order is wrong, and the wrong order costs revenue in ways that compound.</p>
 
-  <p>Real coaching, AI or human, does three things: it diagnoses the problem before recommending a fix, it commits to one recommendation rather than presenting a menu, and it remembers what it said last time so the work compounds. If a tool calling itself an AI coach does not do those three things, it is a search engine with a personality.</p>
+  <p>The Ghost OS framework treats automation as the fourth pillar of a subscription business, and the order of operations matters specifically because the costs of not automating each layer are different. Some failures cost time. Some failures cost money directly. The money failures get fixed first, because time is recoverable and revenue is not.</p>
 
-  <h2 id="three-types">The three types of AI business coaching tools</h2>
+  <p>The correct sequence is below. Run it in this order. Each step takes a day to a week. By the end you will have automated the things that protect your revenue, and you can spend the rest of your time on growth instead of triage.</p>
 
-  <p>The market splits cleanly into three categories. Each is built for a different user, and each fails when used by the wrong person. Knowing which type you are looking at saves money and avoidable disappointment.</p>
+  <h2 id="the-five">The five automation priorities, in order</h2>
 
-  <h3>Type 1: General-purpose AI assistants</h3>
-
-  <p>ChatGPT, Claude, Gemini. These are the most powerful AI models available, accessible directly at $0 to $20 per month. They will answer any business question competently. They will not remember you between sessions, they have no framework, and they will give you a balanced overview when you need a recommendation.</p>
-
-  <p>Best for: experienced founders who already know what framework to apply and just need a smart sparring partner. Worst for: solo founders who are stuck because they do not know what question to ask. For this audience, the freedom of an open chat is the problem, not the solution.</p>
-
-  <h3>Type 2: Cloned coach platforms</h3>
-
-  <p>Coachvox, Jodie AI, Tony Robbins AI, and similar products that clone a human coach's methodology into an AI version. Pricing ranges from $99 to $499 per month. The strength is that the AI follows a specific philosophy consistently. The weakness is that the philosophy was designed for the coach's original audience, which is usually general entrepreneurs, not founders inside a specific business model.</p>
-
-  <p>Best for: founders who already respect that specific coach's methodology and want it on demand. Worst for: anyone whose business does not match the coach's original ICP. A clone of a coach who built service businesses will coach your SaaS like a service business, and you will price wrong.</p>
-
-  <h3>Type 3: Specialized AI coaches</h3>
-
-  <p>Built from the ground up for a specific business model, with frameworks designed for that model's mechanics. iTrepreneur for general entrepreneurship, Rocky.ai for leadership, GhostCoach for solopreneur subscription software. Pricing typically runs $40 to $150 per month.</p>
-
-  <p>Best for: founders inside the specialization. A specialized AI coach diagnoses with the right mental models because those models were baked into the product. Worst for: anyone outside the specialization, where the framework will misfire on problems it was not built for.</p>
-
-  <div class="callout">
-    <strong>The honest filter:</strong> if your business is a subscription software product and you are solo or near-solo, you want type 3 specialized to your model — see the <a href="/ai-business-coach/for-solopreneurs/">best AI business coach for solopreneurs</a> guide for what that looks like. If you are a broader entrepreneur outside that specific niche, the <a href="/ai-business-coach/for-entrepreneurs/">entrepreneur-focused guide</a> covers more general options. Type 1 plus your own framework works for experienced operators. Type 2 works only if the cloned coach happens to match your business.
-  </div>
-
-  <h2 id="where-it-wins">Where AI business coaching beats a human coach</h2>
-
-  <p>This is not "AI is better than humans" — it is a specific list of jobs where AI does measurably better, faster, or cheaper. The honest comparison matters because most founders default to assuming a human is always preferable.</p>
-
-  <p><strong>Cost.</strong> Human business coaches for solo founders typically charge $1,000 to $5,000 per month. AI business coaching costs $40 to $150 per month. For a pre-revenue or early-revenue founder, the difference is not a discount, it is the difference between coaching being possible and impossible.</p>
-
-  <p><strong>Availability.</strong> A human coach gives you 60 to 90 minutes a week. An AI coach gives you as many sessions as you want, at 11pm on a Sunday when you are stuck on a pricing decision. The compounding effect of being able to think out loud whenever the question is in front of you is larger than it sounds.</p>
-
-  <p><strong>Framework consistency.</strong> Human coaches drift. They have good weeks and bad weeks. They forget what they told you in session three. A well-built AI coach applies the same framework to every session, which means the work compounds across months rather than restarting each time you switch topics.</p>
-
-  <p><strong>Structured memory.</strong> This is the biggest one. A good AI coaching product holds a structured profile of your business — product, stage, bottleneck, 90-day goal — and injects it into every session. A human coach holds this in their head, which means they remember roughly. AI remembers exactly. The full breakdown is on the <a href="/ai-business-coach/vs-human-coach/">AI vs human coach comparison</a>.</p>
-
-  <h2 id="where-it-falls">Where AI business coaching falls short</h2>
-
-  <p>The places AI coaching loses are not small. They are the places it cannot win regardless of how good the model gets, because they depend on what humans uniquely offer.</p>
-
-  <p><strong>Real relationships.</strong> A coach who has watched you grow over three years and genuinely cares whether you make it brings something an AI cannot: human stake in your outcome. For some founders, this is the entire point. For others, it is irrelevant. Know which one you are before you buy.</p>
-
-  <p><strong>Network access.</strong> A human coach can introduce you to a potential customer, a potential hire, or a potential investor. An AI cannot. If your bottleneck is a specific introduction, AI coaching is the wrong tool entirely.</p>
-
-  <p><strong>Reading the room.</strong> A human coach can tell when you are lying to yourself, when your tone has changed, when you are saying you are fine but you are not. AI is getting closer to this, but it is not there yet. For founder mental health and burnout, this gap matters.</p>
-
-  <p><strong>Accountability that comes from a person watching.</strong> Some founders do not need this. Others find that the prospect of telling a real human they did not do the thing they committed to is the only thing that gets the thing done. If that is you, you need a human in the loop.</p>
-
-  <div class="marcus-says">
-    <div class="ml">Marcus</div>
-    <div class="mq">"I recommend choosing AI coaching when your bottleneck is information and framework. I recommend choosing a human coach when your bottleneck is relationship, network, or accountability. Most founders need the first. Some founders need the second. A few need both, in that order."</div>
-  </div>
-
-  <h2 id="what-to-look-for">What separates good AI coaching from bad</h2>
-
-  <p>If you have decided AI coaching is the right category for your stage, four features separate the tools worth paying for from the tools dressed up as coaching but underneath are just chatbots.</p>
-
-  <p><strong>1. Structured memory, not conversational memory.</strong> A good AI coach holds a profile of your business that you can see and edit, not just a chat history. Conversational memory degrades, gets confused, and rolls over. Structured memory persists. The test: can you ask the tool "what is my current bottleneck?" and get the answer you set last week?</p>
-
-  <p><strong>2. A framework applied to every session.</strong> The framework is what makes coaching different from search. Without one, you get a different answer to the same question on different days, depending on how you phrase it. With one, you get diagnostic consistency.</p>
-
-  <p><strong>3. Recommendations, not menus.</strong> If the tool answers "you could do A, B, C, or D" rather than "I recommend B because of your stage and bottleneck," it is not coaching. It is research. Both have a place. Coaching commits.</p>
-
-  <p><strong>4. Specificity to your business model.</strong> A coaching tool that works for agencies, e-commerce, SaaS, and coaching businesses simultaneously cannot be excellent at any of them. The frameworks for these businesses are different at the unit-economics level. A specialized tool will outperform a generalist on the specifics.</p>
-
-  <p>The <a href="/ai-business-coach/features/">AI business coach features guide</a> covers how these four traits show up in real products. The <a href="/ai-business-coach/comparison/">AI coach comparison</a> shows how the major options stack up against each other on these criteria.</p>
-
-  <h2 id="how-to-choose">How to choose the right type for your stage</h2>
-
-  <p>Stage matters more than feature lists. The right AI coaching tool at $0 MRR is not the same as the right tool at $30k MRR. Pick by stage first, then by feature set.</p>
+  <p>The five layers, in the order that produces the most revenue protection per hour of setup.</p>
 
   <table class="compare-table">
     <thead>
       <tr>
-        <th>Your stage</th>
-        <th>What you actually need</th>
-        <th>Best AI tool type</th>
+        <th>Order</th>
+        <th>Layer</th>
+        <th>What it costs you to skip</th>
       </tr>
     </thead>
     <tbody>
       <tr>
-        <td>Pre-launch</td>
-        <td>Validation framework, pricing logic, ICP clarity</td>
-        <td>Specialized (type 3)</td>
+        <td>1</td>
+        <td>Billing</td>
+        <td>The business does not exist if customers cannot pay</td>
       </tr>
       <tr>
-        <td>Just launched, 2-10 customers</td>
-        <td>Conversion diagnostic, activation event, trial design</td>
-        <td>Specialized (type 3)</td>
+        <td>2</td>
+        <td>Dunning (failed payment recovery)</td>
+        <td>20–40% of total churn is involuntary; this fixes most of it</td>
       </tr>
       <tr>
-        <td>$1k - $10k MRR</td>
-        <td>Acquisition channel commitment, retention math</td>
-        <td>Specialized (type 3)</td>
+        <td>3</td>
+        <td>Onboarding</td>
+        <td>Activation rate drives retention; bad onboarding kills both</td>
       </tr>
       <tr>
-        <td>$10k - $30k MRR plateau</td>
-        <td>Bottleneck diagnosis, expansion revenue</td>
-        <td>Specialized (type 3) or general (type 1)</td>
+        <td>4</td>
+        <td>Trial follow-up</td>
+        <td>Trial-to-paid conversion is the highest-leverage acquisition number</td>
       </tr>
       <tr>
-        <td>$30k+ MRR</td>
-        <td>Hiring, fundraising, specific introductions</td>
-        <td>General (type 1) plus human coach</td>
+        <td>5</td>
+        <td>Churn alerts</td>
+        <td>You can save customers if you know they are leaving in time</td>
       </tr>
     </tbody>
   </table>
 
-  <p>The pattern: specialized AI coaching is strongest in the $0 to $30k MRR window where founders are stuck on subscription-software-specific problems and cannot afford a human coach. Above $30k, the limitations of AI start to matter and the budget for humans starts to exist. Below $30k, the specialization is what makes AI coaching worth using over a free ChatGPT subscription.</p>
+  <h2 id="1-billing">1. Billing — the floor</h2>
+
+  <p>Stripe Billing, Paddle, or a merchant of record handles this for solopreneurs. The integration is a one-time setup of a few hours and the cost is a percentage of revenue, which scales with the business. This is the absolute floor. Until billing works without your manual intervention, nothing else matters.</p>
+
+  <p>The specific things to automate at this layer: subscription creation on signup, plan upgrades and downgrades, prorated charges, invoice generation, tax handling for international customers, and webhook notifications back to your app when a payment succeeds or fails. Each of these will eventually become a manual nightmare if left unhandled.</p>
+
+  <p>The trap most solo founders fall into: building a custom billing flow because they want full control. Do not. Use the platform's hosted checkout or pre-built components. The hours you save can be redirected to the next four layers, where the marginal return is higher.</p>
+
+  <h2 id="2-dunning">2. Dunning — the biggest hidden win</h2>
+
+  <p>Dunning is the recovery process for failed payments. A customer's card expires. Their bank flags the charge as suspicious. The card is declined for insufficient funds. In each case, the customer wants to keep paying, but the payment failed. Without dunning, they churn silently.</p>
+
+  <p>Industry research consistently shows involuntary churn — churn from failed payments — represents somewhere between 20 percent and 40 percent of total churn for typical SaaS businesses. For a solo founder at $5,000 MRR with 5 percent monthly churn, that is $250 in lost MRR every month, half of which is recoverable by a billing system that retries the card a few times and sends an email.</p>
+
+  <p>The fix is mostly automatic if you use a modern billing platform. Stripe Billing has Smart Retries built in. Paddle handles this natively. Configure the retry schedule (Stripe defaults are reasonable), set up the failed payment email sequence (3 emails over 7 days is the typical pattern), and add a recovery URL the customer can click to update their card.</p>
+
+  <p>This is the single highest-ROI automation a solo founder can build. Setup takes a day. The recovered revenue starts the next month. The <a href="/guides/how-to-reduce-saas-churn/">SaaS churn reduction guide</a> covers the broader churn picture, but dunning is the part you fix first and easiest.</p>
+
+  <h2 id="3-onboarding">3. Onboarding — your activation event</h2>
+
+  <p>Activation is the moment a new signup experiences the value your product delivers. For a project management tool, it might be creating the first project. For an analytics product, seeing the first dashboard with their data. For GhostCoach, completing the first session with Marcus. Activation rate predicts retention more than any other variable in the funnel.</p>
+
+  <p>Automated onboarding does three jobs: it guides the new user to the activation event quickly, it removes the manual setup steps that lose people, and it triggers the right messages when users do not get to activation. Three concrete pieces: an in-app product tour or empty-state guidance, an email sequence calibrated to onboarding milestones, and a fallback message when a user stalls at a specific step.</p>
+
+  <p>Tools that work for solo founders: Loops or Customer.io for the email sequence, a simple in-app component for the product tour, your own analytics events fired into the email tool to trigger the right messages. Total setup time is a week of focused work for a baseline version.</p>
+
+  <p>The trap: building elaborate onboarding before knowing what your activation event actually is. If you have not measured which feature usage predicts retention, do not automate around a guess. Get five active users, look at what they all did before becoming active, and build the onboarding around that specific path.</p>
+
+  <h2 id="4-trial">4. Trial follow-up — your conversion lever</h2>
+
+  <p>If you offer a free trial, the conversion from trial to paid is one of the most concentrated revenue levers in the business. A 1 percent improvement in trial-to-paid conversion produces the same revenue as a 1 percent improvement in everything else combined, because every customer flows through it.</p>
+
+  <p>The automation has three parts: a welcome sequence in the first 48 hours, milestone-based emails triggered by usage or non-usage, and a final close sequence in the last 48 hours of the trial. Each one should be calibrated to what the user has actually done in the product, not a generic timer-based sequence.</p>
+
+  <p>The specific moves: day 1 welcome with the activation event front and center, day 3 milestone email triggered by completion or non-completion of activation, day 7 mid-trial usage check, day 12 pre-expiration warning with a clear upgrade prompt, day 14 final email if not yet converted. For a 14-day trial. Adjust the timing for shorter or longer trials.</p>
+
+  <p>The data signals that matter: who completed the activation event, who used the product on more than one day, who hit a specific feature you know predicts paid conversion. Build the email sequence to route on these signals, not just on time elapsed. A user who has activated needs a different message than one who has not.</p>
+
+  <h2 id="5-churn-alerts">5. Churn alerts — your retention insurance</h2>
+
+  <p>Churn alerts are the automation layer for retention. They surface customers who are about to leave, in time for you to intervene. For a solo founder, this is the difference between losing a customer and saving them with a thirty-second message at the right moment.</p>
+
+  <p>The signals to track: a paying customer who has not logged in for fourteen days, a customer whose feature usage has dropped by more than half compared to their previous month, a customer who has hit a specific support friction (failed integration, error message, billing question), a customer whose plan no longer matches their usage pattern.</p>
+
+  <p>Each signal triggers a different intervention. The inactive customer gets a personal email from you asking what changed. The dropping-usage customer gets a specific feature suggestion. The friction customer gets a fix or an apology. The plan-mismatch customer gets an offer to switch tiers. None of these scale to a thousand customers manually, but the automation makes them scalable from day one.</p>
+
+  <p>The tools: any analytics product that can fire events to your email tool, plus a daily or weekly digest you read yourself for the cases that need human judgment. The <a href="/guides/how-to-reduce-saas-churn/">churn reduction guide</a> covers the full diagnostic if your churn is concentrated rather than distributed.</p>
+
+  <div class="marcus-says">
+    <div class="ml">Marcus</div>
+    <div class="mq">"I recommend automating in this order: billing, dunning, onboarding, trial follow-up, churn alerts. I recommend you do not automate support until you have written a hundred replies by hand. The replies tell you what your product is missing."</div>
+  </div>
+
+  <h2 id="do-not">What not to automate yet</h2>
+
+  <p>The mirror of knowing what to automate first is knowing what to leave manual. Solo founders waste time automating things that should stay manual because they are mistaking activity for progress.</p>
+
+  <p><strong>Support.</strong> Until you have written a hundred support replies yourself, do not automate them. The replies are how you learn what your product is missing, where the documentation is wrong, and which features are confusing. Automate too early and you lose that feedback loop, and the product stops improving.</p>
+
+  <p><strong>Sales calls.</strong> If you are doing demos or sales calls, do them yourself until at least $5k MRR. The calls are where you find out what the buyer's real concerns are, what objections actually come up, and what language closes the deal. Automating these too early replaces signal with form responses.</p>
+
+  <p><strong>Content production.</strong> Content for marketing, for the blog, for social. AI tools can produce it. They cannot produce the specific voice and judgment that differentiates a founder-led brand from a content farm. Write your own content until you have a clear voice, then automate the production layer while keeping the editorial layer human.</p>
+
+  <p><strong>Customer success outreach.</strong> Until you have a hundred paying customers, every check-in with a customer should be personal. The patterns you spot in those conversations become your retention strategy. Automate after you know what you are looking for, not before.</p>
+
+  <div class="callout">
+    <strong>The general rule:</strong> automate the things that produce no information (billing, dunning, scheduled emails). Keep manual the things that produce information (support, sales, customer conversations). The mistake is automating the second category for efficiency before you have extracted the signal you needed from doing them by hand.
+  </div>
+
+  <h2 id="nocode">When to graduate from no-code to actual integration</h2>
+
+  <p>For the first $10k MRR, Zapier, Make, n8n, and similar no-code automation tools are the right answer. They are fast to set up, easy to change, and cost less than your time to build custom integrations. Use them. Do not feel guilty about it.</p>
+
+  <p>The signs you have outgrown no-code: one of your Zaps runs more than a thousand times per month, you are paying more than $100 per month for the tool, you have hit a logical complexity Zapier cannot handle without three workarounds, or a single Zap failure causes more than $100 of revenue impact. At any of those signals, the no-code abstraction is now costing more than a custom integration would.</p>
+
+  <p>The migration path: pick the highest-volume or highest-stakes Zap, rebuild it as a direct API integration in your codebase, monitor it for a month, then move the next one. Do not migrate everything at once. Most solo founders keep using no-code for 80 percent of automations indefinitely and only migrate the 20 percent that hit one of the signals above.</p>
+
+  <p>If you are stuck on which Zap to migrate first, the answer is almost always the one closest to revenue: the one that handles signup events, the one that handles failed payments, or the one that triggers your trial conversion sequence. These are the automations where a silent failure costs the most.</p>
 
   <div class="cta-box">
-    <h3>Try AI coaching built for your stage</h3>
-    <p>GhostCoach is specialized for solopreneur subscription software, pre-launch to $30k MRR. Marcus diagnoses your bottleneck and gives you one specific recommendation per session.</p>
+    <h3>Diagnose your automation gaps with Marcus</h3>
+    <p>Tell Marcus your MRR, your current automation setup, and which of the five layers you have or have not addressed. Get one specific recommendation for what to automate next.</p>
     <a href="/#pricing" class="cta-btn">Talk to Marcus free →</a>
     <div class="cta-foot">14-day free trial · cancel anytime · $79/month Builder plan</div>
   </div>
 
   <div class="related-box">
-    <div class="related-title">Where to go from here</div>
+    <div class="related-title">Related guides</div>
     <ul class="related-list">
-      <li><a href="/ai-business-coach/for-solopreneurs/">Best AI business coach for solopreneurs in 2026</a></li>
-      <li><a href="/ai-business-coach/for-entrepreneurs/">Best AI business coach for entrepreneurs in 2026</a></li>
-      <li><a href="/ai-business-coach/vs-human-coach/">AI business coach vs human coach: which wins?</a></li>
-      <li><a href="/guides/saas-coach/">SaaS coach: coaching for subscription software founders</a></li>
+      <li><a href="/guides/how-to-reduce-saas-churn/">How to reduce SaaS churn</a></li>
+      <li><a href="/guides/how-to-price-saas-product/">How to price your SaaS product</a></li>
+      <li><a href="/ai-business-coach/features/">AI business coach features</a></li>
+      <li><a href="/ai-business-coach/for-solopreneurs/">AI business coach for solopreneurs</a></li>
     </ul>
   </div>
 
