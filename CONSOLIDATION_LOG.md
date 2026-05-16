@@ -97,3 +97,39 @@ Cross-links from live pages added:
 
 TIER 3 raw material was NOT folded into the new pages (specialist wrote from scratch).
 Held orphans remain as reserve. Worth flagging to specialist for next batch.
+
+
+## v17 deploy (2026-05-16)
+
+Sprint 4 + Sprint 5 combined deploy (6 pages).
+
+Sprint 4 — /guides/ cluster expansion:
+- `/guides/retention-vs-acquisition-saas/` (briefing priority #1)
+- `/guides/scale-saas-without-hiring/` (briefing priority #3)
+- `/guides/business-coach-cost-solopreneur/` (specialist new topic)
+
+Sprint 5 — Cross-cluster expansion:
+- `/ai-self-coaching/free-coaching/` (TOFU expansion, under-served cluster)
+- `/vibe/saas/` (pillar page completing /vibe/ URL structure)
+- `/ai-business-coach/limitations/` (trust/objection page)
+
+Sitemap: 34 → 40 URLs.
+
+Specialist progress notes:
+- Finally followed §2 brand requirements (canonical nav, unified footer)
+  on this batch — biggest improvement since handover.
+- Sprint 4 positioning explicitly avoids Pair 4 hold overlap (resource
+  allocation diagnostic + solo operational systems, NOT post-launch journey
+  or growth strategy).
+- Regression: dropped mobile breakpoint on all 6 (had it in v16). Mechanical
+  fix applied during integration.
+
+Briefing roadmap status: 5 of 6 priority pages now shipped.
+Only `/guides/saas-customer-support-solo/` remains unbuilt.
+
+Two scale-saas-without-hiring + vibe-saas had broken forward-links to that
+unbuilt page on first upload. Specialist retargeted before deploy.
+
+Cross-links from 6 live pages added (3 different related-box patterns
+encountered: .related-links, .related-grid, .related-list, plus an inline-
+styled custom pattern on /vibe/ hub).

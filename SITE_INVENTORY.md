@@ -11,8 +11,8 @@
 
 | Metric | Count |
 |---|---|
-| Total HTML pages on disk | 79 |
-| Pages in `sitemap.xml` (indexable) | 34 |
+| Total HTML pages on disk | 85 |
+| Pages in `sitemap.xml` (indexable) | 40 |
 | Orphan pages (on disk, not indexed) | 37 |
 | 301-redirected (consolidated duplicates) | 5 |
 | Functional pages excluded from sitemap | 3 |
@@ -21,10 +21,10 @@
 
 | Cluster | Total | Live | Orphan | Redirected |
 |---|---|---|---|---|
-| /vibe/ | 7 | 7 | 0 | 0 |
-| /guides/ | 52 | 10 | 37 | 5 |
-| /ai-business-coach/ | 7 | 7 | 0 | 0 |
-| /ai-self-coaching/ | 4 | 4 | 0 | 0 |
+| /vibe/ | 8 | 8 | 0 | 0 |
+| /guides/ | 55 | 13 | 37 | 5 |
+| /ai-business-coach/ | 8 | 8 | 0 | 0 |
+| /ai-self-coaching/ | 5 | 5 | 0 | 0 |
 | top-level content | 5 | 5 | — | — |
 | top-level functional | 4 | 1 | — | — |
 
@@ -71,7 +71,7 @@
 
 ## 3. Live pages — full inventory
 
-These are the 34 pages currently indexed in `sitemap.xml`. **Do NOT create new pages that duplicate these topics.** Cross-link new pages to the relevant live ones via the related-links box.
+These are the 40 pages currently indexed in `sitemap.xml`. **Do NOT create new pages that duplicate these topics.** Cross-link new pages to the relevant live ones via the related-links box.
 
 ### 3.1 Top-level content pages
 
@@ -83,7 +83,7 @@ These are the 34 pages currently indexed in `sitemap.xml`. **Do NOT create new p
 | `/privacy/` | Privacy Policy — GhostCoach | 145 | ok |
 | `/terms/` | Terms of Use — GhostCoach | 128 | ok |
 
-### 3.2 `/vibe/` cluster (7 live)
+### 3.2 `/vibe/` cluster (8 live)
 
 | Path | Title | Title len | Desc len | Issues |
 |---|---|---|---|---|
@@ -92,10 +92,11 @@ These are the 34 pages currently indexed in `sitemap.xml`. **Do NOT create new p
 | `/vibe/` | GhostCoach — AI Business Coaching for Vibe Coders | 49 | 126 | ok |
 | `/vibe/make-money/` | How to Make Money From Your Vibe-Coded App | 42 | 153 | ok |
 | `/vibe/non-technical-founders/` | Vibe Coding for Non-Technical Founders — The Business Layer | 59 | 148 | ok |
+| `/vibe/saas/` | Vibe-Coded SaaS — From MVP to Real Business | 43 | 136 | ok |
 | `/vibe/saas-pricing/` | How to Price Your Vibe-Coded SaaS — A Specific Guide | 52 | 155 | ok |
 | `/vibe/vibe-coded-app-broken/` | My Vibe-Coded App Is Broken — Ask This Before You Fix It | 56 | 153 | ok |
 
-### 3.3 `/ai-business-coach/` cluster (7 live)
+### 3.3 `/ai-business-coach/` cluster (8 live)
 
 | Path | Title | Title len | Desc len | Issues |
 |---|---|---|---|---|
@@ -103,32 +104,37 @@ These are the 34 pages currently indexed in `sitemap.xml`. **Do NOT create new p
 | `/ai-business-coach/features/` | AI Business Coach Features: What Actually Matters | 49 | 134 | ok |
 | `/ai-business-coach/for-entrepreneurs/` | Best AI Business Coach for Entrepreneurs in 2026 | 48 | 143 | ok |
 | `/ai-business-coach/for-solopreneurs/` | Best AI Business Coach for Solopreneurs in 2026 | 47 | 136 | ok |
+| `/ai-business-coach/limitations/` | AI Business Coach Limitations — What It Cannot Do | 49 | 123 | ok |
 | `/ai-business-coach/pricing/` | AI Business Coach Pricing: Free, Paid & Best Value | 50 | 137 | ok |
 | `/ai-business-coach/reviews/` | AI Business Coach Reviews: What Users Actually Experience | 57 | 142 | ok |
 | `/ai-business-coach/vs-human-coach/` | AI Business Coach vs Human Coach: Which Wins? | 45 | 144 | ok |
 
-### 3.4 `/ai-self-coaching/` cluster (4 live)
+### 3.4 `/ai-self-coaching/` cluster (5 live)
 
 | Path | Title | Title len | Desc len | Issues |
 |---|---|---|---|---|
 | `/ai-self-coaching/claude/` | Using Claude as a Business Coach: Prompts & Setup | 49 | 141 | ok |
 | `/ai-self-coaching/frameworks/` | AI Self-Coaching Frameworks That Actually Work | 46 | 129 | ok |
+| `/ai-self-coaching/free-coaching/` | Free Business Coaching — What You Can Get Without Paying | 56 | 141 | ok |
 | `/ai-self-coaching/prompts/` | AI Business Coaching Prompts: 50+ for Founders | 46 | 130 | ok |
 | `/ai-self-coaching/strategy-and-goals/` | Using AI for Business Strategy & Goal Setting | 45 | 134 | ok |
 
-### 3.5 `/guides/` cluster (10 live)
+### 3.5 `/guides/` cluster (13 live)
 
 | Path | Title | Title len | Desc len | Issues |
 |---|---|---|---|---|
+| `/guides/business-coach-cost-solopreneur/` | Business Coach Cost for Solopreneurs — Real Numbers | 51 | 140 | ok |
 | `/guides/ghostcoach-vs-mentorcruise/` | GhostCoach vs MentorCruise — Honest Comparison | 46 | 141 | ok |
 | `/guides/how-to-price-saas-product/` | How to Price a SaaS Product — The Solo Founder's Guide | 54 | 152 | ok |
 | `/guides/how-to-reduce-saas-churn/` | How to Reduce SaaS Churn — A Diagnostic Guide for Solo Founders | 63 | 145 | title:63 |
 | `/guides/how-to-validate-saas-idea/` | How to Validate a SaaS Idea — A Guide for Solo Founders | 55 | 146 | ok |
 | `/guides/mrr-plateau-how-to-grow-saas/` | MRR Plateau: Why Your SaaS Growth Stopped (And How to Fix It) | 61 | 147 | title:61 |
+| `/guides/retention-vs-acquisition-saas/` | Retention vs Acquisition for SaaS — A Diagnostic | 48 | 148 | ok |
 | `/guides/saas-acquisition-system/` | The SaaS Acquisition System — How to Get Consistent Customers Wit | 78 | 154 | title:78 |
 | `/guides/saas-business-automation/` | SaaS Business Automation — The Order That Actually Matters | 58 | 151 | ok |
 | `/guides/saas-coach/` | SaaS Coach — Coaching for Subscription Software Founders | 56 | 145 | ok |
 | `/guides/saas-customer-interviews/` | SaaS Customer Interviews — Questions That Produce Signal | 56 | 141 | ok |
+| `/guides/scale-saas-without-hiring/` | How to Scale a SaaS Without Hiring — Solo Founder Playbook | 58 | 141 | ok |
 | `/guides/what-is-ai-business-coaching/` | What Is AI Business Coaching? A Founder's Guide | 47 | 141 | ok |
 
 ### 3.6 Functional pages in sitemap (1)
