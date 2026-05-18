@@ -1,6 +1,6 @@
 # GhostCoach — Consolidation Log
 
-Last updated: 2026-05-16
+Last updated: 2026-05-17
 
 This file documents cross-cluster URL consolidation decisions.
 For redirect implementation, see `/_redirects`.
@@ -133,3 +133,91 @@ unbuilt page on first upload. Specialist retargeted before deploy.
 Cross-links from 6 live pages added (3 different related-box patterns
 encountered: .related-links, .related-grid, .related-list, plus an inline-
 styled custom pattern on /vibe/ hub).
+
+
+## v18 deploy (2026-05-17)
+
+NEW FUNCTIONAL PAGE: /onboarding/index.html
+
+Two-step onboarding wizard that fires after credit card validation
+(between /dashboard/ and /chat/). Replaces the original Tally form approach
+with an in-product modal-style page.
+
+Architecture:
+- 2 steps, 9 questions total (matches Tally form parts):
+  - Step 1: Your product (product, stage, business_model, tools)
+  - Step 2: Your situation (replaces, bottleneck, tried, goal_90_day, additional_context)
+- Supabase auth gate with Phase 1 sessionStorage fallback
+- On submit: UPSERT to profiles table + POST to n8n S2 webhook (placeholder URL)
+- Partial state persistence (resume on refresh)
+- Redirects to /chat/?onboarded=true on success
+- noindex meta, NOT in sitemap (functional page)
+
+Factual gate violation fixed during build:
+- Tally form Q5 in Part 2 said "anything else Alex should know" 
+  → corrected to "Marcus" per spec (PDF "Changes in this version" line:
+  "Marcus throughout (was Alex)")
+
+Schema changes required:
+- ALTER TABLE profiles ADD COLUMN replaces TEXT;
+- ALTER TABLE profiles ADD COLUMN additional_context TEXT;
+- See /sql/v18_onboarding_schema.sql in the deploy
+
+Backend integration status (pending other roadmap items):
+- Supabase config: placeholder constants — set when Supabase Auth ships
+- n8n S2 webhook URL: 'DISABLED-pending-n8n-replacement' — set when n8n built
+
+Stack alignment notes:
+- PDF (Customer Flow v5) describes the OLD stack (Memberstack, Make.com,
+  Airtable, 7-day trial). Built against current spec (Supabase, n8n,
+  14-day trial).
+
+Not modified in this deploy:
+- /dashboard/ — should redirect to /onboarding/ after successful card
+  validation when Stripe integration ships. Flagged as a follow-up.
+- /chat/ — already has a 2-step onboarding overlay per current spec;
+  may want to deprecate that in favor of the new /onboarding/ page once
+  /dashboard/ wires up the redirect. Flagged as a follow-up.
+
+
+## v19 deploy (2026-05-17)
+
+Single hotfix: 301 redirect for malformed URL pattern.
+
+User reported `https://getghostcoach.com/guides/ai-business-coach/pricing/` 
+returning 404. URL combines `/guides/` and `/ai-business-coach/` cluster 
+paths — likely typed manually or surfaced via GSC crawl report.
+
+No internal HTML file contained this broken link (grep confirmed), so it 
+came from an external source (typed URL, social share, indexed historical 
+URL, or autocomplete confusion).
+
+Fix: 301 redirect added to `_redirects`:
+```
+/guides/ai-business-coach/pricing/   /ai-business-coach/pricing/   301!
+```
+
+Active 301 rules: 5 → 6. New "Malformed-URL recovery" section added to 
+_redirects for future similar fixes.
+
+No other changes in this deploy.
+
+
+## v20 deploy (2026-05-17)
+
+Single change: /onboarding/index.html nav simplified.
+
+The canonical nav was replaced with a minimal funnel-safe variant:
+- Brand wordmark on the left (still links to home as a discreet escape)
+- NO "Back to home" link on the right
+- Standard SaaS onboarding pattern (Stripe Checkout, Linear, Notion)
+
+Rationale: user just paid for a trial. Inviting them to leave mid-onboarding
+is anti-pattern. Minimal nav reduces drop-off without trapping anyone — the
+wordmark logo still navigates home for the rare user who needs it.
+
+Other funnel pages (/signup/, /dashboard/, /chat/ onboarding overlay) still
+use the standard "← Back to home" pattern. Flagged for future review — same
+UX logic applies across the whole paid-funnel sequence.
+
+No other changes in this deploy.

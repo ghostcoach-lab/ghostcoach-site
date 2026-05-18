@@ -1,6 +1,6 @@
 # GhostCoach Site Inventory & SEO Strategy Handover
 
-**Generated:** 2026-05-16 (v2 — adds functional pages section)
+**Generated:** 2026-05-17 (v2 — adds functional pages section)
 **For:** External SEO specialist — additional landing page strategy
 **Site:** https://getghostcoach.com
 **Current production state:** v14 + /how-it-works/ added to sitemap
@@ -11,11 +11,11 @@
 
 | Metric | Count |
 |---|---|
-| Total HTML pages on disk | 85 |
+| Total HTML pages on disk | 86 |
 | Pages in `sitemap.xml` (indexable) | 40 |
 | Orphan pages (on disk, not indexed) | 37 |
 | 301-redirected (consolidated duplicates) | 5 |
-| Functional pages excluded from sitemap | 3 |
+| Functional pages excluded from sitemap | 4 |
 
 **Cluster breakdown:**
 
@@ -26,7 +26,7 @@
 | /ai-business-coach/ | 8 | 8 | 0 | 0 |
 | /ai-self-coaching/ | 5 | 5 | 0 | 0 |
 | top-level content | 5 | 5 | — | — |
-| top-level functional | 4 | 1 | — | — |
+| top-level functional | 5 | 1 | — | — |
 
 
 ---
@@ -208,6 +208,7 @@ These pages exist and are accessible at their URLs, but they're deliberately exc
 |---|---|---|---|
 | `/signup/` | Account creation funnel | Conversion-only — no organic traffic value | Yes (CTA destination) |
 | `/dashboard/` | User profile + payment management | Auth-required — user-specific content | No |
+| `/onboarding/` | Unknown | Unknown | Unknown |
 | `/chat/` | The Marcus coaching session UI | Auth/transactional — not informational | No |
 
 
@@ -226,6 +227,7 @@ These URLs have been consolidated into canonical destinations. Any topic touchin
 | `/guides/how-to-monetize-vibe-coded-app/` | `/vibe/make-money/` | Pair 3 |
 | `/guides/vibe-coding-micro-saas-business-model/` | `/vibe/make-money/` | Pair 5 |
 | `/guides/ai-coach-vs-human-coach/` | `/ai-business-coach/vs-human-coach/` | Pair B |
+| `/guides/ai-business-coach/pricing/` | `/ai-business-coach/pricing/` | Malformed-URL recovery |
 
 
 ---

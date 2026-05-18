@@ -22,3 +22,12 @@
 
 # Pair B: identical "AI coach vs human coach" comparison
 /guides/ai-coach-vs-human-coach/                 /ai-business-coach/vs-human-coach/      301!
+
+# ────────────────────────────────────────────────────────────────────────────
+# Malformed-URL recovery (301s) — added v19
+# Wrong-cluster combinations users sometimes type or that get indexed by
+# Google. Recovers SEO equity + delivers correct landing page to users.
+# ────────────────────────────────────────────────────────────────────────────
+
+# Confusion between /guides/ and /ai-business-coach/ cluster paths
+/guides/ai-business-coach/pricing/               /ai-business-coach/pricing/             301!
