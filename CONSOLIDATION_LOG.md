@@ -1,6 +1,6 @@
 # GhostCoach — Consolidation Log
 
-Last updated: 2026-05-17
+Last updated: 2026-05-18
 
 This file documents cross-cluster URL consolidation decisions.
 For redirect implementation, see `/_redirects`.
@@ -221,3 +221,64 @@ use the standard "← Back to home" pattern. Flagged for future review — same
 UX logic applies across the whole paid-funnel sequence.
 
 No other changes in this deploy.
+
+
+## v21 deploy (2026-05-18)
+
+Six change sets bundled together.
+
+### 1. /vibe/ button + footer fixes (8 pages)
+Two CSS bugs visible on /vibe/ spoke pages:
+- "Talk to Marcus free" button invisible (text color matched background)
+  → Root cause: .article a { color: var(--amber) } had specificity (0,1,1),
+    .cta-btn { color: var(--ink) } had only (0,1,0), so the link rule won
+    and made the button text amber on amber background
+  → Fix: added `a.cta-btn { color: var(--ink) !important; }` to override
+- Footer brand text center-aligned (orphan CSS rule from old footer styling)
+  → Fix: removed `text-align: center` from `footer { ... }` rule
+- Applied to all 8 /vibe/ pages (5 affected + 3 preventive for consistency)
+
+### 2. Broken /free-ai-business-coaching.html URL (2 pages)
+- Two internal links used relative `href="free-ai-business-coaching.html"`
+  which resolved to non-existent paths under /ai-business-coach/{slug}/
+- Fixed by replacing with absolute `href="/ai-self-coaching/free-coaching/"`
+  (the v17 page is the closest topical match)
+- Files touched: /ai-business-coach/for-solopreneurs/ and /ai-business-coach/pricing/
+- The v19 301 redirect for /guides/ai-business-coach/pricing/ remains
+  in place (different URL, still valuable for GSC-discovered URLs)
+
+### 3. Footer logo → home (85 pages)
+- Ghost+Coach wordmark in the unified footer was not clickable
+- Wrapped in `<a href="https://getghostcoach.com/" style="text-decoration:none;display:inline-block;">`
+- Targeted ONLY the footer wordmark (20px), not the nav wordmark (18px)
+- Applied to all 85 pages with the unified footer
+
+### 4. Terms / Privacy in new tab (85 pages, 178 link occurrences)
+- Bulk-added `target="_blank" rel="noopener noreferrer"` to every <a> tag
+  pointing at /terms/ or /privacy/ paths
+- Approximately 89 links per type, 178 total updates
+
+### 5. /contact/ page rebuild
+- Removed duplicate "Why log in first?" info-card (was duplicating the
+  login-gate copy below)
+- Added "Signup or login issues" to Common topics list (now first item)
+- Added "Signup / login issues" and "Other" to form category dropdown
+- Replaced login-gate copy: "Log in to submit this form" → "Log in if you
+  have an account" with new helper text about auto-attaching account details
+- Removed `disabled` attributes from all 4 form fields — form is now
+  accessible WITHOUT login (login is optional/informational, not required)
+- Replaced Memberstack JS auth check with Supabase pattern (with Phase 1
+  fallback so the form works pre-Supabase-integration)
+- Replaced Make.com webhook URL with `DISABLED-pending-n8n-replacement`
+  placeholder (per spec: Make.com is replaced by n8n)
+- Added Supabase JS SDK to <head>
+- Repointed login button from /login/ to /signup/ (canonical entry point)
+
+### 6. /signup/ help block
+- Inserted below the form, above the footer
+- Subtle card design: 540px max-width, cream background, info icon
+- Title in Playfair Display, body in DM Sans, amber accent link
+- Links to /contact/ for users who get stuck signing up
+- Design approved by founder before implementation
+
+State: 85 pages → 85 pages (no new pages). Sitemap unchanged (40 URLs).

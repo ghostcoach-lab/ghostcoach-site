@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>How to Validate a SaaS Idea — A Guide for Solo Founders | GhostCoach</title>
+<meta name="description" content="Validating a SaaS idea as a solo founder is not the same as validating a funded startup. Here is the specific sequence that fits your constraints.">
+<link rel="canonical" href="https://getghostcoach.com/guides/how-to-validate-saas-idea/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #0F1117;
+  --ink-soft: #1A1D27;
+  --amber: #C8861E;
+  --amber-lt: #E8A832;
+  --cream: #F7F5F0;
+  --teal: #0B7A60;
+  --muted: #8B8A98;
+  --border: rgba(15,17,23,0.08);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+nav {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 18px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.wordmark { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; }
+.wordmark a { color: var(--cream); text-decoration: none; }
+.position { color: var(--muted); font-size: 14px; }
+.nav-cta {
+  background: var(--amber);
+  color: var(--ink);
+  padding: 10px 20px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 14px;
+}
+.nav-cta:hover { background: var(--amber-lt); }
+.hero { padding: 80px 32px 60px; max-width: 820px; margin: 0 auto; }
+.eyebrow {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 20px;
+}
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(36px, 5vw, 56px);
+  line-height: 1.1;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.hero h1 em { font-style: italic; color: var(--amber); }
+.hero-sub { font-size: 21px; color: var(--muted); line-height: 1.5; max-width: 700px; }
+.article { max-width: 760px; margin: 0 auto; padding: 0 32px 80px; }
+.article h2 {
+  font-family: 'Playfair Display', serif;
+  font-size: 32px;
+  font-weight: 700;
+  margin-top: 56px;
+  margin-bottom: 20px;
+  line-height: 1.2;
+}
+.article h3 {
+  font-size: 21px;
+  font-weight: 600;
+  margin-top: 32px;
+  margin-bottom: 14px;
+}
+.article p { margin-bottom: 18px; }
+.article a {
+  color: var(--amber);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.article a:hover { color: var(--ink); }
+.article ul, .article ol { margin-bottom: 18px; padding-left: 24px; }
+.article li { margin-bottom: 8px; }
+.article strong { font-weight: 600; }
+.toc {
+  background: rgba(15,17,23,0.04);
+  border-left: 3px solid var(--amber);
+  padding: 24px 28px;
+  margin: 40px 0;
+  border-radius: 4px;
+}
+.toc-title {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 14px;
+}
+.toc ul { list-style: none; padding-left: 0; }
+.toc li { margin-bottom: 8px; }
+.toc a { color: var(--ink); text-decoration: none; font-size: 16px; }
+.toc a:hover { color: var(--amber); }
+.marcus-says {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 36px;
+  border-radius: 8px;
+  margin: 40px 0;
+}
+.marcus-says .ml {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--amber-lt);
+  margin-bottom: 14px;
+}
+.marcus-says .mq {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 24px;
+  line-height: 1.4;
+  color: var(--cream);
+}
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 28px 0 36px;
+  font-size: 15px;
+}
+.compare-table th, .compare-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.compare-table th {
+  background: rgba(15,17,23,0.04);
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.compare-table td:first-child { font-weight: 600; width: 28%; }
+.callout {
+  background: rgba(200,134,30,0.08);
+  border-left: 3px solid var(--amber);
+  padding: 20px 24px;
+  margin: 28px 0;
+  border-radius: 4px;
+  font-size: 16px;
+}
+.cta-box {
+  background: var(--ink);
+  color: var(--cream);
+  padding: 48px 40px;
+  border-radius: 12px;
+  margin: 56px 0 32px;
+  text-align: center;
+}
+.cta-box h3 {
+  font-family: 'Playfair Display', serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--cream);
+  margin-bottom: 14px;
+}
+.cta-box p {
+  color: var(--muted);
+  font-size: 17px;
+  margin-bottom: 24px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.cta-btn {
+  display: inline-block;
+  background: var(--amber);
+  color: var(--ink);
+  padding: 14px 28px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 16px;
+  text-decoration: none;
+}
+.cta-btn:hover { background: var(--amber-lt); }
+.cta-foot { font-size: 13px; color: var(--muted); margin-top: 14px; }
+.related-box { margin-top: 48px; padding-top: 36px; border-top: 1px solid var(--border); }
+.related-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.related-list { list-style: none; padding-left: 0; }
+.related-list li { margin-bottom: 10px; }
+.related-list a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  display: block;
+  padding: 12px 16px;
+  background: rgba(15,17,23,0.03);
+  border-radius: 6px;
+  transition: all 0.15s;
+}
+.related-list a:hover { background: rgba(200,134,30,0.1); color: var(--amber); }
+footer { background: var(--ink); color: var(--muted); padding: 48px 32px 32px; text-align: center; font-size: 14px; }
+footer a { color: var(--cream); text-decoration: none; margin: 0 12px; }
+footer a:hover { color: var(--amber); }
+.footer-brand { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--cream); margin-bottom: 16px; }
+.footer-links { margin-bottom: 20px; }
+.footer-copy { font-size: 12px; color: rgba(255,255,255,0.4); }
+@media (max-width: 680px) {
+  nav { padding: 14px 20px; flex-wrap: wrap; gap: 10px; }
+  .position { display: none; }
+  .hero { padding: 60px 20px 40px; }
+  .article { padding: 0 20px 60px; }
+  .article h2 { font-size: 26px; }
+  .cta-box { padding: 36px 24px; }
+  .marcus-says { padding: 28px 24px; }
+  .marcus-says .mq { font-size: 20px; }
+  .compare-table { font-size: 14px; }
+  .compare-table th, .compare-table td { padding: 10px 12px; }
+}
+</style>
+</head>
+<body>
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
+    <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
+    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+  </a>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">Guides · Pre-Launch</div>
+  <h1>How to validate a SaaS idea when you have <em>no money, no team, and one shot</em></h1>
+  <p class="hero-sub">Generic validation advice assumes you have time, money, and an audience. As a solopreneur, you have none of those. The validation method has to fit those constraints, or it costs you the one thing you cannot replace: the year you spent building the wrong thing.</p>
+</section>
+
+<section class="article">
+
+  <div class="toc">
+    <div class="toc-title">In this guide</div>
+    <ul>
+      <li><a href="#why-generic-fails">Why most validation advice does not fit solopreneurs</a></li>
+      <li><a href="#three-questions">The three questions you actually need to answer</a></li>
+      <li><a href="#pre-build">The pre-build validation sequence</a></li>
+      <li><a href="#post-build">The post-build sequence if you already shipped</a></li>
+      <li><a href="#kill-signals">Signals to kill versus continue</a></li>
+      <li><a href="#timeline">How long validation should take</a></li>
+    </ul>
+  </div>
+
+  <h2 id="why-generic-fails">Why most validation advice does not fit solopreneurs</h2>
+
+  <p>The standard validation playbook was written for funded startups. Run forty customer interviews. Build a landing page and split-test the copy. Spend $500 on ads to measure intent. Test five different price points. Each of these assumes resources a solopreneur does not have.</p>
+
+  <p>You do not have time for forty interviews. You do not have $500 to spend on ads to validate one assumption. You cannot afford to test five price points sequentially over six months. You have weeks, not quarters, and the cost of being wrong is the only thing that matters: a year of your life building something nobody will pay for.</p>
+
+  <p>The solopreneur validation problem is fundamentally different. You are not optimizing across a hundred possible ideas to pick the best one. You are answering one question: should I build this specific thing, or kill it now? The method has to give you a clear answer fast, with the resources you actually have.</p>
+
+  <p>The frameworks that get cited most often — Lean Startup, the Mom Test, customer development — are useful inputs. But applying them as written will burn the year you are trying to protect. You need a tighter version calibrated for one founder, no budget, and a deadline measured in weeks.</p>
+
+  <h2 id="three-questions">The three questions you actually need to answer</h2>
+
+  <p>Validation reduces to three diagnostic questions. If the answer to any one is no, the idea is dead. If the answer to all three is yes, you have something worth building.</p>
+
+  <h3>1. Does this problem actually exist?</h3>
+
+  <p>Not "would someone use this if you built it" — that is the wrong question, because people will say yes to anything hypothetical to be polite. The real question is whether someone is currently doing something painful, expensive, or annoying that your product would replace.</p>
+
+  <p>The test: can you find five specific people who can describe, in their own words, the problem you are trying to solve, without you prompting them? If you have to lead them to the problem, they do not have it.</p>
+
+  <h3>2. Will the right person pay to fix it?</h3>
+
+  <p>This is the question most validation work skips. Existence of a problem is not the same as willingness to pay. People have problems they would not pay to fix. People also have problems they will pay to fix but only at prices that do not support a business.</p>
+
+  <p>The test: can you get five people to commit to paying a specific monthly price before you have built the product? Commitment means signed up for a waitlist with a credit card, prepaid for early access, or written explicit confirmation. Verbal "I would totally pay for that" is not commitment. It is politeness.</p>
+
+  <h3>3. Can you reach these people without a marketing budget?</h3>
+
+  <p>This is the question that kills more solopreneur ideas than the other two combined. The problem exists. People will pay. But the cost of acquiring each customer is higher than they will ever pay you. That is a business that does not work, no matter how good the product is.</p>
+
+  <p>The test: name three specific places where your ideal customer hangs out and is reachable for free. A subreddit they read. A Discord they are in. A newsletter they subscribe to. If you cannot name them, you cannot afford to acquire them. The <a href="/guides/saas-acquisition-system/">SaaS acquisition system guide</a> covers what a sustainable acquisition channel actually looks like.</p>
+
+  <div class="callout">
+    <strong>The honest filter:</strong> most ideas pass question 1, fail question 2 quietly, and fail question 3 catastrophically. If you cannot answer question 3 with three specific channels you can name today, the rest does not matter. Stop validating. Find a different problem in a different audience you can reach.
+  </div>
+
+  <h2 id="pre-build">The pre-build validation sequence</h2>
+
+  <p>If you have not started building, run this sequence before writing a line of code. Total time: two to four weeks. Total cost: under $100.</p>
+
+  <h3>Week 1: write the problem statement and find the people</h3>
+
+  <p>Write down, in two sentences, the exact problem your product solves and the exact person who has it. Be specific. Not "small business owners" but "agency owners with three to ten employees who manage client projects in spreadsheets." If you cannot write this in two sentences, you are not ready to validate. Go think more.</p>
+
+  <p>Then find ten of these specific people. Not "people who might have this problem." Ten actual humans with names, jobs, and contact details. Find them in the channels you named in question 3 above. If you cannot find ten in a week, your audience is too narrow or you do not know where they are.</p>
+
+  <h3>Week 2: do five problem-discovery conversations</h3>
+
+  <p>Talk to five of those ten people. Not all ten — five is enough to spot patterns. The conversations are not pitches. They are diagnostic. Ask about their current workflow, what is painful about it, what they have tried before, what they spend on tools or workarounds today. The <a href="/guides/saas-customer-interviews/">SaaS customer interviews guide</a> covers the specific questions that produce useful signal.</p>
+
+  <p>What you are listening for: do they describe the problem you assumed they had, in their own words, without you leading them? If yes, proceed. If they only confirm the problem when you describe it, kill the idea or rewrite the problem statement.</p>
+
+  <h3>Week 3: get five pre-orders</h3>
+
+  <p>Now you find out if they will actually pay. Build a one-page landing page that describes the product, the price, and the launch date. Send it to the five people who confirmed the problem. Ask them to pre-order or commit a credit card to a waitlist. The price has to be real — same price you would charge at launch. The <a href="/guides/how-to-price-saas-product/">SaaS pricing guide</a> covers how to set that number defensibly.</p>
+
+  <p>If three or more of the five commit, you have demand. If fewer than three commit, the problem exists but the willingness to pay does not. Kill or pivot. Do not build hoping it will convert better with strangers — it will not.</p>
+
+  <h3>Week 4: decide</h3>
+
+  <p>By the end of week 4, you have data on all three questions. Either build, or kill. Both are good outcomes. The bad outcome is building anyway because you are emotionally attached and cannot face the loss of the idea you have been carrying around. That is how you spend a year on the wrong thing.</p>
+
+  <h2 id="post-build">The post-build sequence if you already shipped</h2>
+
+  <p>If you already built the product before reading this guide — which is most solopreneurs — the validation sequence is different. You are now answering a slightly different question: given that the product exists, is the problem and willingness to pay strong enough to invest more time, or do you cut losses?</p>
+
+  <p>The fastest test: put the product behind a real signup with a real price and run a two-week experiment. Drive traffic from the channels you named in question 3, at the volume you can sustain without paid ads. Measure two things: signup-to-paid conversion, and post-signup activation (do they use it more than once).</p>
+
+  <p>If conversion is below 1 percent or activation is below 20 percent after two weeks of real traffic, the product is failing one of the three questions. The most common pattern: problem exists, willingness to pay exists, but the product is not solving the problem the way the target customer needs. The fix is usually scope, not promotion.</p>
+
+  <p>For vibe coders who already shipped, the post-build validation question is especially common. The <a href="/vibe/after-vibe-coding-what-next/">after vibe coding guide</a> covers the specific moves to make in the first ninety days post-launch.</p>
+
+  <h2 id="kill-signals">Signals to kill versus continue</h2>
+
+  <p>The hardest part of validation is being honest about what the data is telling you. Founders are good at finding reasons to keep going. Below is the threshold I use, separated by stage.</p>
+
+  <table class="compare-table">
+    <thead>
+      <tr>
+        <th>Stage</th>
+        <th>Kill if</th>
+        <th>Continue if</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Problem discovery</td>
+        <td>Fewer than 3 of 5 describe the problem unprompted</td>
+        <td>4 of 5 or more describe it in their own words</td>
+      </tr>
+      <tr>
+        <td>Willingness to pay</td>
+        <td>Fewer than 3 of 5 commit money at real price</td>
+        <td>3 of 5 commit with a credit card or pre-order</td>
+      </tr>
+      <tr>
+        <td>Reachable channel</td>
+        <td>Cannot name 3 specific channels you can use today</td>
+        <td>Named 3 channels and seen organic traction in at least one</td>
+      </tr>
+      <tr>
+        <td>Post-launch conversion</td>
+        <td>Below 1% signup-to-paid after 2 weeks real traffic</td>
+        <td>Above 2% signup-to-paid sustained over 30 days</td>
+      </tr>
+      <tr>
+        <td>Post-launch activation</td>
+        <td>Below 20% of signups use the product more than once</td>
+        <td>Above 40% return within first week</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>The middle of the table — kill at 3 out of 5, continue at 4 out of 5 — leaves a grey zone. In the grey zone, the right move is almost always to gather more data before committing more time. Run one more week. Find five more people. Do not build because you cannot bear to wait.</p>
+
+  <div class="marcus-says">
+    <div class="ml">Marcus</div>
+    <div class="mq">"I recommend killing the idea if you cannot find five people who will pay before you build anything. Validation is not a feeling. It is a yes from a stranger with a credit card."</div>
+  </div>
+
+  <h2 id="timeline">How long validation should take</h2>
+
+  <p>Two to four weeks of focused work, before any code is written. That is the target. If validation is taking longer than four weeks, one of three things is true: the audience is too narrow to reach, the founder is avoiding the kill signal, or the problem is not the one they thought it was.</p>
+
+  <p>Founders extend validation timelines because the decision is uncomfortable. Killing an idea feels like losing. Building the wrong thing for a year is the actual loss. The four-week budget is a forcing function: it forces you to make a decision before you have spent enough time to feel sunk into it.</p>
+
+  <p>The other failure mode is the opposite — shortcutting validation entirely and building the moment you have an idea. This is the more common pattern, and it is the more expensive one. Four weeks of validation costs you a month. Twelve months of building costs you a year. The math is not close.</p>
+
+  <p>If you want a second opinion on your specific idea before committing the four weeks, the <a href="/ai-business-coach/for-solopreneurs/">AI business coach for solopreneurs</a> page covers what kind of diagnostic Marcus can run on a pre-validation idea, including the specific kill signals for your situation.</p>
+
+  <div class="cta-box">
+    <h3>Validate your idea with Marcus</h3>
+    <p>Tell Marcus the idea, the audience, and the three channels you would use to reach them. Get a diagnostic before you spend the four weeks.</p>
+    <a href="/#pricing" class="cta-btn">Talk to Marcus free →</a>
+    <div class="cta-foot">14-day free trial · cancel anytime · $79/month Builder plan</div>
+  </div>
+
+  <div class="related-box">
+    <div class="related-title">Related guides</div>
+    <ul class="related-list">
+      <li><a href="/guides/saas-customer-interviews/">SaaS customer interviews: the questions that produce signal</a></li>
+      <li><a href="/guides/how-to-price-saas-product/">How to price your SaaS product</a></li>
+      <li><a href="/vibe/after-vibe-coding-what-next/">After vibe coding: what to do in the first ninety days</a></li>
+      <li><a href="/guides/saas-coach/">SaaS coach: coaching for subscription software founders</a></li>
+    </ul>
+  </div>
+
+</section>
+
+<footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
+  <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
+    <div>
+      <a href="https://getghostcoach.com/" style="text-decoration:none;display:inline-block;">
+        <div style="display:flex;align-items:baseline;">
+          <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#F7F5F0;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:#E8A832;">Coach</span>
+        </div>
+      </a>
+      <div style="font-size:12px;color:rgba(247,245,240,0.4);margin-top:10px;line-height:1.6;max-width:210px;">AI business coaching for solopreneurs building digital products.</div>
+      <div style="margin-top:18px;display:flex;gap:14px;">
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">𝕏 Twitter</a>
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">in LinkedIn</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
+      <a href="https://getghostcoach.com/#faq" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">FAQ</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
+      <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
+      <form onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('.gc-nl-ok').style.display='block';" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'">Subscribe →</button>
+      </form>
+      <div class="gc-nl-ok" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+    </div>
+  </div>
+  <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
+    <div style="font-size:12px;color:rgba(247,245,240,0.4);">© 2025 GhostCoach. All rights reserved.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:rgba(247,245,240,0.45);">"The product is the easy part."</div>
+  </div>
+  <style>
+    @media(max-width:900px){.gc-footer-grid{grid-template-columns:1fr 1fr !important;gap:28px !important;}}
+    @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
+  </style>
+</footer>
+
+</body>
+</html>
