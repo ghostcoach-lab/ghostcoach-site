@@ -249,7 +249,7 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
       </div>
 
       <!-- FORM -->
-      <form id="contact-form" onsubmit="handleSubmit(event)">
+      <form id="gc-contact-form">
 
         <!-- Login prompt — informational only, form is not gated -->
         <div class="login-gate" id="login-gate">
@@ -270,29 +270,29 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
              trip this. n8n S7 MUST reject any submission where this is non-empty. -->
         <div aria-hidden="true" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;">
           <label for="f-website">Leave this field blank</label>
-          <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off">
+          <input type="text" id="gc-website" name="website" tabindex="-1" autocomplete="off">
         </div>
 
         <!-- Anti-bot time-trap: set on page load by the load handler.
              Real users take at least 3 seconds to fill the form;
              headless bots submit instantly. Checked client-side as a
              fast bail-out; n8n S7 MUST re-check server-side. -->
-        <input type="hidden" id="f-load-ts" name="_load_ts" value="">
+        <input type="hidden" id="gc-load-ts" name="_load_ts" value="">
 
         <div class="field-row">
           <div class="field">
             <label>Name <span class="req">*</span></label>
-            <input type="text" id="f-name" placeholder="Your name" maxlength="80" required>
+            <input type="text" id="f-name" placeholder="Your name" maxlength="80" required name="name">
           </div>
           <div class="field">
             <label>Email <span class="req">*</span></label>
-            <input type="email" id="f-email" placeholder="your@email.com" maxlength="254" required>
+            <input type="email" id="gc-email" placeholder="your@email.com" maxlength="254" required name="email">
           </div>
         </div>
 
         <div class="field">
           <label>Category <span class="req">*</span></label>
-          <select id="f-category" required>
+          <select id="f-category" required name="category">
             <option value="">Select a category</option>
             <option value="signup-login">Signup / login issues</option>
             <option value="general">General question</option>
@@ -307,18 +307,20 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
 
         <div class="field">
           <label>Subject</label>
-          <input type="text" id="f-subject" placeholder="Brief description of your question" maxlength="120">
+          <input type="text" id="f-subject" placeholder="Brief description of your question" maxlength="120" name="subject">
         </div>
 
         <div class="field">
           <label>Message <span class="req">*</span></label>
-          <textarea id="f-message" rows="6" placeholder="Describe your question or issue in as much detail as you can. The more context you give us, the faster and more specific our reply." maxlength="5000" required oninput="updateCount(this)"></textarea>
+          <textarea id="f-message" rows="6" placeholder="Describe your question or issue in as much detail as you can. The more context you give us, the faster and more specific our reply." maxlength="5000" required oninput="updateCount(this)" name="message"></textarea>
           <div class="char-count" id="char-count">0 / 30 characters minimum</div>
         </div>
 
-        <button type="submit" class="submit-btn" id="submit-btn">Send message →</button>
+        <p id="gc-error" style="color:#E55353;font-size:13px;margin-top:8px;min-height:18px;"></p>
+          <button type="submit" class="submit-btn" id="gc-submit-btn">Send message →</button>
         <div class="privacy-note">Your message is private. We don't use it for marketing or share it with third parties.</div>
       </form>
+        <div id="gc-success" style="display:none;text-align:center;padding:48px 24px;background:rgba(11,122,96,0.08);border-radius:12px;margin-top:24px;"><div style="font-size:48px;margin-bottom:16px;">✓</div><h3 style="font-family:'Playfair Display',serif;font-size:24px;color:#0B7A60;margin:0 0 12px 0;">Message sent</h3><p style="color:rgba(15,17,23,0.65);margin:0;">We'll get back to you within 24 hours.</p></div>
     </div>
 
   </div>
@@ -365,11 +367,11 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
       <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
-      <form onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('.gc-nl-ok').style.display='block';" style="display:flex;flex-direction:column;gap:7px;">
-        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'">
-        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'">Subscribe →</button>
+      <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
       </form>
-      <div class="gc-nl-ok" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+      <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
     </div>
   </div>
   <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
@@ -382,143 +384,14 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
   </style>
 </footer>
 
-<script>
-// ── CONFIG ─────────────────────────────────────────────────
-// Swap CONTACT_WEBHOOK to the real n8n S7 URL when the workflow ships.
-// While it contains 'DISABLED', handleSubmit shows success without POSTing.
-const CONTACT_WEBHOOK = 'DISABLED-pending-n8n-replacement';
-const SUPABASE_URL = '[REPLACE_WITH_SUPABASE_URL]';
-const SUPABASE_ANON_KEY = '[REPLACE_WITH_SUPABASE_ANON_KEY]';
 
-// Anti-bot time-trap threshold. Submissions arriving sooner than this
-// after page load are silently dropped. 3000ms blocks headless bots
-// without inconveniencing humans (filling the form takes 15s+).
-const MIN_FILL_MS = 3000;
 
-// ── AUTH STATE (optional — form is NOT gated) ──────────────
-// If user is logged in via Supabase, hide the login prompt and auto-fill
-// name/email. Otherwise the form works normally without auth.
-async function tryAutoFillFromSession() {
-  if (typeof window.supabase === 'undefined') return;
-  if (SUPABASE_URL.indexOf('REPLACE_WITH') !== -1) return;  // Phase 1 — not configured yet
-  try {
-    const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    const { data: { session } } = await client.auth.getSession();
-    if (!session || !session.user) return;
-    const gate = document.getElementById('login-gate');
-    if (gate) gate.style.display = 'none';
-    document.getElementById('f-email').value = session.user.email || '';
-    const { data: profile } = await client.from('profiles').select('firstname,lastname').eq('user_id', session.user.id).single();
-    if (profile && (profile.firstname || profile.lastname)) {
-      document.getElementById('f-name').value = `${profile.firstname || ''} ${profile.lastname || ''}`.trim();
-    }
-  } catch (e) { /* Phase 1 fallback — no auth, form still works */ }
-}
-
-window.addEventListener('load', () => {
-  // Anti-bot time-trap: stamp the moment the page finished loading.
-  document.getElementById('f-load-ts').value = String(Date.now());
-
-  tryAutoFillFromSession();
-
-  // Dev/test: add ?prefill=1 to URL to skip the auth check and just show prefilled state
-  if (new URLSearchParams(window.location.search).get('prefill') === '1') {
-    const gate = document.getElementById('login-gate');
-    if (gate) gate.style.display = 'none';
-  }
-});
-
-// ── CHAR COUNT ─────────────────────────────────────────────
-function updateCount(el) {
-  const count = el.value.length;
-  const el2 = document.getElementById('char-count');
-  if(count < 30) {
-    el2.textContent = `${count} / 30 characters minimum`;
-    el2.style.color = '#D85A30';
-  } else {
-    el2.textContent = `${count} characters`;
-    el2.style.color = '#8B8A98';
-  }
-}
-
-// ── SHOW SUCCESS ───────────────────────────────────────────
-// Used by both real success AND silent bot rejection — a tripped
-// bot sees the exact same visual outcome as a successful human,
-// so it can't tell it was filtered. Real signal goes to n8n logs.
-function showSuccess() {
-  document.getElementById('contact-form').style.display = 'none';
-  document.getElementById('success-state').style.display = 'block';
-}
-
-// ── SUBMIT ─────────────────────────────────────────────────
-async function handleSubmit(e) {
-  e.preventDefault();
-
-  // Defence 1 — honeypot. Real users never see this field;
-  // any value means a bot. Show success but do NOT post.
-  const honeypot = document.getElementById('f-website').value;
-  if (honeypot) { showSuccess(); return; }
-
-  // Defence 2 — time-trap. Reject submissions made within
-  // MIN_FILL_MS of page load. Show success but do NOT post.
-  const loadTs = parseInt(document.getElementById('f-load-ts').value, 10);
-  const elapsed = Date.now() - loadTs;
-  if (!loadTs || elapsed < MIN_FILL_MS) { showSuccess(); return; }
-
-  // Defence 3 — length caps. The maxlength attributes on inputs
-  // are the first line; these slices are belt-and-braces in case
-  // an extension or bot stripped the attribute.
-  const name     = document.getElementById('f-name').value.trim().slice(0, 80);
-  const email    = document.getElementById('f-email').value.trim().slice(0, 254);
-  const category = document.getElementById('f-category').value.slice(0, 32);
-  const subject  = document.getElementById('f-subject').value.trim().slice(0, 120);
-  const message  = document.getElementById('f-message').value.trim().slice(0, 5000);
-
-  // Standard validation (server validates again — this is for UX only)
-  if(!name || !email || !category || message.length < 30) {
-    if(message.length < 30) {
-      document.getElementById('f-message').focus();
-      document.getElementById('char-count').style.color = '#D85A30';
-    }
-    return;
-  }
-
-  const btn = document.getElementById('submit-btn');
-  btn.textContent = 'Sending...';
-  btn.disabled = true;
-
-  // Phase 1 — webhook URL is still a placeholder; skip the POST
-  // and show success so the form is fully testable end-to-end
-  // before S7 is wired in.
-  if (CONTACT_WEBHOOK.indexOf('DISABLED') !== -1) {
-    showSuccess();
-    return;
-  }
-
-  try {
-    await fetch(CONTACT_WEBHOOK, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'contact_form',
-        name, email, category, subject, message,
-        website: honeypot,           // server re-checks (must be empty)
-        load_ts: loadTs,             // server re-checks (must exist + be old enough)
-        submit_ts: Date.now(),       // for clock-skew detection
-        elapsed_ms: elapsed,
-        timestamp: new Date().toISOString(),
-        source: 'getghostcoach.com/contact/'
-      })
-    });
-  } catch(err) {
-    console.log('Webhook failed — continuing:', err);
-  }
-
-  // Always show success — never reveal to the sender whether
-  // their submission was accepted, rate-limited, or filtered.
-  showSuccess();
-}
-</script>
-
+  <!-- v23: GhostCoach JS integration -->
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/webhooks.js"></script>
+  <script src="/js/pages/newsletter.js"></script>
+  <script src="/js/pages/contact.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 # GhostCoach — Consolidation Log
 
-Last updated: 2026-05-18
+Last updated: 2026-05-19
 
 This file documents cross-cluster URL consolidation decisions.
 For redirect implementation, see `/_redirects`.
@@ -282,3 +282,177 @@ Two CSS bugs visible on /vibe/ spoke pages:
 - Design approved by founder before implementation
 
 State: 85 pages → 85 pages (no new pages). Sitemap unchanged (40 URLs).
+
+
+## v22 deploy (2026-05-18)
+
+Contact page hardened with anti-bot client-side defences (delivered by
+the webarchitect). All v21 changes preserved.
+
+### Client-side defences on /contact/index.html
+
+1. **Honeypot** — `<input name="website">` inside an aria-hidden,
+   off-screen wrapper. Real users never see or interact with it.
+   Bots that auto-fill URL/website fields trip it. handleSubmit shows
+   success and silently aborts the POST.
+
+2. **Time-trap** — hidden `f-load-ts` input stamped with `Date.now()`
+   on page load. handleSubmit rejects (silently) if elapsed time
+   < MIN_FILL_MS (3000). Real users always take longer.
+
+3. **maxlength caps** on every field:
+   - name: 80
+   - email: 254
+   - subject: 120
+   - message: 5000
+
+4. **Defensive .slice()** in handleSubmit using the same caps — belt-
+   and-braces in case maxlength was bypassed.
+
+5. **CONTACT_WEBHOOK as const** at top of script. Currently set to
+   `DISABLED-pending-n8n-replacement`. When n8n S7 is built, ONE LINE
+   change makes the form functional. While DISABLED, handleSubmit
+   shows success without firing fetch — fully testable today.
+
+### Server-side spec (n8n S7) — not yet built
+
+Documented in `/backend-specs/S7-contact-form-spec.md`. Critical points:
+- Server-side honeypot + time-trap re-check (client is bypassable)
+- Email-header-injection defence: strip `\r\n` from email + subject
+  BEFORE any Beehiiv call. Without this, the form can be turned into
+  an open relay.
+- Length caps server-side too (don't trust client)
+- Rate limit: 3/hr per IP, 1/hr per email, 50/24h per IP
+- Silent rejection pattern (HTTP 200 even on rejection) — denies bots
+  signal about thresholds
+
+### New files
+
+- `/sql/v22_contact_rate_limit_table.sql` — Supabase table for rate-
+  limit counters. Run before n8n S7 ships.
+- `/backend-specs/S7-contact-form-spec.md` — full server-side spec.
+
+### When n8n S7 is built
+
+1. Run the SQL migration (creates contact_rate_limit table)
+2. Build S7 per the spec document
+3. Update `CONTACT_WEBHOOK` const in /contact/index.html to the n8n URL
+4. Ship — form is live with full defences
+
+No other changes in v22. Sitemap unchanged (40 URLs). Pages on disk: 86.
+
+
+## v23 deploy (2026-05-19)
+
+Backend JS integration — Phase A site-wide + Phase B page-specific.
+
+### Phase A — Site-wide additions
+
+- **/js/ folder created** at the deploy root with 4 base files + 6 page files:
+  - `/js/config.js` — central config (Supabase URL, anon key, Stripe key, webhook secret, n8n base + paths)
+  - `/js/supabase-client.js` — Supabase client singleton
+  - `/js/auth.js` — `GCAuth` helper (signUp, signIn, magic link, requireAuth, etc.)
+  - `/js/webhooks.js` — `GCWebhook` helper (submitOnboarding, endSession, submitContact, newsletterSignup)
+  - `/js/pages/signup.js` — email/password signup
+  - `/js/pages/login.js` — login form
+  - `/js/pages/onboarding.js` — (file included, but NOT used in /onboarding/ — we kept the existing wizard's inline JS instead, just changed the submit path to call GCWebhook.submitOnboarding)
+  - `/js/pages/chat.js` — (file included, deferred — needs Supabase Edge Function before /chat/ can be rewired)
+  - `/js/pages/contact.js` — CUSTOMIZED to preserve v22 anti-bot defences (honeypot, time-trap, length caps) AND use GCWebhook.submitContact
+  - `/js/pages/newsletter.js` — newsletter signup via GCWebhook
+
+- **Supabase CDN script** added to <head> of all 86 pages
+  - 84 pages got it via the standard </head> anchor
+  - 2 pages skipped (/contact/, /onboarding/ already had it from v18/v22)
+  - 2 pages required fallback insertion before <body> (homepage and /vibe/index.html
+    had malformed HTML missing </head>; fixed inline)
+
+- **Base scripts** added before </body> on all 86 pages:
+  ```
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/webhooks.js"></script>
+  <script src="/js/pages/newsletter.js"></script>
+  ```
+
+- **/login/ page CREATED** — new page mirroring /signup/ chrome but minimal
+  form (email/password only). Uses /js/pages/login.js. Includes link back
+  to /signup/ for new users.
+
+- **Newsletter form** in the global footer got proper IDs:
+  - Form gets `id="gc-newsletter-form"` and `data-source="footer_signup"`
+  - Email input gets `id="gc-newsletter-email"`
+  - Submit button gets `id="gc-newsletter-btn"`
+  - Success div gets `id="gc-newsletter-msg"`
+  - Inline `onsubmit` removed (handler now in newsletter.js)
+  - Applied to 85 pages (footer-bearing pages)
+
+### Phase B — Page-specific integrations
+
+- **/signup/**:
+  - firstname field REMOVED (name collected on /dashboard/ per founder's decision)
+  - Email + password section wrapped in `<form id="gc-signup-form">`
+  - Inputs got gc-* IDs + name attributes
+  - Inline `handleSubmit` + `showErr` + sessionStorage save logic REMOVED
+    (replaced by /js/pages/signup.js which uses Supabase auth.signUp)
+  - OAuth buttons (Google/Facebook) left in place visually but currently
+    non-functional — Supabase OAuth needs separate configuration
+
+- **/contact/** (KEEPS v22 security):
+  - IDs renamed to gc-* prefix for fields the JS addresses by ID
+  - `name="..."` attributes added to fields (the new contact.js uses FormData)
+  - gc-error and gc-success elements added
+  - Inline `handleSubmit` + CONTACT_WEBHOOK const REMOVED
+  - /js/pages/contact.js is a CUSTOMIZED version preserving all v22 defences:
+    - Honeypot check at top of submit handler
+    - Time-trap (MIN_FILL_MS = 3000)
+    - Defensive .slice() length caps
+    - Silent rejection pattern
+    Then on pass: `GCWebhook.submitContact()` fires
+  - Result: bot defences + n8n integration both present
+
+- **/onboarding/**:
+  - Existing 2-step wizard preserved (UI, multi-select chips, progress bar)
+  - Phase 1 SUPABASE_URL placeholder removed
+  - Auth gate switched to `GCAuth.requireAuth('/login/')`
+  - Submit path switched to `GCWebhook.submitOnboarding(userId, profile)`
+  - Post-onboarding redirect changed: `/chat/?onboarded=true` → `/dashboard/`
+    (matches webarchitect's flow where /dashboard/ collects name/phone/country)
+  - firstname/lastname/phone/country deliberately OMITTED from the submit
+    payload (they live on /dashboard/ per the founder's decision)
+  - /js/pages/onboarding.js NOT included on this page (existing wizard JS
+    is more sophisticated than the webarchitect's version)
+
+### Deferred to a later deploy (Phase C)
+
+- /chat/ rewrite to use Supabase Edge Function `marcus-chat` instead of
+  the Phase 1 client-side API key. Requires the Edge Function to be
+  deployed first.
+- /dashboard/ purpose redefinition. Currently has profile + Stripe card UI.
+  In the new flow it remains the collector for firstname/lastname/phone/
+  country AND becomes the payment step. No changes in this deploy.
+
+### Config still pending (founder action required)
+
+1. `config.js` has REAL values for: Supabase URL/anon, Stripe pk, webhook
+   secret, Stripe price IDs. Verify these are correct.
+2. Supabase Edge Function `marcus-chat` must be deployed:
+   `supabase functions deploy marcus-chat --project-ref irmkcmcgfstdieujrrlg`
+3. Supabase secrets:
+   `supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref irmkcmcgfstdieujrrlg`
+   `supabase secrets set SUPABASE_SERVICE_ROLE_KEY=eyJ... --project-ref irmkcmcgfstdieujrrlg`
+4. Run pending SQL migrations:
+   - `/sql/v18_onboarding_schema.sql` (replaces + additional_context columns)
+   - `/sql/v22_contact_rate_limit_table.sql` (rate-limit counter table)
+5. Build n8n scenarios S2 (onboarding), S7 (contact form), S8 (newsletter).
+   S3 (session end) blocked on /chat/ rewrite.
+
+### State after v23
+
+- Pages on disk: 87 (was 86 — +1 for new /login/)
+- Sitemap URLs: 40 (unchanged — /login/ is noindex like /onboarding/)
+- Orphans: 37
+- 301 redirects: 6
+- JS files in deploy: 10 (+ /js/ folder structure)
+- Webhook secrets in client: YES (intentional per webarchitect — only authorizes
+  triggers, never data reads; service role key never in client)

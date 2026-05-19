@@ -100,6 +100,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
   .steps{max-width:100%;}
 }
 </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -198,28 +199,27 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
         <div class="divider-line"></div>
       </div>
 
-      <div class="field">
-        <label>First name <span class="req">*</span></label>
-        <input type="text" id="firstname" placeholder="Lars" autocomplete="given-name" oninput="clearErr('firstname')">
-        <div class="field-err" id="firstname-err">Please enter your first name</div>
-      </div>
+      
 
-      <div class="field">
+      <form id="gc-signup-form">
+          <div class="field">
         <label>Email address <span class="req">*</span></label>
-        <input type="email" id="email" placeholder="lars@example.com" autocomplete="email" oninput="clearErr('email')">
+        <input type="email" id="gc-email" name="email" placeholder="lars@example.com" autocomplete="email" oninput="clearErr('email')">
         <div class="field-err" id="email-err">Please enter a valid email address</div>
       </div>
 
       <div class="field">
         <label>Password <span class="req">*</span></label>
         <div class="pw-wrap">
-          <input type="password" id="password" placeholder="Minimum 8 characters" autocomplete="new-password" oninput="clearErr('password')">
+          <input type="password" id="gc-password" name="password" placeholder="Minimum 8 characters" autocomplete="new-password" oninput="clearErr('password')">
           <button class="pw-toggle" onclick="togglePw()" type="button" id="pw-btn">Show</button>
         </div>
         <div class="field-err" id="password-err">Password must be at least 8 characters</div>
       </div>
 
-      <button class="submit-btn" onclick="handleSubmit()">Create account →</button>
+      <button id="gc-submit-btn" type="submit" class="submit-btn" onclick="handleSubmit()">Create account →</button>
+          <p id="gc-error" style="color:#E55353;font-size:13px;margin-top:8px;min-height:18px;text-align:center;"></p>
+        </form>
 
       <div class="form-foot">
         By creating an account you agree to our
@@ -231,106 +231,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
   </div>
 </div>
 
-<script>
-// ── Read plan from URL param ──────────────────────────────────
-const params = new URLSearchParams(window.location.search);
-const plan = (params.get('plan') || 'builder').toLowerCase();
 
-if(plan === 'lifetime'){
-  document.getElementById('plan-label').textContent = 'Lifetime — $499 one-time';
-  document.getElementById('plan-title-label').textContent = "What's in Lifetime (Operator for life)";
-  document.getElementById('plan-price').textContent = '$499 one-time';
-  document.getElementById('operator-feature').style.display = 'flex';
-  document.getElementById('operator-pricing-audit').style.display = 'flex';
-
-  // Lifetime is a one-time purchase, not a trial — swap left-side copy
-  const lh = document.querySelector('.left-headline');
-  if(lh) lh.innerHTML = 'Lifetime access.<br><em>Operator for life.</em>';
-  const ls = document.querySelector('.left-sub');
-  if(ls) ls.textContent = "One-time $499 payment. Backed by our 30-day money-back guarantee — full refund within 30 days if it isn't for you.";
-
-  // Replace the "No charge until day 15" timeline item with the 30-day guarantee
-  const trialItems = document.querySelectorAll('.trial-item');
-  const last = trialItems[trialItems.length - 1];
-  if(last){
-    const cross = last.querySelector('.ti-cross');
-    if(cross){
-      const replacement = document.createElement('div');
-      replacement.className = 'ti-check';
-      replacement.innerHTML = '<svg viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F7F5F0" stroke-width="1.5" stroke-linecap="round"/></svg>';
-      cross.replaceWith(replacement);
-    }
-    const txt = last.querySelector('.ti-text');
-    if(txt){ txt.textContent = '30-day money-back guarantee'; txt.style.color = ''; }
-  }
-
-  // Price note for lifetime
-  const note = document.querySelector('.price-note');
-  if(note) note.innerHTML = 'Founding member pricing. Your card is charged <strong>$499 once</strong> — no monthly fees, ever. All Operator features included for life. Closes at 50 members.<br><br>🛡️ <strong>30-day money-back guarantee.</strong> Full refund within 30 days.';
-}
-if(plan === 'operator'){
-  document.getElementById('plan-label').textContent = 'Operator — $149/mo';
-  document.getElementById('plan-title-label').textContent = "What's in Operator";
-  document.getElementById('plan-price').textContent = '$149/month';
-  document.getElementById('operator-feature').style.display = 'flex';
-  document.getElementById('operator-pricing-audit').style.display = 'flex';
-}
-
-// ── Password toggle ───────────────────────────────────────────
-function togglePw(){
-  const inp = document.getElementById('password');
-  const btn = document.getElementById('pw-btn');
-  const show = inp.type === 'password';
-  inp.type = show ? 'text' : 'password';
-  btn.textContent = show ? 'Hide' : 'Show';
-}
-
-// ── Validation ────────────────────────────────────────────────
-function clearErr(id){
-  document.getElementById(id).classList.remove('err-input');
-  document.getElementById(id + '-err').style.display = 'none';
-}
-function showErr(id, msg){
-  const el = document.getElementById(id);
-  el.classList.add('err-input');
-  const err = document.getElementById(id + '-err');
-  err.textContent = msg;
-  err.style.display = 'block';
-  return false;
-}
-
-function handleSubmit(){
-  let ok = true;
-  const name = document.getElementById('firstname').value.trim();
-  const email = document.getElementById('email').value.trim();
-  const pw = document.getElementById('password').value;
-
-  if(!name) ok = showErr('firstname', 'Please enter your first name');
-  if(!email || !email.includes('@') || !email.includes('.'))
-    ok = showErr('email', 'Please enter a valid email address');
-  if(pw.length < 8)
-    ok = showErr('password', 'Password must be at least 8 characters');
-
-  if(!ok) return;
-
-  // Save to sessionStorage for use on dashboard page
-  sessionStorage.setItem('gc_signup', JSON.stringify({
-    firstname: name, email, plan
-  }));
-
-  // Redirect to dashboard
-  window.location.href = '/dashboard/?plan=' + plan;
-}
-
-// ── Social login (UI placeholder — connect OAuth provider) ────
-function handleSocial(provider){
-  sessionStorage.setItem('gc_signup', JSON.stringify({ plan, provider }));
-  // In production: trigger Memberstack/Supabase OAuth flow
-  // ms.loginWithProvider('google') or similar
-  alert('Social login will be connected to Memberstack / Supabase OAuth. Redirecting to dashboard for now.');
-  window.location.href = '/dashboard/?plan=' + plan;
-}
-</script>
 <p style="text-align: center; font-family: 'DM Sans', sans-serif; font-size: 13px; color: rgba(15,17,23,0.55); margin: 28px auto 32px; padding: 0 24px; max-width: 540px; line-height: 1.6;">Trouble signing up? It's almost always our end &mdash; <a href="/contact/" style="color: #C8861E; text-decoration: underline; text-underline-offset: 2px;">tell us</a> and we'll fix it.</p>
 <footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
   <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
@@ -373,13 +274,13 @@ function handleSocial(provider){
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
       <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
-      <form onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('.gc-nl-ok').style.display='block';" style="display:flex;flex-direction:column;gap:7px;">
-        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'">
-        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'">Subscribe →</button>
+      <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
       </form>
 
 
-      <div class="gc-nl-ok" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+      <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
     </div>
   </div>
   <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
@@ -391,5 +292,12 @@ function handleSocial(provider){
     @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
   </style>
 </footer>
+  <!-- v23: GhostCoach JS integration -->
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/webhooks.js"></script>
+  <script src="/js/pages/newsletter.js"></script>
+  <script src="/js/pages/signup.js"></script>
 </body>
 </html>

@@ -557,11 +557,11 @@
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
       <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
-      <form onsubmit="event.preventDefault();this.querySelector('input').value='';this.querySelector('.gc-nl-ok').style.display='block';" style="display:flex;flex-direction:column;gap:7px;">
-        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'">
-        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'">Subscribe →</button>
+      <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
       </form>
-      <div class="gc-nl-ok" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+      <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
     </div>
   </div>
   <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
@@ -578,9 +578,7 @@
   // ════════════════════════════════════════════════════════════════════════
   // CONFIG — set these when Supabase + n8n are live
   // ════════════════════════════════════════════════════════════════════════
-  const SUPABASE_URL = '[REPLACE_WITH_SUPABASE_URL]';
-  const SUPABASE_ANON_KEY = '[REPLACE_WITH_SUPABASE_ANON_KEY]';
-  const N8N_ONBOARDING_URL = 'DISABLED-pending-n8n-replacement';
+  // Config from /js/config.js (loaded globally as window.GC)
 
   // ════════════════════════════════════════════════════════════════════════
   // STATE
@@ -605,24 +603,13 @@
   // INIT — auth gate + restore partial state
   // ════════════════════════════════════════════════════════════════════════
   async function init() {
-    // Try Supabase Phase 2 mode
-    if (typeof window.supabase !== 'undefined' && SUPABASE_URL.indexOf('REPLACE_WITH') === -1) {
-      try {
-        gcSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        const { data: { session } } = await gcSupabase.auth.getSession();
-        if (!session) {
-          window.location.href = '/signup/';
-          return;
-        }
-        gcUser = { id: session.user.id, email: session.user.email };
-        // Pre-load any existing profile so user can re-onboard without losing data
-        await loadExistingProfile();
-      } catch (e) {
-        console.warn('Supabase auth check failed, falling back to Phase 1:', e);
-      }
-    } else {
-      console.log('Onboarding running in Phase 1 mode (no Supabase configured)');
-    }
+    // v23: use GCAuth.requireAuth() — redirects to /login/ if no session
+    const session = await GCAuth.requireAuth('/login/');
+    if (!session) return;
+    gcSupabase = window.supabase.createClient(GC.SUPABASE_URL, GC.SUPABASE_ANON);
+    gcUser = { id: session.user.id, email: session.user.email };
+    // Pre-load any existing profile so user can re-onboard without losing data
+    try { await loadExistingProfile(); } catch (e) { /* first-time onboarding */ }
 
     // Restore partial state from sessionStorage (resume on refresh)
     const stored = sessionStorage.getItem('gc_onboarding_partial');
@@ -859,38 +846,25 @@
       sessionStorage.setItem('gc_profile', JSON.stringify(profile));
     } catch (e) { /* private mode — continue anyway */ }
 
-    // Try Supabase UPSERT
-    if (gcSupabase && gcUser) {
-      try {
-        const { error } = await gcSupabase
-          .from('profiles')
-          .upsert({
-            user_id: gcUser.id,
-            ...profile,
-            goal_start_date: new Date().toISOString(),
-            goal_progress: 0,
-            updated_at: new Date().toISOString(),
-          });
-        if (error) console.error('Supabase profile upsert error:', error);
-      } catch (e) {
-        console.error('Supabase profile upsert exception:', e);
-      }
-    }
-
-    // Fire n8n S2 webhook (placeholder until n8n built — will fail silently)
+    // v23: submit via GCWebhook.submitOnboarding() (n8n S2)
+    // Note: firstname/lastname/phone/country are collected on /dashboard/, not here.
+    // n8n S2 INSERTs/UPDATEs the profile row with just the business fields below.
     try {
-      await fetch(N8N_ONBOARDING_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'onboarding_complete',
-          user_id: gcUser ? gcUser.id : null,
-          email: gcUser ? gcUser.email : null,
-          profile,
-          timestamp: new Date().toISOString(),
-        }),
+      await GCWebhook.submitOnboarding(gcUser.id, {
+        product:            profile.product,
+        stage:              profile.stage,
+        business_model:     profile.business_model,
+        tools:              profile.tools,
+        bottleneck:         profile.bottleneck,
+        tried:              profile.tried,
+        goal_90_day:        profile.goal_90_day,
+        replaces:           profile.replaces,            // GhostCoach extra
+        additional_context: profile.additional_context,  // GhostCoach extra
       });
-    } catch (e) { /* n8n not configured yet — silent fail */ }
+    } catch (e) {
+      console.error('Onboarding submit failed:', e);
+      // Continue anyway — sessionStorage has the data as a fallback
+    }
 
     // Clear partial state
     try { sessionStorage.removeItem('gc_onboarding_partial'); } catch (e) {}
@@ -898,7 +872,7 @@
     // Show success overlay, then redirect to chat
     document.getElementById('successOverlay').classList.add('visible');
     setTimeout(() => {
-      window.location.href = '/chat/?onboarded=true';
+      window.location.href = '/dashboard/';
     }, 1500);
   }
 
@@ -908,5 +882,11 @@
   document.addEventListener('DOMContentLoaded', init);
 </script>
 
+  <!-- v23: GhostCoach JS integration -->
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/webhooks.js"></script>
+  <script src="/js/pages/newsletter.js"></script>
 </body>
 </html>
