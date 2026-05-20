@@ -30,7 +30,7 @@
 
   // ── Load user profile (for context: goal, stage, plan) ──────────────────────
   async function loadProfile() {
-    const { data, error } = await supabase
+    const { data, error } = await gcSupabase
       .from('profiles')
       .select('firstname, goal_90_day, goal_progress, stage')
       .eq('user_id', userId)
@@ -41,7 +41,7 @@
 
   // ── Create a new session row in Supabase ─────────────────────────────────────
   async function createSession() {
-    const { data, error } = await supabase
+    const { data, error } = await gcSupabase
       .from('sessions')
       .insert({ user_id: userId, processing_status: 'pending' })
       .select('id')
@@ -137,7 +137,7 @@
   // ── Real-time goal bar update ─────────────────────────────────────────────────
   function subscribeToGoalProgress() {
     if (!goalBar) return;
-    supabase
+    gcSupabase
       .channel('profile-goal-' + userId)
       .on('postgres_changes', {
         event:  'UPDATE',

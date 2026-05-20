@@ -584,7 +584,8 @@
   // STATE
   // ════════════════════════════════════════════════════════════════════════
   let currentStep = 1;
-  let gcSupabase = null;
+  // v24: removed local `let gcSupabase` — it shadowed window.gcSupabase and broke auth.
+  // Now using the global window.gcSupabase singleton from supabase-client.js.
   let gcUser = null;
   let formData = {
     product: '',
@@ -606,7 +607,7 @@
     // v23: use GCAuth.requireAuth() — redirects to /login/ if no session
     const session = await GCAuth.requireAuth('/login/');
     if (!session) return;
-    gcSupabase = window.supabase.createClient(GC.SUPABASE_URL, GC.SUPABASE_ANON);
+    // v24: no need to recreate the client — supabase-client.js already created window.gcSupabase
     gcUser = { id: session.user.id, email: session.user.email };
     // Pre-load any existing profile so user can re-onboard without losing data
     try { await loadExistingProfile(); } catch (e) { /* first-time onboarding */ }

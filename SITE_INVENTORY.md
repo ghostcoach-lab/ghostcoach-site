@@ -1,6 +1,6 @@
 # GhostCoach Site Inventory & SEO Strategy Handover
 
-**Generated:** 2026-05-19 (v2 — adds functional pages section)
+**Generated:** 2026-05-20 (v2 — adds functional pages section)
 **For:** External SEO specialist — additional landing page strategy
 **Site:** https://getghostcoach.com
 **Current production state:** v14 + /how-it-works/ added to sitemap

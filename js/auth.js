@@ -6,7 +6,7 @@ const GCAuth = {
   // Sign up with email + password.
   // Supabase sends a confirmation email. User must click before they can log in.
   async signUp(email, password) {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await gcSupabase.auth.signUp({
       email,
       password,
       options: {
@@ -20,14 +20,14 @@ const GCAuth = {
 
   // Sign in with email + password
   async signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await gcSupabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
   },
 
   // Sign in with magic link (passwordless)
   async signInWithMagicLink(email) {
-    const { error } = await supabase.auth.signInWithOtp({
+    const { error } = await gcSupabase.auth.signInWithOtp({
       email,
       options: { emailRedirectTo: window.location.origin + '/dashboard/' }
     });
@@ -36,20 +36,20 @@ const GCAuth = {
 
   // Sign out
   async signOut() {
-    const { error } = await supabase.auth.signOut();
+    const { error } = await gcSupabase.auth.signOut();
     if (error) throw error;
     window.location.href = '/';
   },
 
   // Get current session (null if not logged in)
   async getSession() {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await gcSupabase.auth.getSession();
     return session;
   },
 
   // Get current user (null if not logged in)
   async getUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await gcSupabase.auth.getUser();
     return user;
   },
 
@@ -71,7 +71,7 @@ const GCAuth = {
 
   // Listen for auth state changes (login, logout, token refresh)
   onAuthChange(callback) {
-    supabase.auth.onAuthStateChange((event, session) => {
+    gcSupabase.auth.onAuthStateChange((event, session) => {
       callback(event, session);
     });
   },

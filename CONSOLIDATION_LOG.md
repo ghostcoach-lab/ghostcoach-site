@@ -1,6 +1,6 @@
 # GhostCoach — Consolidation Log
 
-Last updated: 2026-05-19
+Last updated: 2026-05-20
 
 This file documents cross-cluster URL consolidation decisions.
 For redirect implementation, see `/_redirects`.
@@ -456,3 +456,46 @@ Backend JS integration — Phase A site-wide + Phase B page-specific.
 - JS files in deploy: 10 (+ /js/ folder structure)
 - Webhook secrets in client: YES (intentional per webarchitect — only authorizes
   triggers, never data reads; service role key never in client)
+
+
+## v24 deploy (2026-05-20)
+
+JS supabase-client refactor + onboarding scope fix.
+
+### Files changed (4 total)
+
+1. `/js/supabase-client.js` — exposes `window.gcSupabase` instead of a 
+   local `const supabase`. Avoids confusion with the CDN's `window.supabase` 
+   (which is the namespace object containing `.createClient`).
+
+2. `/js/auth.js` — all references to `supabase.auth.*` renamed to 
+   `gcSupabase.auth.*` to match the new client name.
+
+3. `/js/pages/chat.js` — all references to `supabase.from()`, 
+   `supabase.channel()` renamed to `gcSupabase.*` to match.
+
+4. `/onboarding/index.html` — REQUIRED collateral fix. The v23 onboarding 
+   inline JS declared `let gcSupabase = null;` at top of script, which 
+   created a script-lexical-environment binding that shadowed 
+   `window.gcSupabase` across the whole realm. With the new supabase-client.js
+   exposing `window.gcSupabase`, this shadowing would have caused 
+   `GCAuth.requireAuth()` to crash on first call (null reference).
+   
+   Fix: removed the `let gcSupabase = null;` declaration AND removed the 
+   redundant `gcSupabase = window.supabase.createClient(...)` line in 
+   `init()`. All `gcSupabase` references in the onboarding inline JS now 
+   resolve to the global `window.gcSupabase` singleton.
+
+### Why the rename matters
+
+The Supabase CDN script exposes `window.supabase` — a namespace object that 
+contains `.createClient`, `.createBrowserClient`, etc. Naming a client 
+instance `supabase` (as v23 did) created confusion:
+- `window.supabase.createClient(...)` — the CDN
+- `supabase.auth.signUp(...)` — our client instance
+
+With separate names (`window.supabase` = CDN, `window.gcSupabase` = our 
+client), the distinction is clear and there's no risk of accidentally 
+referencing the CDN namespace when you meant the client.
+
+No other site changes in v24. Sitemap unchanged. Pages on disk: 87.
