@@ -1,6 +1,6 @@
 # GhostCoach — Consolidation Log
 
-Last updated: 2026-05-20
+Last updated: 2026-05-22
 
 This file documents cross-cluster URL consolidation decisions.
 For redirect implementation, see `/_redirects`.
@@ -499,3 +499,379 @@ client), the distinction is clear and there's no risk of accidentally
 referencing the CDN namespace when you meant the client.
 
 No other site changes in v24. Sitemap unchanged. Pages on disk: 87.
+
+
+## v25 deploy (2026-05-20)
+
+New /processing/ page — post-onboarding bridge before /chat/.
+
+### What was built
+
+1. **NEW PAGE: /processing/index.html** (14.7 KB)
+   - Minimal funnel-safe nav (brand wordmark only, like /onboarding/)
+   - Centered card design with cream/white surface, brand-aligned
+   - H1: "Marcus is preparing your profile." (Playfair Display 34px, 
+     "Marcus" in italic amber)
+   - Three pulsing amber dots (CSS animation, 1.4s cycle, 0.2s cascade)
+   - Three body paragraphs (DM Sans 15px, founder-direct tone)
+   - Reassuring aside ("You can wait here or close the tab")
+   - noindex meta, NOT in sitemap (functional page)
+   - Responsive at 680px breakpoint
+
+2. **NEW SCRIPT: /js/pages/processing.js** (1.9 KB)
+   - GCAuth.requireAuth("/login/") — auth gate
+   - On load: immediate readiness check (returning users go straight to /chat/)
+   - Supabase real-time subscription on profiles UPDATE events for this user
+   - Polling fallback every 30s (defends against missed real-time events)
+   - Redirects to /chat/ when marcus_ready_at field is set
+
+3. **NEW SQL MIGRATION: /sql/v25_marcus_ready_field.sql**
+   - Adds `marcus_ready_at TIMESTAMPTZ` column to profiles
+   - Adds partial index for fast "ready users" queries
+   - n8n S2 must set this field at the end of its processing flow
+
+4. **MODIFIED: /onboarding/index.html**
+   - Final redirect after submit: /dashboard/ → /processing/
+   - User flow now: signup → email confirm → onboarding → processing → chat
+
+### New user flow (post-v25)
+
+```
+/signup/             email + password account creation
+       ↓ (Supabase sends confirmation email)
+[email click]
+       ↓ (lands on /onboarding/ per auth.js emailRedirectTo)
+/onboarding/         2-step wizard (product/stage/business model/tools/
+                     bottleneck/tried/goal/replaces/additional context)
+       ↓ (submit calls GCWebhook.submitOnboarding → n8n S2)
+/processing/         NEW — shows pulsing dots + status message
+                     waits for marcus_ready_at to be set on the profile row
+       ↓ (real-time event when n8n S2 finishes)
+/chat/               first coaching session with Marcus
+```
+
+### What n8n S2 must do (when built)
+
+At the end of S2's flow, after INSERT/UPDATE of the profile row:
+```sql
+UPDATE profiles SET marcus_ready_at = now() WHERE user_id = $1;
+```
+This triggers the Supabase real-time event that /processing/ subscribes to,
+causing the page to redirect to /chat/.
+
+### Founder action required
+
+1. Run `/sql/v25_marcus_ready_field.sql` in Supabase SQL Editor
+2. When building n8n S2, add the marcus_ready_at UPDATE as the final step
+
+### State after v25
+
+- Pages on disk: 88 (was 87 — +1 for /processing/)
+- Sitemap URLs: 40 (unchanged — /processing/ is noindex)
+- Orphans: 37
+- 301 redirects: 6
+- SQL migrations pending: v18 (replaces+additional_context), v22 (rate_limit), 
+  v25 (marcus_ready_at)
+- Functional pages: 6 (signup, login, onboarding, processing ←NEW, chat, dashboard)
+
+
+## v26 deploy (2026-05-21)
+
+Full Option B flow built — adds /card/ + /activating/ as brand-styled pages
+that integrate the webarchitect's functional patterns with the v25 design system.
+
+### Complete user flow (post-v26)
+
+```
+/signup/              email + password
+     -> email confirm  (Supabase sends + auth.js redirects to /onboarding/)
+/onboarding/          business wizard (existing)
+     -> POST to n8n S2 via GCWebhook.submitOnboarding
+/processing/          "Marcus is preparing your profile"
+                      (v25 brand design, pulsing dots)
+                      Subscribes Supabase real-time on profiles.marcus_ready_at
+                      Polling fallback every 30s
+     -> redirect to /card/
+/card/                "Start your 14-day free trial"
+                      (NEW v26, brand-styled card capture)
+                      Stripe Elements card field
+                      POSTs to n8n S5 to create subscription
+     -> redirect to /activating/
+/activating/          "Activating your trial..."
+                      (NEW v26, sister page to /processing/)
+                      Polls users.status every 3s
+                      Help fallback link after 30s
+     -> redirect to /chat/
+/chat/                Marcus session (existing Phase 1)
+```
+
+### New files in v26
+
+1. `/card/index.html` (16.4 KB) — Stripe Elements card capture page.
+   Brand-styled: cream bg, white card surface, Playfair "Start your 14-day
+   free trial" headline with italic amber "free trial", DM Sans body, amber
+   submit button, teal-tinted trial note, lock-icon security note,
+   help fallback link to /contact/.
+
+2. `/js/pages/card.js` (2.9 KB) — Stripe Elements integration:
+   - GCAuth.requireAuth("/login/") auth gate
+   - Reads ?plan= URL param (builder/operator/lifetime)
+   - Plan badge + price line dynamically populated from PLAN_INFO map
+   - Stripe Elements card field with brand-matched styling
+     (DM Sans font, amber focus border, red invalid border)
+   - On submit: createPaymentMethod, POST to /gc-s5-subscribe with
+     payment_method_id, plan, stripe_price_id, user_id
+   - Includes WEBHOOK_SECRET in x-gc-secret header
+   - Success: redirect to /activating/
+
+3. `/activating/index.html` (14.8 KB) — Trial activation wait page.
+   Sister design to /processing/: same chrome, same card layout, same
+   pulsing amber dots. Different content:
+   - H1: "Activating your trial..." with italic amber "trial"
+   - Body: "We are setting up your subscription with Stripe and unlocking
+     your first session with Marcus. This usually takes just a few seconds."
+   - Help fallback (hidden by default): "Taking longer than expected?
+     Let us know -> /contact/" — surfaces after 30 seconds
+
+4. `/js/pages/activating.js` (1.2 KB) — Status polling:
+   - GCAuth.requireAuth("/login/") gate
+   - Polls users.status every 3 seconds
+   - Redirects to /chat/ when status changes from "pending" to anything else
+   - Surfaces help fallback element after 10 polls (30 seconds)
+
+5. `/sql/v26_users_status_field.sql` (1.1 KB) — schema migration:
+   - Adds `status TEXT DEFAULT 'pending'` to users table
+   - Backfills existing rows
+   - Adds partial index on non-pending statuses (for analytics queries)
+
+### Files modified in v26
+
+1. `/js/pages/processing.js` — redirect target changed from /chat/ to /card/.
+   All other logic (marcus_ready_at + Supabase real-time + 30s polling
+   fallback) preserved from v25.
+
+2. `/processing/index.html` and `/js/pages/processing.js` — these had been
+   accidentally overwritten by the webarchitect's dark-themed
+   "Activating your trial" version at some point in the previous turn.
+   Restored to v25 brand-styled "Marcus is preparing your profile" version
+   with corrected redirect target (/card/ instead of /chat/).
+
+3. `/onboarding/index.html` — final redirect restored to /processing/
+   (had reverted to /chat/?onboarded=true at some point).
+
+### Backend dependencies (founder action required)
+
+1. Run SQL migrations in Supabase SQL Editor:
+   - `/sql/v18_onboarding_schema.sql` (replaces + additional_context)
+   - `/sql/v22_contact_rate_limit_table.sql` (rate-limit table)
+   - `/sql/v25_marcus_ready_field.sql` (profiles.marcus_ready_at)
+   - `/sql/v26_users_status_field.sql` (users.status)
+
+2. Build n8n S2 (onboarding webhook). At the end of S2 processing:
+   `UPDATE profiles SET marcus_ready_at = now() WHERE user_id = $1;`
+   This unblocks /processing/ -> /card/
+
+3. Build n8n S5 (Stripe subscription create). After Stripe creates the
+   subscription successfully:
+   `UPDATE users SET status = 'trialing' WHERE id = $1;`
+   This unblocks /activating/ -> /chat/
+
+4. Verify config.js has correct Stripe price IDs:
+   - STRIPE_PRICE_BUILDER (currently set)
+   - STRIPE_PRICE_OPERATOR (currently set)
+   - STRIPE_PRICE_LIFETIME (verify or add — used by /card/?plan=lifetime)
+
+### State after v26
+
+- Pages on disk: 90 (was 88 — +2 for /card/ and /activating/)
+- Sitemap URLs: 40 (unchanged — both new pages are noindex)
+- Orphans: 37
+- 301 redirects: 6
+- JS files in deploy: 13 (4 base + 9 page-specific)
+- SQL migrations pending: 4 (v18, v22, v25, v26)
+- Functional pages: 8 (signup, login, onboarding, processing, card, activating, chat, dashboard)
+
+
+## v27 deploy (2026-05-22)
+
+Multi-part: dashboard Lifetime, nav Log in links, meta changes, new /account/
+page, user_memory schema.
+
+### Phase 1 — Dashboard Lifetime
+- Added Lifetime as 3rd plan option in the switcher ($499 once)
+- selectPlan() rewritten: toggles all 3 options, hides the trial note when
+  Lifetime is selected (one-time payment, no trial), relabels the CTA button
+  to "Get lifetime access →", updates the plan label
+- Removed the old lifetime special-case that locked/replaced the plan-row
+
+### Phase 2 — Nav "Log in" links
+- Homepage: "Log in" text link (.nav-link) added before "Start free trial →"
+- Inner pages (about, contact, how-it-works): "← Back to home" wrapped in a
+  flex container with a "Log in" text link before it (inline-styled to match
+  the dark nav, no class dependencies)
+
+### Phase 3 — Meta changes
+- Homepage <title>: "AI Business Coach for Solo SaaS Founders | GhostCoach"
+- Homepage description: "AI business coaching for solopreneurs building SaaS.
+  One specific recommendation per session — not a menu of options. 14-day free trial."
+- /vibe/ <title>: "AI Business Coach for Vibe Coders | GhostCoach"
+
+### Phase 4 — NEW /account/ page (28.5 KB) + account.js (11 KB)
+Single scrollable page, 7 sections, brand-styled (cream, white cards,
+Playfair headers). Account-specific nav (brand + Back to sessions + Log out).
+noindex, not in sitemap.
+
+Sections:
+1. Personal info — firstname, lastname, phone, country (editable);
+   email read-only with "Need to change your email? Contact support." note.
+   Saves to profiles via upsert.
+2. Business profile — 8 editable onboarding fields (product, stage,
+   business_model, tools, bottleneck, tried, replaces, additional_context).
+   Saves to profiles via upsert.
+3. 90-day goal — goal_90_day textarea + progress bar (goal_progress) + reset
+   button (sets progress to 0, fresh goal_start_date).
+4. Session history — reads sessions table, renders list (session number, date,
+   3-bullet summary, action committed, goal progress score) + an inline SVG
+   line chart of goal_progress_score over time (drawn with vanilla JS, no
+   chart library — respects the no-npm constraint).
+5. Plan & billing — current plan pill + status, upgrade/downgrade/cancel
+   buttons (POST to n8n S6 /gc-s6-plan), payment method line. Lifetime plan
+   hides all billing actions (permanent, no recurring billing).
+6. Email preferences — newsletter toggle (POST to n8n S8 signup/unsubscribe),
+   transactional emails shown as locked-on (disabled toggle).
+7. Danger zone — delete account (double-confirm, POST to n8n S6 type:delete,
+   then GCAuth.signOut).
+
+account.js loads profiles + users + sessions + subscriptions + newsletter in
+parallel (Promise.all), populates every field, wires all save handlers.
+
+### Phase 5 — SQL migration /sql/v27_user_memory_field.sql
+Adds `user_memory TEXT` to profiles for the curated-memory pattern. n8n S3
+(session-end) must, in addition to the 3-bullet summary, distil each session
+into this rolling ~500-1000 token memory. New-session context becomes:
+MARCUS_PROMPT + business profile + user_memory + last 1-2 session summaries.
+(This avoids dumping raw transcripts into context.)
+
+### Backend dependencies (founder action)
+- Run /sql/v27_user_memory_field.sql in Supabase
+- n8n S3: update user_memory at session end (curated memory)
+- n8n S6 (/gc-s6-plan): handle upgrade/downgrade/cancel/delete from /account/
+- n8n S8 (/gc-s8-signup, /gc-s8-unsubscribe): newsletter toggle from /account/
+
+### State after v27
+- Pages on disk: 91 (was 90 — +1 for /account/)
+- Sitemap URLs: 40 (unchanged — /account/ is noindex)
+- JS files: 14 (4 base + 10 page-specific, now includes account.js)
+- SQL migrations pending: 5 (v18, v22, v25, v26, v27)
+- Functional pages: 9 (signup, login, onboarding, processing, card,
+  activating, chat, dashboard, account)
+
+
+## v28 deploy (2026-05-22)
+
+Two tweaks.
+
+### Tweak 1 — /activating/ copy = /processing/ copy
+The two wait pages serve a similar role, so /activating/ now uses the same
+copy as /processing/:
+- Headline: "Marcus is preparing your profile."
+- Same three body paragraphs (Ghost OS profile / email when ready / wait or close tab)
+Kept on /activating/: its own meta (title "Activating your trial", canonical
+/activating/), the activating.js script (polls users.status → /chat/), and the
+#gc-help-fallback link that surfaces after 30s. Only the visible copy changed.
+
+### Tweak 2 — Dashboard custom card field → Stripe Elements
+The dashboard previously collected raw card number / expiry / CVV in custom JS
+(fmtCard, detectCardType, fmtExp, validateAll) — which means card data touched
+our code. Replaced with Stripe Elements, matching /card/ and satisfying the
+PCI rule (card data never touches GhostCoach code).
+
+Changes:
+- Added Stripe.js (<script src="https://js.stripe.com/v3/">) to dashboard head
+- Replaced card number + expiry + CVV inputs with a single Stripe Elements
+  mount (#gc-card-element) + error display (#gc-card-error)
+- Kept the "Name on card" field (passed as billing_details.name)
+- Removed fmtCard / detectCardType / fmtExp / validateAll / showFieldErr
+- Removed dead CSS (.card-num-wrap, .card-type-badge)
+- Added Stripe Elements init + brand-matched styling (amber focus border)
+- CTA button enables when the card is complete AND name is filled
+- Rewrote handleStart(): createPaymentMethod -> POST to n8n S5
+  (/gc-s5-subscribe) with payment_method_id + plan + stripe_price_id ->
+  redirect to /activating/ (was a direct sessionStorage save + /chat/ redirect)
+
+The dashboard's Stripe flow now mirrors /card/ exactly. Both card-entry paths
+converge on /activating/.
+
+### Note for founder
+The dashboard and /card/ are now two card-entry points doing the same thing
+(Stripe Elements -> n8n S5 -> /activating/). In the Option B funnel only /card/
+is used. The dashboard remains as the original "Step 2 of 3" page. Worth
+deciding later whether the dashboard becomes purely post-trial management
+(it overlaps with /account/ now) or stays as an alternate signup entry.
+
+### State after v28
+- Pages on disk: 91 (unchanged)
+- Sitemap URLs: 40 (unchanged)
+- No new pages; edits to /activating/ and /dashboard/ only
+
+
+## v29 deploy (2026-05-22)
+
+Dashboard card cleanup, single card entry, /account/ confirmations + billing portal.
+
+### Dashboard
+- Removed the credit-card brand logos (VISA/Mastercard/AMEX/UnionPay SVGs)
+  and the "via Stripe" label
+- Removed the "Name on card" field (users may pay with someone else's card);
+  validateCard() now only requires the Stripe Elements card to be complete;
+  handleStart billing_details sends email only (no name)
+- Removed dead CSS (.card-logos / .card-logo / .logo-label)
+
+### Single card entry point
+Per founder decision, the dashboard is now the ONLY card-entry point.
+- /processing/ redirect changed: /card/ → /dashboard/
+- _redirects: /card/ → /dashboard/ (301!) so the old /card/ URL funnels in
+- NOTE: a polished Card_index.html was uploaded in the same message; it was
+  NOT used because the explicit instruction was "dashboard = the one entry."
+  /card/ now 301s to /dashboard/. Reversible if the founder meant the opposite.
+
+New funnel:
+  /signup/ → email confirm → /onboarding/ → /processing/ → /dashboard/ → /activating/ → /chat/
+
+### /account/ — Manage billing & invoices
+Added a "Manage billing & invoices" button to Plan & billing. It POSTs to
+n8n /gc-s6-portal (which must create a Stripe billing-portal session and
+return { url }), then redirects to the Stripe-hosted Customer Portal where
+the user can update company name, billing address, VAT/tax ID, download
+invoices, update card, and manage plan.
+
+### /account/ — confirmations (per the supplied screenshot)
+- Edit personal / business → inline "Saved ✓" + toast
+- Edit 90-day goal → "Goal updated ✓" toast
+- Toggle email preference → flips instantly + "Updated ✓" toast; Beehiiv sync
+  is fire-and-forget (non-blocking, doesn't revert on failure)
+- Upgrade (Builder→Operator) → optimistic: pill flips to Operator immediately +
+  banner "You're now on Operator — weekly digest and pricing audit unlocked."
+- Downgrade (Operator→Builder) → banner "Your plan changes to Builder on [date].
+  You keep Operator access until then." + persistent scheduled-change notice
+- Lifetime upgrade → celebratory banner "You're a founding member — Operator
+  features, for life." Handles cap-full failure (HTTP 409) →
+  "All 50 founding-member spots are taken."
+- Cancel → "Your subscription ends [date]. Access continues until then." +
+  win-back ("Keep my subscription" → resume)
+- Delete → type-DELETE-to-proceed modal (button disabled until input === DELETE)
+  → on success a full-screen "Your account has been deleted." → signs out
+
+[date] values come from subscription.current_period_end (already loaded).
+
+### Backend dependencies (founder action)
+- n8n /gc-s6-plan must handle: upgrade, downgrade, lifetime (return 409 when
+  the 50-spot cap is reached), cancel, resume, delete
+- n8n /gc-s6-portal must create a Stripe billingPortal session and return
+  { url } (uses Stripe secret key — n8n only)
+
+### State after v29
+- Pages on disk: 91 (unchanged; /card/ now 301s to /dashboard/)
+- Sitemap URLs: 40 (unchanged)
+- 301 redirects: 7 (added /card/ → /dashboard/)
+- Edits: dashboard, processing.js, _redirects, account/index.html, account.js

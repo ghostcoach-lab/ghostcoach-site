@@ -1,6 +1,6 @@
 # GhostCoach Site Inventory & SEO Strategy Handover
 
-**Generated:** 2026-05-20 (v2 — adds functional pages section)
+**Generated:** 2026-05-22 (v2 — adds functional pages section)
 **For:** External SEO specialist — additional landing page strategy
 **Site:** https://getghostcoach.com
 **Current production state:** v14 + /how-it-works/ added to sitemap
@@ -11,11 +11,11 @@
 
 | Metric | Count |
 |---|---|
-| Total HTML pages on disk | 87 |
+| Total HTML pages on disk | 91 |
 | Pages in `sitemap.xml` (indexable) | 40 |
 | Orphan pages (on disk, not indexed) | 37 |
 | 301-redirected (consolidated duplicates) | 5 |
-| Functional pages excluded from sitemap | 5 |
+| Functional pages excluded from sitemap | 9 |
 
 **Cluster breakdown:**
 
@@ -26,7 +26,7 @@
 | /ai-business-coach/ | 8 | 8 | 0 | 0 |
 | /ai-self-coaching/ | 5 | 5 | 0 | 0 |
 | top-level content | 5 | 5 | — | — |
-| top-level functional | 6 | 1 | — | — |
+| top-level functional | 10 | 1 | — | — |
 
 
 ---
@@ -77,7 +77,7 @@ These are the 40 pages currently indexed in `sitemap.xml`. **Do NOT create new p
 
 | Path | Title | Desc len | Issues |
 |---|---|---|---|
-| `/` | GhostCoach — The Business System for Solo Product Builders | 134 | ok |
+| `/` | AI Business Coach for Solo SaaS Founders | 136 | ok |
 | `/about/` | About GhostCoach — Why We Built It | 130 | ok |
 | `/contact/` | Contact GhostCoach — Get in Touch | 74 | ok |
 | `/privacy/` | Privacy Policy — GhostCoach | 145 | ok |
@@ -89,7 +89,7 @@ These are the 40 pages currently indexed in `sitemap.xml`. **Do NOT create new p
 |---|---|---|---|---|
 | `/vibe/after-vibe-coding-what-next/` | What to Do After Vibe Coding — From App to Business | 51 | 149 | ok |
 | `/vibe/get-customers/` | How to Get Customers for Your Vibe-Coded App | 44 | 154 | ok |
-| `/vibe/` | GhostCoach — AI Business Coaching for Vibe Coders | 49 | 126 | ok |
+| `/vibe/` | AI Business Coach for Vibe Coders | 33 | 126 | ok |
 | `/vibe/make-money/` | How to Make Money From Your Vibe-Coded App | 42 | 153 | ok |
 | `/vibe/non-technical-founders/` | Vibe Coding for Non-Technical Founders — The Business Layer | 59 | 148 | ok |
 | `/vibe/saas/` | Vibe-Coded SaaS — From MVP to Real Business | 43 | 136 | ok |
@@ -210,6 +210,10 @@ These pages exist and are accessible at their URLs, but they're deliberately exc
 | `/login/` | Unknown | Unknown | Unknown |
 | `/dashboard/` | User profile + payment management | Auth-required — user-specific content | No |
 | `/onboarding/` | Unknown | Unknown | Unknown |
+| `/processing/` | Unknown | Unknown | Unknown |
+| `/card/` | Unknown | Unknown | Unknown |
+| `/activating/` | Unknown | Unknown | Unknown |
+| `/account/` | Unknown | Unknown | Unknown |
 | `/chat/` | The Marcus coaching session UI | Auth/transactional — not informational | No |
 
 
@@ -228,7 +232,7 @@ These URLs have been consolidated into canonical destinations. Any topic touchin
 | `/guides/how-to-monetize-vibe-coded-app/` | `/vibe/make-money/` | Pair 3 |
 | `/guides/vibe-coding-micro-saas-business-model/` | `/vibe/make-money/` | Pair 5 |
 | `/guides/ai-coach-vs-human-coach/` | `/ai-business-coach/vs-human-coach/` | Pair B |
-| `/guides/ai-business-coach/pricing/` | `/ai-business-coach/pricing/` | Malformed-URL recovery |
+| `/guides/ai-business-coach/pricing/` | `/ai-business-coach/pricing/` | Malformed |
 
 
 ---

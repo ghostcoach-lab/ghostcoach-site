@@ -31,3 +31,6 @@
 
 # Confusion between /guides/ and /ai-business-coach/ cluster paths
 /guides/ai-business-coach/pricing/               /ai-business-coach/pricing/             301!
+
+# v29 — single card entry: /card/ retired in favour of /dashboard/
+/card/    /dashboard/    301!

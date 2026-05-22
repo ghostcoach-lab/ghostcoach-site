@@ -74,15 +74,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 .trial-note strong{color:#C8861E;}
 
 /* Card brand logos */
-.card-logos{display:flex;gap:8px;align-items:center;margin-bottom:16px;}
-.card-logo{flex-shrink:0;border-radius:4px;border:0.5px solid rgba(15,17,23,0.1);overflow:hidden;}
-.logo-label{font-size:11px;color:#8B8A98;margin-left:4px;}
 
 /* Stripe note below card logos */
 .stripe-note{font-size:11px;color:#8B8A98;display:flex;align-items:center;gap:5px;margin-bottom:16px;}
 
-.card-num-wrap{position:relative;}
-.card-type-badge{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:10px;color:#8B8A98;font-weight:500;letter-spacing:.05em;}
 
 /* WHY BOX */
 .why-box{background:#F7F5F0;border-radius:10px;padding:14px 16px;border-left:2px solid rgba(200,134,30,0.35);margin-top:16px;}
@@ -105,8 +100,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
   .steps{max-width:100%;}
   .field-row{grid-template-columns:1fr;}
 }
+  /* Stripe Elements card field (v28) */
+  #gc-card-element{background:white;border:1px solid rgba(15,17,23,0.18);border-radius:10px;padding:13px 14px;transition:border-color .15s,box-shadow .15s;}
+  #gc-card-element.StripeElement--focus{border-color:#C8861E;box-shadow:0 0 0 3px rgba(200,134,30,0.12);}
+  #gc-card-element.StripeElement--invalid{border-color:#E55353;}
+  #gc-card-error{color:#E55353;font-size:12px;margin-top:6px;display:none;}
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://js.stripe.com/v3/"></script>
 </head>
 <body>
 
@@ -192,6 +193,10 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
             <span class="plan-opt-name">Operator</span>
             <span class="plan-opt-price">$149 / month</span>
           </div>
+          <div class="plan-opt" id="opt-lifetime" onclick="selectPlan('lifetime')">
+            <span class="plan-opt-name">Lifetime</span>
+            <span class="plan-opt-price">$499 once</span>
+          </div>
         </div>
       </div>
     </div>
@@ -205,69 +210,14 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
       </div>
 
       <!-- Card brand logos -->
-      <div class="card-logos">
-        <!-- Visa -->
-        <svg class="card-logo" width="44" height="29" viewBox="0 0 44 29">
-          <rect width="44" height="29" fill="#1434CB"/>
-          <text x="22" y="20" font-family="Arial,sans-serif" font-size="13" font-weight="800" fill="#fff" text-anchor="middle" letter-spacing="-0.5">VISA</text>
-        </svg>
-        <!-- Mastercard -->
-        <svg class="card-logo" width="44" height="29" viewBox="0 0 44 29">
-          <rect width="44" height="29" fill="#fff"/>
-          <circle cx="17" cy="14.5" r="9.5" fill="#EB001B"/>
-          <circle cx="27" cy="14.5" r="9.5" fill="#F79E1B"/>
-          <path d="M22 7.2a9.5 9.5 0 010 14.6A9.5 9.5 0 0122 7.2z" fill="#FF5F00"/>
-        </svg>
-        <!-- American Express -->
-        <svg class="card-logo" width="44" height="29" viewBox="0 0 44 29">
-          <rect width="44" height="29" fill="#2E77BC"/>
-          <text x="22" y="13" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="#fff" text-anchor="middle">AMERICAN</text>
-          <text x="22" y="22" font-family="Arial,sans-serif" font-size="7.5" font-weight="700" fill="#fff" text-anchor="middle" letter-spacing="0.3">EXPRESS</text>
-        </svg>
-        <!-- UnionPay -->
-        <svg class="card-logo" width="44" height="29" viewBox="0 0 44 29">
-          <rect width="44" height="29" fill="#fff"/>
-          <rect x="0" y="0" width="16" height="29" fill="#E21836" rx="3"/>
-          <rect width="44" height="29" fill="none" rx="3"/>
-          <rect x="14" y="0" width="16" height="29" fill="#E21836"/>
-          <rect x="14" y="0" width="16" height="29" fill="#fff"/>
-          <rect x="28" y="0" width="16" height="29" fill="#00539B" rx="3"/>
-          <circle cx="22" cy="14.5" r="6" fill="#E21836"/>
-          <text x="22" y="17.5" font-family="Arial,sans-serif" font-size="5.5" font-weight="700" fill="#fff" text-anchor="middle">UP</text>
-        </svg>
-        <span class="logo-label">via Stripe</span>
-      </div>
 
-      <!-- Card number -->
+      <!-- Card details (Stripe Elements — v28) -->
       <div class="field">
-        <label>Card number <span class="req">*</span></label>
-        <div class="card-num-wrap">
-          <input class="mono" type="text" id="card-num" placeholder="1234  5678  9012  3456" maxlength="19" oninput="fmtCard(this)" autocomplete="cc-number">
-          <span class="card-type-badge" id="card-type-badge"></span>
-        </div>
-        <div class="field-err" id="card-num-err">Please enter a valid card number</div>
+        <label>Card details <span class="req">*</span></label>
+        <div id="gc-card-element"></div>
+        <div id="gc-card-error" role="alert"></div>
       </div>
 
-      <!-- Expiry + CVV -->
-      <div class="field-row">
-        <div class="field">
-          <label>Expiry date <span class="req">*</span></label>
-          <input class="mono" type="text" id="card-exp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)" autocomplete="cc-exp">
-          <div class="field-err" id="exp-err">Invalid expiration date</div>
-        </div>
-        <div class="field">
-          <label>CVV <span class="req">*</span></label>
-          <input class="mono" type="text" id="card-cvv" placeholder="123" maxlength="4" oninput="validateAll()" autocomplete="cc-csc">
-          <div class="field-err" id="cvv-err">Invalid CVV code</div>
-        </div>
-      </div>
-
-      <!-- Name on card -->
-      <div class="field">
-        <label>Name on card <span class="req">*</span></label>
-        <input type="text" id="card-name" placeholder="Lars Bakker" autocomplete="cc-name" oninput="validateAll()">
-        <div class="field-err" id="card-name-err">Please enter the name on your card</div>
-      </div>
 
       <!-- Why we ask -->
       <div class="why-box">
@@ -301,10 +251,6 @@ if(saved.firstname){
 if(saved.email) document.getElementById('p-email').value = saved.email;
 if(saved.plan) currentPlan = saved.plan;
 selectPlan(currentPlan);
-if(currentPlan === 'lifetime'){
-  // Lifetime shows Operator features, locked (no switcher)
-  document.querySelector('.plan-row').innerHTML = '<div class="plan-opt sel" style="opacity:1;"><span class="plan-opt-name">Lifetime — Operator</span><span class="plan-opt-price">$499 one-time · no renewal</span></div>';
-}
 
 // ── Avatar initials ───────────────────────────────────────────
 function updateAvatar(){
@@ -318,83 +264,68 @@ function updateAvatar(){
 
 // ── Plan switcher ─────────────────────────────────────────────
 function selectPlan(plan){
-  if(plan === 'lifetime') plan = 'operator'; // Lifetime = Operator features
   currentPlan = plan;
   document.getElementById('opt-builder').classList.toggle('sel', plan === 'builder');
   document.getElementById('opt-operator').classList.toggle('sel', plan === 'operator');
-  const price = plan === 'operator' ? '$149/month' : '$79/month';
-  document.getElementById('profile-plan-label').textContent =
-    (plan === 'operator' ? 'Operator' : 'Builder') + ' plan · 14-day trial';
+  const lifeEl = document.getElementById('opt-lifetime');
+  if(lifeEl) lifeEl.classList.toggle('sel', plan === 'lifetime');
+
+  // Lifetime is a one-time payment — no trial. Hide the trial note + relabel CTA.
+  const trialNote = document.querySelector('.trial-note');
+  if(trialNote) trialNote.style.display = (plan === 'lifetime') ? 'none' : '';
+  const cta = document.getElementById('cta-btn');
+  if(cta) cta.textContent = (plan === 'lifetime') ? 'Get lifetime access →' : 'Start my 14-day trial →';
+
+  let label;
+  if(plan === 'lifetime') label = 'Lifetime · Operator features for life';
+  else if(plan === 'operator') label = 'Operator plan · 14-day trial';
+  else label = 'Builder plan · 14-day trial';
+  document.getElementById('profile-plan-label').textContent = label;
 }
 
-// ── Card formatting ───────────────────────────────────────────
-function fmtCard(el){
-  let v = el.value.replace(/\D/g, '').substring(0, 16);
-  el.value = v.match(/.{1,4}/g)?.join('  ') || v;
-  detectCardType(v);
-  validateAll();
-}
+// ── Stripe Elements (v28) ─────────────────────────────────────
+const stripe = Stripe(GC.STRIPE_KEY);
+const elements = stripe.elements();
+const cardElement = elements.create('card', {
+  style: {
+    base: {
+      fontFamily: '"DM Sans", sans-serif',
+      fontSize: '15px',
+      color: '#0F1117',
+      '::placeholder': { color: '#8B8A98' }
+    },
+    invalid: { color: '#E55353' }
+  }
+});
+cardElement.mount('#gc-card-element');
 
-function detectCardType(num){
-  const badge = document.getElementById('card-type-badge');
-  if(/^4/.test(num)) badge.textContent = 'VISA';
-  else if(/^5[1-5]|^2[2-7]/.test(num)) badge.textContent = 'MC';
-  else if(/^3[47]/.test(num)) badge.textContent = 'AMEX';
-  else if(/^62/.test(num)) badge.textContent = 'UP';
-  else badge.textContent = '';
-}
-
-function fmtExp(el){
-  let v = el.value.replace(/\D/g, '').substring(0, 4);
-  if(v.length >= 2) v = v.substring(0, 2) + ' / ' + v.substring(2);
-  el.value = v;
-  validateAll();
-}
+let cardComplete = false;
+const cardErrEl = document.getElementById('gc-card-error');
+cardElement.on('change', (event) => {
+  cardComplete = !!event.complete;
+  if (event.error) {
+    cardErrEl.textContent = event.error.message;
+    cardErrEl.style.display = 'block';
+  } else {
+    cardErrEl.style.display = 'none';
+  }
+  validateCard();
+});
 
 // ── Validation ────────────────────────────────────────────────
-function showFieldErr(id, msg, show){
-  document.getElementById(id).style.display = show ? 'block' : 'none';
-  if(msg) document.getElementById(id).textContent = msg;
-}
-
-function validateAll(){
-  const num = document.getElementById('card-num').value.replace(/\s/g, '');
-  const exp = document.getElementById('card-exp').value.replace(/\s/g, '').replace('/', '');
-  const cvv = document.getElementById('card-cvv').value;
-  const name = document.getElementById('card-name').value.trim();
-
-  let numOk = num.length === 16;
-  let expOk = false;
-  let cvvOk = false;
-  let nameOk = name.length > 0;
-
-  if(exp.length === 4){
-    const mm = parseInt(exp.substring(0, 2));
-    const yy = parseInt(exp.substring(2, 4));
-    const now = new Date();
-    const curYY = now.getFullYear() % 100;
-    const curMM = now.getMonth() + 1;
-    expOk = mm >= 1 && mm <= 12 && (yy > curYY || (yy === curYY && mm >= curMM));
-    showFieldErr('exp-err', 'Invalid expiration date', exp.length === 4 && !expOk);
-  } else {
-    showFieldErr('exp-err', null, false);
-  }
-
-  if(cvv.length >= 3){
-    cvvOk = /^\d{3,4}$/.test(cvv);
-    showFieldErr('cvv-err', 'Invalid CVV code', !cvvOk);
-  } else {
-    showFieldErr('cvv-err', null, false);
-  }
-
-  const allOk = numOk && expOk && cvvOk && nameOk;
+function validateCard(){
   const btn = document.getElementById('cta-btn');
-  btn.disabled = !allOk;
+  btn.disabled = !cardComplete;
 }
 
-// ── Start trial ───────────────────────────────────────────────
-function handleStart(){
-  // Save profile to sessionStorage for onboarding
+// ── Start trial (v28: Stripe createPaymentMethod → n8n S5) ─────
+async function handleStart(){
+  const btn = document.getElementById('cta-btn');
+  const originalText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Processing…';
+
+  // Save profile fields for onboarding continuity
   const profile = {
     firstname: document.getElementById('p-firstname').value.trim(),
     lastname: document.getElementById('p-lastname').value.trim(),
@@ -405,13 +336,56 @@ function handleStart(){
   };
   sessionStorage.setItem('gc_profile', JSON.stringify(profile));
 
-  // In production:
-  // 1. Tokenise card via Stripe.js (createPaymentMethod)
-  // 2. POST token + profile to your backend / Memberstack
-  // 3. Backend creates subscription with 14-day trial
-  // 4. On success → redirect to onboarding
+  // Resolve the authenticated user (if signed in)
+  let userId = null, email = profile.email;
+  try {
+    const session = await GCAuth.getSession();
+    if (session) { userId = session.user.id; email = session.user.email || email; }
+  } catch (e) { /* not signed in — n8n S5 can match by email */ }
 
-  window.location.href = '/chat/';
+  // Pick the Stripe price for the selected plan
+  const priceId = currentPlan === 'operator'
+    ? GC.STRIPE_PRICE_OPERATOR
+    : (currentPlan === 'lifetime' ? (GC.STRIPE_PRICE_LIFETIME || null) : GC.STRIPE_PRICE_BUILDER);
+
+  try {
+    // 1. Tokenise card via Stripe.js — card data never touches our code
+    const { paymentMethod, error } = await stripe.createPaymentMethod({
+      type: 'card',
+      card: cardElement,
+      billing_details: { email }
+    });
+    if (error) {
+      cardErrEl.textContent = error.message;
+      cardErrEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return;
+    }
+
+    // 2. POST to n8n S5 to create the subscription
+    const res = await fetch(`${GC.N8N_BASE}/gc-s5-subscribe`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-gc-secret': GC.WEBHOOK_SECRET },
+      body: JSON.stringify({
+        user_id: userId,
+        email: email,
+        payment_method_id: paymentMethod.id,
+        plan: currentPlan,
+        stripe_price_id: priceId
+      })
+    });
+    if (!res.ok) throw new Error('Could not start. Please try again or contact support.');
+
+    // 3. Redirect to the activation wait page (polls users.status → /chat/)
+    window.location.href = '/activating/';
+
+  } catch (err) {
+    cardErrEl.textContent = err.message || 'Something went wrong. Please try again.';
+    cardErrEl.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
 }
 </script>
 <footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">

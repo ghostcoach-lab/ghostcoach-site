@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Your account | GhostCoach</title>
+<meta name="description" content="Manage your GhostCoach profile, business details, 90-day goal, session history, plan, and email preferences.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://getghostcoach.com/account/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink:#0F1117; --ink-soft:#1A1D27; --amber:#C8861E; --amber-lt:#E8A832;
+    --cream:#F7F5F0; --teal:#0B7A60; --muted:#8B8A98;
+  }
+  * { box-sizing:border-box; }
+  html, body { margin:0; padding:0; }
+  body { font-family:'DM Sans',sans-serif; background:var(--cream); color:var(--ink); line-height:1.7; -webkit-font-smoothing:antialiased; }
+
+  main { max-width:760px; margin:0 auto; padding:96px 24px 80px; }
+
+  .acct-h1 {
+    font-family:'Playfair Display',serif;
+    font-size:36px; font-weight:500; line-height:1.15;
+    margin:0 0 8px 0;
+  }
+  .acct-h1 em { font-style:italic; color:var(--amber); }
+  .acct-intro { font-size:15px; color:rgba(15,17,23,0.6); margin:0 0 40px 0; }
+
+  .acct-section {
+    background:white;
+    border:0.5px solid rgba(15,17,23,0.08);
+    border-radius:14px;
+    padding:32px;
+    margin-bottom:24px;
+    box-shadow:0 1px 3px rgba(15,17,23,0.04);
+  }
+  .acct-section h2 {
+    font-family:'Playfair Display',serif;
+    font-size:22px; font-weight:500;
+    margin:0 0 6px 0;
+  }
+  .acct-section .section-hint {
+    font-size:13px; color:rgba(15,17,23,0.5);
+    margin:0 0 24px 0;
+  }
+
+  .field { margin-bottom:18px; }
+  .field-row { display:flex; gap:16px; }
+  .field-row .field { flex:1; }
+  .field label {
+    display:block; font-size:12px; font-weight:500;
+    color:rgba(15,17,23,0.7); margin-bottom:6px;
+    text-transform:uppercase; letter-spacing:0.5px;
+  }
+  .field input, .field select, .field textarea {
+    width:100%; font-family:'DM Sans',sans-serif; font-size:15px;
+    color:var(--ink); background:white;
+    border:1px solid rgba(15,17,23,0.18); border-radius:10px;
+    padding:11px 14px; transition:border-color .15s, box-shadow .15s;
+  }
+  .field textarea { resize:vertical; min-height:80px; line-height:1.6; }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline:none; border-color:var(--amber);
+    box-shadow:0 0 0 3px rgba(200,134,30,0.12);
+  }
+  .field input[readonly] {
+    background:rgba(15,17,23,0.03); color:rgba(15,17,23,0.55); cursor:not-allowed;
+  }
+  .field-note { font-size:12px; color:rgba(15,17,23,0.5); margin-top:6px; }
+  .field-note a { color:var(--amber); text-decoration:none; border-bottom:1px solid rgba(200,134,30,0.4); }
+
+  .btn {
+    font-family:'DM Sans',sans-serif; font-size:14px; font-weight:600;
+    border:none; border-radius:999px; padding:11px 22px;
+    cursor:pointer; transition:background .15s, opacity .15s;
+  }
+  .btn-primary { background:var(--amber); color:white; }
+  .btn-primary:hover:not(:disabled) { background:#B5781A; }
+  .btn-primary:disabled { background:rgba(15,17,23,0.2); cursor:not-allowed; }
+  .btn-ghost { background:transparent; color:var(--ink); border:1px solid rgba(15,17,23,0.2); }
+  .btn-ghost:hover { border-color:var(--ink); }
+  .btn-danger { background:transparent; color:#C0392B; border:1px solid rgba(192,57,43,0.4); }
+  .btn-danger:hover { background:rgba(192,57,43,0.06); }
+
+  .save-row { display:flex; align-items:center; gap:14px; margin-top:8px; }
+  .save-msg { font-size:13px; color:var(--teal); opacity:0; transition:opacity .2s; }
+  .save-msg.show { opacity:1; }
+
+  /* 90-day goal progress bar */
+  .goal-progress-wrap { margin:18px 0; }
+  .goal-progress-label { display:flex; justify-content:space-between; font-size:13px; color:rgba(15,17,23,0.6); margin-bottom:8px; }
+  .goal-progress-track { height:10px; background:rgba(15,17,23,0.08); border-radius:999px; overflow:hidden; }
+  .goal-progress-fill { height:100%; background:var(--amber); border-radius:999px; transition:width .3s ease; }
+
+  /* Session history */
+  .chart-wrap { margin:0 0 28px 0; }
+  .session-list { display:flex; flex-direction:column; gap:14px; }
+  .session-item {
+    border:0.5px solid rgba(15,17,23,0.1); border-radius:10px;
+    padding:16px 18px;
+  }
+  .session-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .session-num { font-size:13px; font-weight:600; color:var(--ink); }
+  .session-date { font-size:12px; color:rgba(15,17,23,0.5); }
+  .session-summary { font-size:14px; color:rgba(15,17,23,0.75); line-height:1.6; margin:0 0 8px 0; white-space:pre-line; }
+  .session-action { font-size:13px; color:var(--ink); }
+  .session-action strong { color:var(--amber); }
+  .session-score { display:inline-block; font-size:12px; color:var(--teal); margin-top:6px; }
+  .empty-state { font-size:14px; color:rgba(15,17,23,0.5); text-align:center; padding:24px; }
+
+  /* Plan & billing */
+  .plan-current { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
+  .plan-pill { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--amber); background:rgba(200,134,30,0.08); padding:5px 12px; border-radius:999px; }
+  .plan-status { font-size:13px; color:rgba(15,17,23,0.55); }
+  .billing-actions { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; }
+  .payment-method { font-size:13px; color:rgba(15,17,23,0.6); padding-top:16px; border-top:1px solid rgba(15,17,23,0.06); }
+
+  /* Email prefs toggle */
+  .pref-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(15,17,23,0.06); }
+  .pref-row:last-child { border-bottom:none; }
+  .pref-label { font-size:14px; color:var(--ink); }
+  .pref-sub { font-size:12px; color:rgba(15,17,23,0.5); margin-top:2px; }
+  .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
+  .toggle input { opacity:0; width:0; height:0; }
+  .toggle-slider { position:absolute; cursor:pointer; inset:0; background:rgba(15,17,23,0.2); border-radius:999px; transition:.2s; }
+  .toggle-slider:before { content:""; position:absolute; height:18px; width:18px; left:3px; top:3px; background:white; border-radius:50%; transition:.2s; }
+  .toggle input:checked + .toggle-slider { background:var(--teal); }
+  .toggle input:checked + .toggle-slider:before { transform:translateX(20px); }
+  .toggle input:disabled + .toggle-slider { opacity:0.5; cursor:not-allowed; }
+
+  /* Danger zone */
+  .acct-section.danger { border-color:rgba(192,57,43,0.25); }
+  .acct-section.danger h2 { color:#C0392B; }
+
+  @media (max-width:680px) {
+    main { padding:80px 16px 60px; }
+    .acct-h1 { font-size:28px; }
+    .acct-section { padding:24px 20px; }
+    .field-row { flex-direction:column; gap:0; }
+  }
+
+  /* v29 — billing confirmations */
+  .billing-banner { padding:14px 16px; border-radius:10px; font-size:14px; line-height:1.5; margin-bottom:18px; }
+  .billing-banner.success { background:rgba(11,122,96,0.08); border-left:3px solid var(--teal); color:#0B7A60; }
+  .billing-banner.celebrate { background:rgba(200,134,30,0.10); border-left:3px solid var(--amber); color:#8a5c12; font-family:'Playfair Display',serif; font-size:17px; font-style:italic; }
+  .billing-banner.error { background:rgba(192,57,43,0.06); border-left:3px solid #C0392B; color:#C0392B; }
+  .scheduled-notice { padding:12px 14px; border-radius:10px; background:rgba(15,17,23,0.04); border:1px dashed rgba(15,17,23,0.22); font-size:13px; color:rgba(15,17,23,0.7); margin-bottom:18px; }
+  .winback { margin-top:16px; padding:14px 16px; border-radius:10px; background:rgba(200,134,30,0.05); border:0.5px solid rgba(200,134,30,0.2); font-size:13px; color:rgba(15,17,23,0.72); line-height:1.55; }
+  .winback button { margin-top:10px; }
+  /* Delete modal */
+  .delete-modal { position:fixed; inset:0; background:rgba(15,17,23,0.55); display:flex; align-items:center; justify-content:center; z-index:200; padding:24px; }
+  .delete-modal-box { background:white; border-radius:14px; padding:32px; max-width:440px; width:100%; box-shadow:0 8px 40px rgba(15,17,23,0.2); }
+  .delete-modal-box h3 { font-family:'Playfair Display',serif; font-size:22px; color:#C0392B; margin:0 0 12px 0; }
+  .delete-modal-box p { font-size:14px; color:rgba(15,17,23,0.7); line-height:1.6; margin:0 0 20px 0; }
+  .delete-modal-box label { display:block; font-size:13px; color:rgba(15,17,23,0.7); margin-bottom:8px; }
+  .delete-modal-box input { width:100%; font-family:'DM Sans',sans-serif; font-size:15px; border:1px solid rgba(15,17,23,0.2); border-radius:10px; padding:11px 14px; margin-bottom:20px; letter-spacing:0.1em; }
+  .delete-modal-box input:focus { outline:none; border-color:#C0392B; box-shadow:0 0 0 3px rgba(192,57,43,0.1); }
+  .delete-modal-actions { display:flex; gap:12px; justify-content:flex-end; }
+  /* Account-deleted overlay */
+  .deleted-overlay { position:fixed; inset:0; background:var(--cream); display:flex; align-items:center; justify-content:center; z-index:300; text-align:center; padding:24px; }
+  .deleted-overlay h2 { font-family:'Playfair Display',serif; font-size:28px; font-weight:500; color:var(--ink); }
+</style>
+</head>
+<body>
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
+    <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
+    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+  </a>
+  <div style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
+    <a href="/chat/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;font-family:'DM Sans',sans-serif;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.6)'">← Back to sessions</a>
+    <a href="#" id="gc-logout" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;">Log out</a>
+  </div>
+</nav>
+
+<main>
+  <h1 class="acct-h1">Your <em>account</em></h1>
+  <p class="acct-intro">Manage your profile, goal, sessions, plan, and preferences.</p>
+
+  <!-- 1. PERSONAL INFO -->
+  <section class="acct-section">
+    <h2>Personal info</h2>
+    <p class="section-hint">Your name and contact details.</p>
+    <form id="gc-personal-form">
+      <div class="field-row">
+        <div class="field">
+          <label for="ac-firstname">First name</label>
+          <input type="text" id="ac-firstname" autocomplete="given-name">
+        </div>
+        <div class="field">
+          <label for="ac-lastname">Last name</label>
+          <input type="text" id="ac-lastname" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label for="ac-phone">Phone</label>
+          <input type="tel" id="ac-phone" autocomplete="tel">
+        </div>
+        <div class="field">
+          <label for="ac-country">Country</label>
+          <select id="ac-country"><option value="">Select…</option><option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahamas</option><option>Bahrain</option><option>Bangladesh</option><option>Belarus</option><option>Belgium</option><option>Belize</option><option>Bolivia</option><option>Bosnia</option><option>Botswana</option><option>Brazil</option><option>Bulgaria</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option><option>Costa Rica</option><option>Croatia</option><option>Cyprus</option><option>Czech Republic</option><option>Denmark</option><option>Ecuador</option><option>Egypt</option><option>Estonia</option><option>Ethiopia</option><option>Finland</option><option>France</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Guatemala</option><option>Hungary</option><option>Iceland</option><option>India</option><option>Indonesia</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kenya</option><option>Latvia</option><option>Lebanon</option><option>Lithuania</option><option>Luxembourg</option><option>Malaysia</option><option>Malta</option><option>Mexico</option><option>Moldova</option><option>Morocco</option><option>Netherlands</option><option>New Zealand</option><option>Nigeria</option><option>Norway</option><option>Pakistan</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option><option>Singapore</option><option>Slovakia</option><option>Slovenia</option><option>South Africa</option><option>South Korea</option><option>Spain</option><option>Sri Lanka</option><option>Sweden</option><option>Switzerland</option><option>Tanzania</option><option>Thailand</option><option>Tunisia</option><option>Turkey</option><option>Uganda</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option><option>Uzbekistan</option><option>Venezuela</option><option>Vietnam</option><option>Zimbabwe</option></select>
+        </div>
+      </div>
+      <div class="field">
+        <label for="ac-email">Email</label>
+        <input type="email" id="ac-email" readonly>
+        <p class="field-note">Need to change your email? <a href="/contact/">Contact support.</a></p>
+      </div>
+      <div class="save-row">
+        <button type="submit" class="btn btn-primary" id="gc-personal-save">Save changes</button>
+        <span class="save-msg" id="gc-personal-msg">Saved ✓</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- 2. BUSINESS PROFILE -->
+  <section class="acct-section">
+    <h2>Business profile</h2>
+    <p class="section-hint">Marcus uses these in every session. Keep them current as your business evolves.</p>
+    <form id="gc-business-form">
+      <div class="field">
+        <label for="ac-product">What are you building?</label>
+        <input type="text" id="ac-product" placeholder="e.g. a scheduling tool for barbers">
+      </div>
+      <div class="field">
+        <label for="ac-stage">Stage</label>
+        <select id="ac-stage">
+          <option value="">Select…</option>
+          <option value="pre-launch">Pre-launch</option>
+          <option value="just-launched">Just launched</option>
+          <option value="growing">Growing</option>
+          <option value="scaling">Scaling</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="ac-business-model">Business model</label>
+        <input type="text" id="ac-business-model" placeholder="e.g. monthly SaaS subscription">
+      </div>
+      <div class="field">
+        <label for="ac-tools">Tools you use</label>
+        <input type="text" id="ac-tools" placeholder="e.g. Stripe, Supabase, Vercel">
+      </div>
+      <div class="field">
+        <label for="ac-bottleneck">Biggest bottleneck right now</label>
+        <textarea id="ac-bottleneck" placeholder="What's the thing most holding you back?"></textarea>
+      </div>
+      <div class="field">
+        <label for="ac-tried">What you've already tried</label>
+        <textarea id="ac-tried" placeholder="Approaches you've attempted so Marcus doesn't repeat them"></textarea>
+      </div>
+      <div class="field">
+        <label for="ac-replaces">What this replaces for customers</label>
+        <input type="text" id="ac-replaces" placeholder="e.g. spreadsheets, a manual process">
+      </div>
+      <div class="field">
+        <label for="ac-additional">Anything else Marcus should know</label>
+        <textarea id="ac-additional" placeholder="Optional context"></textarea>
+      </div>
+      <div class="save-row">
+        <button type="submit" class="btn btn-primary" id="gc-business-save">Save changes</button>
+        <span class="save-msg" id="gc-business-msg">Saved ✓</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- 3. 90-DAY GOAL -->
+  <section class="acct-section">
+    <h2>90-day goal</h2>
+    <p class="section-hint">The single outcome you're driving toward this quarter.</p>
+    <form id="gc-goal-form">
+      <div class="field">
+        <label for="ac-goal">Current goal</label>
+        <textarea id="ac-goal" placeholder="e.g. reach $2k MRR by end of quarter"></textarea>
+      </div>
+      <div class="goal-progress-wrap">
+        <div class="goal-progress-label">
+          <span>Progress</span>
+          <span id="ac-goal-pct">0%</span>
+        </div>
+        <div class="goal-progress-track">
+          <div class="goal-progress-fill" id="ac-goal-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div class="save-row">
+        <button type="submit" class="btn btn-primary" id="gc-goal-save">Save goal</button>
+        <button type="button" class="btn btn-ghost" id="gc-goal-reset">Reset goal</button>
+        <span class="save-msg" id="gc-goal-msg">Goal updated ✓</span>
+      </div>
+    </form>
+  </section>
+
+  <!-- 4. SESSION HISTORY -->
+  <section class="acct-section">
+    <h2>Session history</h2>
+    <p class="section-hint">Your coaching sessions and how your goal progress has moved over time.</p>
+    <div class="chart-wrap" id="gc-chart-wrap"></div>
+    <div class="session-list" id="gc-session-list">
+      <div class="empty-state">Loading your sessions…</div>
+    </div>
+  </section>
+
+  <!-- 5. PLAN & BILLING -->
+  <section class="acct-section">
+    <h2>Plan &amp; billing</h2>
+    <p class="section-hint">Your current plan and payment details.</p>
+    <div id="gc-billing-banner" class="billing-banner" style="display:none;"></div>
+    <div id="gc-scheduled-notice" class="scheduled-notice" style="display:none;"></div>
+
+    <div class="plan-current">
+      <span class="plan-pill" id="gc-plan-pill">Builder</span>
+      <span class="plan-status" id="gc-plan-status">14-day trial</span>
+    </div>
+    <div class="billing-actions" id="gc-billing-actions">
+      <button type="button" class="btn btn-primary" id="gc-upgrade" data-action="upgrade">Upgrade to Operator</button>
+      <button type="button" class="btn btn-ghost" id="gc-lifetime" data-action="lifetime">Get Lifetime access</button>
+      <button type="button" class="btn btn-ghost" id="gc-downgrade" data-action="downgrade">Downgrade to Builder</button>
+      <button type="button" class="btn btn-ghost" id="gc-cancel" data-action="cancel">Cancel subscription</button>
+    </div>
+    <div class="billing-actions" style="margin-top:2px;">
+      <button type="button" class="btn btn-ghost" id="gc-manage-billing">Manage billing &amp; invoices</button>
+    </div>
+    <div id="gc-winback" class="winback" style="display:none;"></div>
+    <div class="payment-method" id="gc-payment-method">Payment method: <span id="gc-card-last4">—</span></div>
+  </section>
+
+  <!-- 6. EMAIL PREFERENCES -->
+  <section class="acct-section">
+    <h2>Email preferences</h2>
+    <p class="section-hint">Choose what we send you.</p>
+    <div class="pref-row">
+      <div>
+        <div class="pref-label">Newsletter</div>
+        <div class="pref-sub">Weekly insights for solo product builders.</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="gc-newsletter-toggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <div class="pref-row">
+      <div>
+        <div class="pref-label">Transactional emails</div>
+        <div class="pref-sub">Session recaps, billing, account notices. Always on.</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" checked disabled>
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </section>
+
+  <!-- 7. DANGER ZONE -->
+  <section class="acct-section danger">
+    <h2>Danger zone</h2>
+    <p class="section-hint">Deleting your account cancels your subscription, removes your data, and unsubscribes you from all email. This cannot be undone.</p>
+    <button type="button" class="btn btn-danger" id="gc-delete-account">Delete my account</button>
+  </section>
+
+  <!-- Delete confirmation modal (type DELETE) -->
+  <div id="gc-delete-modal" class="delete-modal" style="display:none;">
+    <div class="delete-modal-box">
+      <h3>Delete your account?</h3>
+      <p>This cancels your subscription, removes your data, and unsubscribes you from all email. This cannot be undone.</p>
+      <label for="gc-delete-confirm">Type <strong>DELETE</strong> to proceed</label>
+      <input type="text" id="gc-delete-confirm" autocomplete="off" placeholder="DELETE">
+      <div class="delete-modal-actions">
+        <button type="button" class="btn btn-ghost" id="gc-delete-cancel">Cancel</button>
+        <button type="button" class="btn btn-danger" id="gc-delete-confirm-btn" disabled>Delete my account</button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
+  <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
+    <div>
+      <a href="https://getghostcoach.com/" style="text-decoration:none;display:inline-block;">
+        <div style="display:flex;align-items:baseline;">
+          <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#F7F5F0;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:#E8A832;">Coach</span>
+        </div>
+      </a>
+      <div style="font-size:12px;color:rgba(247,245,240,0.4);margin-top:10px;line-height:1.6;max-width:210px;">AI business coaching for solopreneurs building digital products.</div>
+      <div style="margin-top:18px;display:flex;gap:14px;">
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">𝕏 Twitter</a>
+        <a href="#" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">in LinkedIn</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
+      <a href="https://getghostcoach.com/#faq" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">FAQ</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
+      <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
+      <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
+      </form>
+      <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+    </div>
+  </div>
+  <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
+    <div style="font-size:12px;color:rgba(247,245,240,0.4);">© 2025 GhostCoach. All rights reserved.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:rgba(247,245,240,0.45);">"The product is the easy part."</div>
+  </div>
+  <style>
+    @media(max-width:900px){.gc-footer-grid{grid-template-columns:1fr 1fr !important;gap:28px !important;}}
+    @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
+  </style>
+</footer>
+
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/webhooks.js"></script>
+  <script src="/js/pages/newsletter.js"></script>
+  <script src="/js/pages/account.js"></script>
+</body>
+</html>
