@@ -186,6 +186,24 @@
   // ── 4. Session history + chart ──────────────────────────────────────────────
   renderSessions(sessions);
 
+  // v30 — chat CTA continuity line (most recent session's commitment)
+  (function setChatContinuity() {
+    const cont = document.getElementById('gc-chat-continuity');
+    const sub  = document.getElementById('gc-chat-sub');
+    if (!cont) return;
+    if (sessions && sessions.length) {
+      const last = sessions[sessions.length - 1];
+      if (last && last.action_committed) {
+        cont.innerHTML = 'Last session, you committed to <em>' + esc(last.action_committed) + '</em>.';
+        if (sub) sub.textContent = 'Pick up where you left off — Marcus remembers.';
+        return;
+      }
+    }
+    // First-timer / no history: keep the default "ready when you are"
+    cont.textContent = 'Marcus is ready when you are.';
+    if (sub) sub.textContent = 'Your first session is set up from your onboarding answers.';
+  })();
+
   function renderSessions(rows) {
     const listEl  = document.getElementById('gc-session-list');
     const chartEl = document.getElementById('gc-chart-wrap');

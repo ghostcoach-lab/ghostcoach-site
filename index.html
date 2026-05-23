@@ -2904,5 +2904,31 @@ window.addEventListener('scroll',()=>{
   <script src="/js/auth.js"></script>
   <script src="/js/webhooks.js"></script>
   <script src="/js/pages/newsletter.js"></script>
+
+  <script>
+  // v30 — show "Chat with Marcus" in the nav only when logged in
+  (function () {
+    function injectChatLink() {
+      var login = document.querySelector('a[href="/login/"]');
+      if (!login || document.getElementById('gc-nav-chat')) return;
+      var chat = document.createElement('a');
+      chat.id = 'gc-nav-chat';
+      chat.href = '/chat/';
+      chat.textContent = 'Chat with Marcus →';
+      chat.className = login.className;
+      chat.setAttribute('style', login.getAttribute('style') || '');
+      login.parentNode.insertBefore(chat, login);
+      login.style.display = 'none'; // logged-in users don't need "Log in"
+    }
+    function check() {
+      try {
+        if (!window.GCAuth || !GCAuth.getSession) return;
+        GCAuth.getSession().then(function (s) { if (s) injectChatLink(); }).catch(function(){});
+      } catch (e) {}
+    }
+    if (document.readyState !== 'loading') check();
+    else document.addEventListener('DOMContentLoaded', check);
+  })();
+  </script>
 </body>
 </html>

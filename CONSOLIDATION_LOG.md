@@ -1,6 +1,6 @@
 # GhostCoach — Consolidation Log
 
-Last updated: 2026-05-22
+Last updated: 2026-05-23
 
 This file documents cross-cluster URL consolidation decisions.
 For redirect implementation, see `/_redirects`.
@@ -875,3 +875,69 @@ invoices, update card, and manage plan.
 - Sitemap URLs: 40 (unchanged)
 - 301 redirects: 7 (added /card/ → /dashboard/)
 - Edits: dashboard, processing.js, _redirects, account/index.html, account.js
+
+
+## v30 deploy (2026-05-23)
+
+The /chat/ rewrite — moves chat off Phase 1 onto the production architecture.
+
+### /chat/ rebuilt (48KB → ~13KB)
+Removed: the API-key modal (no more pasting sk-ant-... keys), the page's own
+onboarding wizard, the inline MARCUS_PROMPT, all Phase-1 inline JS, the direct
+api.anthropic.com calls, the redundant second nav, and the double back button.
+Preserved: the dark chat UI (bubbles, glow, slim nav, input, recap overlay).
+Rewired IDs to chat.js's contract: #gc-chat-messages, #gc-chat-input,
+#gc-send-btn, #gc-end-btn, #gc-session-status, #gc-goal-bar. Single nav action:
+"← Back" → /account/. Auth-gated via chat.js (GCAuth.requireAuth('/login/')).
+
+### marcus-chat Edge Function (NEW)
+supabase/functions/marcus-chat/index.ts. Holds the Anthropic key server-side
+(OUR key, not the user's). Verifies the caller's Supabase JWT, loads the
+profile + user_memory + last 2 session summaries (the curated-memory pattern),
+builds system = MARCUS_PROMPT (verbatim, unchanged) + that context, calls
+Anthropic (claude-sonnet-4-5), returns { reply }. Empty messages array →
+generates a context-aware opener (first-timer: from onboarding; regular: from
+history). CORS locked to getghostcoach.com.
+
+### chat.js context loading
+loadProfile() now pulls product/stage/business_model/bottleneck/tried/
+goal_90_day/goal_progress/user_memory. On init: shows "Marcus is loading your
+context…", creates the session row, then asks the Edge Function for a
+context-aware opener (callMarcus([], profile)) with a graceful hardcoded
+fallback if the function isn't deployed yet.
+
+### /account/ — Chat with Marcus
+Merged the uploaded design into the v29 account page WITHOUT losing the v29
+billing work: added the dark "Chat with Marcus" CTA hero at the top (continuity
+line wired by account.js — returning users see "Last session, you committed
+to …"; first-timers see "Marcus is ready when you are."), and relabelled the
+nav link to "Chat with Marcus →". All v29 confirmations / manage-billing /
+lifetime / delete modal remain intact.
+
+### Login-conditional nav (home, about, contact, how-it-works)
+Small script: if a Supabase session exists, a "Chat with Marcus →" link is
+injected into the nav and the "Log in" link is hidden. Logged-out visitors see
+"Log in" as before.
+
+### SQL — sessions.processing_status
+/sql/v30_sessions_processing_status.sql. chat.js inserts a session row with
+processing_status='pending'; n8n S3 flips it to 'done' after the recap + memory.
+
+### Backend dependencies (founder action)
+- Deploy the Edge Function:
+    supabase functions deploy marcus-chat --project-ref irmkcmcgfstdieujrrlg
+- Set the secret:
+    supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref irmkcmcgfstdieujrrlg
+  (SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY are auto-provided to Edge Functions)
+- Run /sql/v30_sessions_processing_status.sql (plus the still-pending v18, v22,
+  v25, v26, v27 migrations)
+- Until the function is deployed, /chat/ loads, authenticates, shows the UI,
+  then says "Marcus is unavailable right now." on send (expected interim state).
+
+### State after v30
+- Pages on disk: 91 (unchanged); + supabase/functions/marcus-chat/index.ts
+- SQL migrations pending: 6 (v18, v22, v25, v26, v27, v30)
+- /chat/ now fully integrated: auth → Supabase → Edge Function → our key
+- Funnel end to end:
+    /signup/ → confirm → /onboarding/ → /processing/ → /dashboard/ →
+    /activating/ → /chat/   (and /account/ ↔ /chat/ for returning users)

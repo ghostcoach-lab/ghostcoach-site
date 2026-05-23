@@ -32,7 +32,7 @@
   async function loadProfile() {
     const { data, error } = await gcSupabase
       .from('profiles')
-      .select('firstname, goal_90_day, goal_progress, stage')
+      .select('firstname, product, stage, business_model, bottleneck, tried, goal_90_day, goal_progress, user_memory')
       .eq('user_id', userId)
       .single();
     if (error) console.warn('Could not load profile:', error.message);
@@ -125,8 +125,18 @@
 
       await GCWebhook.endSession(sessionId, userId, transcriptText);
 
-      if (statusEl) statusEl.textContent = 'Session saved. Redirecting…';
-      setTimeout(() => { window.location.href = '/dashboard/'; }, 1500);
+      if (statusEl) statusEl.textContent = 'Session complete';
+
+      // Show the recap overlay (single CTA: Back to account).
+      // n8n S3 writes the summary + emails the recap server-side; the founder
+      // sees goal progress + history on /account/.
+      const overlay = document.getElementById('gc-recap-overlay');
+      if (overlay) {
+        overlay.classList.add('is-open');
+      } else {
+        // Fallback if the overlay markup isn't present
+        window.location.href = '/account/';
+      }
     } catch (err) {
       if (statusEl) statusEl.textContent = 'Could not save session. Your transcript is preserved.';
       endBtn.disabled = false;
@@ -157,12 +167,28 @@
 
   // ── Init ──────────────────────────────────────────────────────────────────────
   try {
+    // Show the loading-context state while we set up
+    if (statusEl) statusEl.textContent = 'Marcus is loading your context…';
+
     sessionId = await createSession();
     subscribeToGoalProgress();
 
     const profile = await loadProfile();
-    const name = profile.firstname ?? 'there';
-    appendMessage('assistant', `Hey ${name}. What's on your mind today?`);
+
+    // Ask the Edge Function for a context-aware opener (empty messages = opener).
+    // First-timers: opener reflects onboarding. Regulars: opener reflects history.
+    let opener;
+    try {
+      opener = await callMarcus([], profile);
+    } catch (e) {
+      const name = profile.firstname ?? 'there';
+      opener = `Hey ${name}. What's on your mind today?`;
+    }
+
+    // Clear the welcome/loading card, then show Marcus's opener
+    const welcome = document.getElementById('chat-welcome');
+    if (welcome) welcome.remove();
+    appendMessage('assistant', opener);
 
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', (e) => {
