@@ -128,7 +128,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
     <div class="step-line"></div>
     <div class="step-col">
       <div class="step-dot dot-idle">3</div>
-      <div class="step-label label-idle">Start trial</div>
+      <div class="step-label label-idle" id="step3-label">Start trial</div>
     </div>
   </div>
 
@@ -141,8 +141,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
         <span id="plan-label">Builder — $79/mo</span>
       </div>
 
-      <h1 class="left-headline">14 days free.<br><em>No charge until day 15.</em></h1>
-      <p class="left-sub">Start your trial today. If GhostCoach doesn't give you something specific to act on in the first session, cancel before day 15 and pay nothing.</p>
+      <h1 class="left-headline" id="left-headline">14 days free.<br><em>No charge until day 15.</em></h1>
+      <p class="left-sub" id="left-sub">Start your trial today. If GhostCoach doesn't give you something specific to act on in the first session, cancel before day 15 and pay nothing.</p>
 
       <div class="trial-card">
         <div class="trial-card-title" id="plan-title-label">What's in Builder</div>
@@ -170,13 +170,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
           <div class="ti-check"><svg viewBox="0 0 9 7" fill="none"><path d="M1 3.5L3.5 6L8 1" stroke="#F7F5F0" stroke-width="1.5" stroke-linecap="round"/></svg></div>
           <div class="ti-text">Pricing audit session included</div>
         </div>
-        <div class="trial-item">
+        <div class="trial-item" id="trial-no-charge">
           <div class="ti-cross"><div class="ti-cross-line"></div></div>
           <div class="ti-text" style="color:#8B8A98;">No charge until day 15</div>
         </div>
       </div>
 
-      <div class="price-note">After your 14-day trial, your card is charged <strong id="plan-price">$79/month</strong>. Cancel any time before day 15 and pay nothing.</div>
+      <div class="price-note" id="price-note">After your 14-day trial, your card is charged <strong id="plan-price">$79/month</strong>. Cancel any time before day 15 and pay nothing.</div>
     </div>
 
     <!-- RIGHT: sign up form -->
@@ -217,7 +217,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
         <div class="field-err" id="password-err">Password must be at least 8 characters</div>
       </div>
 
-      <button id="gc-submit-btn" type="submit" class="submit-btn" onclick="handleSubmit()">Create account →</button>
+      <button id="gc-submit-btn" type="submit" class="submit-btn">Create account →</button>
           <p id="gc-error" style="color:#E55353;font-size:13px;margin-top:8px;min-height:18px;text-align:center;"></p>
         </form>
 

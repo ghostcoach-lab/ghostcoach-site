@@ -5,13 +5,15 @@ const GCAuth = {
 
   // Sign up with email + password.
   // Supabase sends a confirmation email. User must click before they can log in.
-  async signUp(email, password) {
+  async signUp(email, password, plan) {
     const { data, error } = await gcSupabase.auth.signUp({
       email,
       password,
       options: {
         // Redirect here after clicking the confirmation link in the email
-        emailRedirectTo: window.location.origin + '/onboarding/'
+        emailRedirectTo: window.location.origin + '/onboarding/',
+        // Record the chosen plan on the account — read later by onboarding + n8n S1
+        data: { plan: plan || 'builder' }
       }
     });
     if (error) throw error;
