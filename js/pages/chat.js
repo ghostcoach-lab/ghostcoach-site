@@ -125,18 +125,14 @@
 
       await GCWebhook.endSession(sessionId, userId, transcriptText);
 
-      if (statusEl) statusEl.textContent = 'Session complete';
+      if (statusEl) statusEl.textContent = 'Session complete — taking you to your recap…';
 
-      // Show the recap overlay (single CTA: Back to account).
-      // n8n S3 writes the summary + emails the recap server-side; the founder
-      // sees goal progress + history on /account/.
-      const overlay = document.getElementById('gc-recap-overlay');
-      if (overlay) {
-        overlay.classList.add('is-open');
-      } else {
-        // Fallback if the overlay markup isn't present
-        window.location.href = '/account/';
-      }
+      // Hand the session id to the summary page, then go there.
+      // n8n S3 writes the 3-bullet summary + emails the recap server-side;
+      // /session-complete/ shows the summary (or a "check your inbox" fallback)
+      // and links on to /account/.
+      try { sessionStorage.setItem('gc_last_session', sessionId); } catch (e) {}
+      window.location.href = '/session-complete/';
     } catch (err) {
       if (statusEl) statusEl.textContent = 'Could not save session. Your transcript is preserved.';
       endBtn.disabled = false;
