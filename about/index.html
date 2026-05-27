@@ -91,6 +91,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 .admission-text{font-size:15px;color:rgba(247,245,240,0.75);line-height:1.75;}
 .admission-text strong{color:#F7F5F0;font-weight:500;}
 
+/* ── MEET MARCUS (dark voice-card; faint border to read on the dark section) ── */
+.marcus-voice{background:var(--ink);border:0.5px solid rgba(247,245,240,0.07);border-radius:14px;padding:32px 36px;margin-top:36px;}
+.marcus-voice-line{font-family:'Playfair Display',serif;font-style:italic;font-weight:400;font-size:24px;line-height:1.5;color:#F7F5F0;margin-bottom:14px;}
+.marcus-voice-line em{color:var(--amber-lt);font-style:italic;}
+.marcus-voice-attr{font-size:12px;color:rgba(247,245,240,0.4);letter-spacing:.04em;}
+@media(max-width:640px){.marcus-voice{padding:26px 24px;}.marcus-voice-line{font-size:20px;}}
+
 /* ── FOR / NOT FOR ── */
 .for-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:40px 0;}
 .for-card{border-radius:12px;padding:28px 28px;}
@@ -246,8 +253,8 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
 <!-- HERO -->
 <section class="about-hero">
   <div class="hero-eyebrow">About GhostCoach</div>
-  <h1 class="hero-h1">Building the product is the easy part. We built the <em>business layer</em>.</h1>
-  <p class="hero-sub">The tools that help you ship a SaaS in a weekend stop exactly where the hard part begins. GhostCoach is what comes next.</p>
+  <h1 class="hero-h1">Building the product is the easy part. We coach you through the <em>business layer</em>.</h1>
+  <p class="hero-sub">The tools that ship a SaaS in a weekend stop exactly where the hard part begins. GhostCoach coaches you through what comes next — pricing, positioning, getting customers, keeping them.</p>
 </section>
 
 <!-- THE PROBLEM -->
@@ -259,7 +266,21 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
     <p class="body-text">Cursor, Lovable, Bolt, Replit — they changed what's possible for a solo founder. A working product in a weekend is no longer unusual. A subscription product with a real database, a real UI, and real functionality. Shipped. Deployed. Live.</p>
     <p class="body-text">And then the product has four users. Two of them are the founder's test accounts. The other two churned in week one.</p>
     <p class="body-text">Because the vibe coding tools solved the build problem. They didn't touch the business problem: what to charge, who to sell to, how to explain what the product does, how to know if 8% monthly churn is a product failure or an onboarding failure.</p>
-    <p class="body-text"><strong>That gap is why GhostCoach exists.</strong> Not as another AI tool. As the business layer that should have come with the build tools.</p>
+    <p class="body-text"><strong>That gap is why GhostCoach exists.</strong> Not as another AI tool. As the coach for the business layer the build tools never gave you.</p>
+  </div>
+</section>
+
+<!-- MEET MARCUS -->
+<section class="section section-ink2">
+  <div class="section-inner">
+    <div class="section-label" style="color:var(--amber);">Meet Marcus</div>
+    <div class="amber-rule"></div>
+    <h2 class="section-h2 light">Not a chatbot. A coach with a <em>method.</em></h2>
+    <p class="body-text light">Marcus is the coaching intelligence inside GhostCoach — built on the same model as Claude, with the Ghost OS framework layered on top. The result isn't a personality to perform with. It's a way of working: <strong>diagnosis before advice</strong>, and one recommendation per session.</p>
+    <div class="marcus-voice">
+      <p class="marcus-voice-line">I don't give you the answer to the question you asked. I ask a <em>better one</em> first.</p>
+      <div class="marcus-voice-attr">— how Marcus opens a session</div>
+    </div>
   </div>
 </section>
 
@@ -315,7 +336,7 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
       <div class="pillar">
         <div class="pillar-num">04</div>
         <div class="pillar-name">Automation Layer</div>
-        <div class="pillar-desc">Billing, churn alerts, trial follow-up, and the operational infrastructure that makes a solo business feel like it has a team.</div>
+        <div class="pillar-desc">Billing, churn alerts, trial follow-up — the operational systems you build so a solo business runs like it has a team. Marcus helps you decide which to set up, and when.</div>
       </div>
       <div class="pillar" style="grid-column:1/-1;">
         <div class="pillar-num">05</div>
