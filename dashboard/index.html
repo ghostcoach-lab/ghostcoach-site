@@ -171,7 +171,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 
       <div class="field">
         <label>Phone number</label>
-        <input type="tel" id="p-phone" placeholder="+31 6 12 34 56 78" autocomplete="tel">
+        <input type="tel" id="p-phone" placeholder="+31 6 12 34 56 78" autocomplete="tel" oninput="filterPhone(this)">
       </div>
 
       <div class="field">
@@ -327,7 +327,7 @@ if(saved.firstname){
   if (!emailEl) return;
   let email = saved.email || '';
   try {
-    const { data: { session } } = await GCAuth.getSession();
+    const session = await GCAuth.getSession();
     if (session && session.user && session.user.email) email = session.user.email;
   } catch (e) { /* GCAuth not ready or no session — keep saved.email */ }
   emailEl.value = email;
@@ -337,6 +337,11 @@ if(saved.firstname){
 })();
 if(saved.plan) currentPlan = saved.plan;
 selectPlan(currentPlan);
+
+// ── Phone field filter: digits, +, spaces, hyphens, parens only ───
+function filterPhone(el){
+  el.value = el.value.replace(/[^\d+ ()\-]/g, '');
+}
 
 // ── Name field filter: names shouldn't contain digits ───────
 function filterName(el){
