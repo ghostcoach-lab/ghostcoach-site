@@ -2,7 +2,7 @@
 
 _Generated: 25 May 2026 · Reflects deploy v31 (includes the chat rewrite + /session-complete/ page)_
 
-## Published site (the `ghostcoach_deploy_v34/` folder)
+## Published site (the `ghostcoach_deploy_v36/` folder)
 - HTML pages: 92
 - Pages set to noindex (funnel/app/legal): 8
 - Sitemap URLs: 40

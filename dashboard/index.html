@@ -116,7 +116,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
     <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
   </a>
-  <span style="font-size:12px;color:rgba(247,245,240,0.4);font-family:'DM Sans',sans-serif;">Step 2 of 3</span>
+  <div style="display:flex;align-items:center;gap:14px;"><span style="font-size:12px;color:rgba(247,245,240,0.4);font-family:'DM Sans',sans-serif;">Step 2 of 3</span><a href="#" id="gc-logout" style="font-size:12px;color:rgba(247,245,240,0.55);text-decoration:none;border:0.5px solid rgba(247,245,240,0.18);border-radius:6px;padding:5px 11px;font-family:'DM Sans',sans-serif;transition:color .15s,border-color .15s;" onmouseover="this.style.color='#F7F5F0';this.style.borderColor='rgba(247,245,240,0.35)'" onmouseout="this.style.color='rgba(247,245,240,0.55)';this.style.borderColor='rgba(247,245,240,0.18)'">Log out</a></div>
 </nav>
 
 <div class="page">
@@ -156,17 +156,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
       <div class="field-row">
         <div class="field">
           <label>First name <span class="req">*</span></label>
-          <input type="text" id="p-firstname" placeholder="Lars" autocomplete="given-name" oninput="updateAvatar()">
+          <input type="text" id="p-firstname" placeholder="Lars" autocomplete="given-name" oninput="filterName(this); updateAvatar()">
         </div>
         <div class="field">
           <label>Last name</label>
-          <input type="text" id="p-lastname" placeholder="Bakker" autocomplete="family-name" oninput="updateAvatar()">
+          <input type="text" id="p-lastname" placeholder="Bakker" autocomplete="family-name" oninput="filterName(this); updateAvatar()">
         </div>
       </div>
 
       <div class="field">
         <label>Email address <span class="req">*</span></label>
-        <input type="email" id="p-email" placeholder="lars@example.com" autocomplete="email">
+        <input type="email" id="p-email" placeholder="" autocomplete="email">
       </div>
 
       <div class="field">
@@ -206,7 +206,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
       <div class="card-title">Payment details</div>
 
       <div class="trial-note">
-        <strong>No charge today.</strong> Your card is saved now and charged on day 15 — only if you haven't cancelled your trial.
+        <strong>No charge today.</strong> Your card is saved now and charged on day 15 — only if you haven't cancelled your trial. We'll remind you 3 days before it ends.
       </div>
 
       <!-- Card brand logos -->
@@ -232,7 +232,6 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
         <svg width="11" height="13" viewBox="0 0 11 13" fill="none"><path d="M5.5 0L0 2v4c0 3.3 2.3 6.4 5.5 7C8.7 12.4 11 9.3 11 6V2L5.5 0z" fill="#8B8A98"/></svg>
         <span class="secure-text">Payments secured by Stripe. We never store your card details.</span>
       </div>
-      <div class="fine">Cancel before day 15 and you pay nothing.</div>
     </div>
 
   </div>
@@ -303,6 +302,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
   <script src="/js/pages/newsletter.js"></script>
 
 <script>
+// ── Auth gate — redirect to /login/ if no session ─────────────
+(async () => { await GCAuth.requireAuth('/login/'); })();
+
+// ── Log out button (in nav) ───────────────────────────────────
+document.getElementById('gc-logout')?.addEventListener('click', async (e) => {
+  e.preventDefault();
+  try { await GCAuth.signOut(); } catch(_) {}
+  window.location.href = '/';
+});
+
 // ── Read plan + pre-fill from sessionStorage ─────────────────
 const params = new URLSearchParams(window.location.search);
 let currentPlan = (params.get('plan') || 'builder').toLowerCase();
@@ -329,6 +338,11 @@ if(saved.firstname){
 if(saved.plan) currentPlan = saved.plan;
 selectPlan(currentPlan);
 
+// ── Name field filter: names shouldn't contain digits ───────
+function filterName(el){
+  el.value = el.value.replace(/\d/g, '');
+}
+
 // ── Avatar initials ───────────────────────────────────────────
 function updateAvatar(){
   const fn = document.getElementById('p-firstname').value.trim();
@@ -350,6 +364,8 @@ function selectPlan(plan){
   // Lifetime is a one-time payment — no trial. Hide the trial note + relabel CTA.
   const trialNote = document.querySelector('.trial-note');
   if(trialNote) trialNote.style.display = (plan === 'lifetime') ? 'none' : '';
+  const whyBox = document.querySelector('.why-box');
+  if(whyBox) whyBox.style.display = (plan === 'lifetime') ? 'none' : '';
   const cta = document.getElementById('cta-btn');
   if(cta) cta.textContent = (plan === 'lifetime') ? 'Get lifetime access →' : 'Start my 14-day trial →';
 

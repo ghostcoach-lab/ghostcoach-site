@@ -19,8 +19,20 @@
     btnEl.textContent = 'Signing in…';
 
     try {
-      await GCAuth.signIn(emailEl.value.trim(), passEl.value);
-      window.location.href = '/dashboard/';
+      const data = await GCAuth.signIn(emailEl.value.trim(), passEl.value);
+      // Smart redirect: users with an active/trialing subscription go straight to the app;
+      // anyone still in the funnel (e.g. confirmed email but no payment yet) lands on /dashboard/.
+      let target = '/dashboard/';
+      try {
+        const { data: sub } = await gcSupabase
+          .from('subscriptions')
+          .select('status')
+          .eq('user_id', data.user.id)
+          .in('status', ['active', 'trialing'])
+          .maybeSingle();
+        if (sub) target = '/chat/';
+      } catch (_) { /* subscriptions table not populated yet — default to /dashboard/ */ }
+      window.location.href = target;
     } catch (err) {
       errorEl.textContent = err.message === 'Invalid login credentials'
         ? 'Wrong email or password.'
