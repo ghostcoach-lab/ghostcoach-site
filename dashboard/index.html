@@ -476,7 +476,7 @@ async function handleStart(){
     if (!res.ok) throw new Error('Could not start. Please try again or contact support.');
 
     // 3. Redirect to the activation wait page (polls users.status → /chat/)
-    window.location.href = '/activating/';
+    window.location.href = '/onboarding/';
 
   } catch (err) {
     cardErrEl.textContent = err.message || 'Something went wrong. Please try again.';

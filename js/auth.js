@@ -11,7 +11,7 @@ const GCAuth = {
       password,
       options: {
         // Redirect here after clicking the confirmation link in the email
-        emailRedirectTo: window.location.origin + '/onboarding/',
+        emailRedirectTo: window.location.origin + '/dashboard/',
         // Record the chosen plan on the account — read later by onboarding + n8n S1
         data: { plan: plan || 'builder' }
       }

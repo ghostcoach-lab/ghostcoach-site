@@ -35,7 +35,7 @@
         tried:          data.tried       || null,
         goal_90_day:    data.goal_90_day
       });
-      window.location.href = '/dashboard/';
+      window.location.href = '/processing/';
     } catch (err) {
       errorEl.textContent = err.message || 'Could not save. Please try again.';
       btnEl.disabled = false;

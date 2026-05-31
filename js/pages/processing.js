@@ -4,9 +4,9 @@
 // Behavior:
 //   1. Auth gate — redirect to /login/ if not authenticated
 //   2. On load — check if marcus_ready_at is already set (returning user case)
-//      then redirect to /card/ immediately
+//      then redirect to /chat/ immediately
 //   3. Otherwise — subscribe to Supabase real-time updates on the user's
-//      profile row. When n8n S2 sets marcus_ready_at, redirect to /card/
+//      profile row. When n8n S2 sets marcus_ready_at, redirect to /chat/
 //   4. Polling fallback every 30 seconds in case real-time misses an event
 
 (async () => {
@@ -19,7 +19,7 @@
   function redirectNext() {
     if (redirected) return;
     redirected = true;
-    window.location.href = '/dashboard/';
+    window.location.href = '/chat/';
   }
 
   async function checkReady() {
