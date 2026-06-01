@@ -9,7 +9,7 @@
 <meta property="og:title" content="About GhostCoach — Why We Built It">
 <meta property="og:description" content="The business layer problem, the Ghost OS framework, and the honest story behind GhostCoach.">
 <meta property="og:type" content="website">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts/fonts.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 html{scroll-behavior:smooth;}
@@ -462,6 +462,8 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
       <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
       <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
       <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+      <a href="https://getghostcoach.com/cookies/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Policy</a>
+      <a href="#" onclick="GCCookies.open();return false;" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Preferences</a>
     </div>
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
@@ -515,5 +517,6 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
     else document.addEventListener('DOMContentLoaded', check);
   })();
   </script>
+  <script src="/js/cookie-banner.js"></script>
 </body>
 </html>

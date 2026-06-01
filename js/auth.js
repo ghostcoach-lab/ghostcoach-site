@@ -36,6 +36,22 @@ const GCAuth = {
     if (error) throw error;
   },
 
+  // Send a password-reset email. Supabase emails a recovery link that
+  // brings the user to /reset-password/ where they can set a new password.
+  async resetPassword(email) {
+    const { error } = await gcSupabase.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.origin + '/reset-password/'
+    });
+    if (error) throw error;
+  },
+
+  // Update the current user's password. Called from /reset-password/ after
+  // the recovery link has established a session.
+  async updatePassword(newPassword) {
+    const { error } = await gcSupabase.auth.updateUser({ password: newPassword });
+    if (error) throw error;
+  },
+
   // Sign out
   async signOut() {
     const { error } = await gcSupabase.auth.signOut();

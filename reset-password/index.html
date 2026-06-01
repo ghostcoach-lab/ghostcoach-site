@@ -3,16 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Start your free trial | GhostCoach</title>
-<meta name="description" content="Add a card to start your 14-day free trial. No charge today.">
+<title>Set new password | GhostCoach</title>
+<meta name="description" content="Set a new password for your GhostCoach account.">
 <meta name="robots" content="noindex,nofollow">
-<link rel="canonical" href="https://getghostcoach.com/card/">
+<link rel="canonical" href="https://getghostcoach.com/reset-password/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts/fonts.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://js.stripe.com/v3/"></script>
 <style>
   :root {
     --ink: #0F1117; --ink-soft: #1A1D27; --amber: #C8861E; --amber-lt: #E8A832;
@@ -21,110 +18,83 @@
   * { box-sizing: border-box; }
   html, body { margin: 0; padding: 0; }
   body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
-  main {
-    padding-top: 88px; padding-bottom: 64px;
-    min-height: calc(100vh - 88px);
-    display: flex; align-items: center; justify-content: center;
+
+  main { padding-top: 88px; padding-bottom: 64px; min-height: calc(100vh - 88px); display: flex; align-items: center; justify-content: center; }
+
+  .login-card {
+    max-width: 420px;
+    width: 100%;
+    padding: 0 32px;
   }
 
-  .card-shell {
-    max-width: 480px; width: 100%; margin: 0 24px;
-    padding: 48px 40px 40px;
-    background: white;
-    border: 0.5px solid rgba(15,17,23,0.08);
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(15,17,23,0.04);
+  .login-header { text-align: center; margin-bottom: 32px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; color: var(--amber);
+    text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 12px;
   }
-  .plan-badge {
-    display: inline-block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 11px; font-weight: 600;
-    color: var(--amber);
-    text-transform: uppercase; letter-spacing: 1.4px;
-    margin-bottom: 14px;
-  }
-  .card-title {
+  .login-title {
     font-family: 'Playfair Display', serif;
-    font-size: 30px; font-weight: 500; line-height: 1.2;
-    color: var(--ink);
-    margin: 0 0 8px 0;
+    font-size: 36px; font-weight: 500; line-height: 1.15;
+    color: var(--ink); margin: 0 0 12px 0;
   }
-  .card-title em { font-style: italic; color: var(--amber); }
-  .price-line {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px; color: rgba(15,17,23,0.6);
-    margin: 0 0 24px 0;
+  .login-title em { font-style: italic; color: var(--amber); }
+  .login-subtitle {
+    font-size: 15px; color: rgba(15,17,23,0.65); margin: 0;
   }
-  .trial-note {
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; color: rgba(15,17,23,0.55);
-    line-height: 1.55;
-    margin: 0 0 28px 0;
-    padding: 14px 16px;
-    background: rgba(11,122,96,0.06);
-    border-radius: 8px;
-    border-left: 2px solid var(--teal);
-  }
-  .field-label {
-    display: block;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px; font-weight: 500;
-    color: rgba(15,17,23,0.7);
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: rgba(15,17,23,0.7); margin-bottom: 6px;
     text-transform: uppercase; letter-spacing: 0.5px;
-    margin: 0 0 8px 0;
   }
-  #gc-card-element {
-    background: white;
-    border: 1px solid rgba(15,17,23,0.18);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 20px;
-    transition: border-color 0.15s, box-shadow 0.15s;
+  .field input {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px;
+    color: var(--ink); background: white;
+    border: 1px solid rgba(15,17,23,0.18); border-radius: 10px;
+    padding: 12px 14px; transition: border-color .15s ease, box-shadow .15s ease;
   }
-  #gc-card-element.StripeElement--focus {
-    border-color: var(--amber);
+  .field input:focus {
+    outline: none; border-color: var(--amber);
     box-shadow: 0 0 0 3px rgba(200,134,30,0.12);
   }
-  #gc-card-element.StripeElement--invalid { border-color: #E55353; }
-  #gc-submit-btn {
-    width: 100%;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 15px; font-weight: 600;
-    color: white; background: var(--amber);
-    border: none; border-radius: 999px;
-    padding: 14px 24px;
-    cursor: pointer;
-    transition: background 0.15s, opacity 0.15s;
+
+  .submit-btn {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px;
+    font-weight: 600; color: white; background: var(--amber);
+    border: none; border-radius: 999px; padding: 13px 24px;
+    cursor: pointer; transition: background .15s ease;
+    margin-top: 8px;
   }
-  #gc-submit-btn:hover:not(:disabled) { background: #B5781A; }
-  #gc-submit-btn:disabled { background: rgba(15,17,23,0.2); cursor: not-allowed; }
-  #gc-card-error {
-    color: #E55353; font-size: 13px;
-    margin: 14px 0 0 0; min-height: 18px; text-align: center;
+  .submit-btn:hover { background: #B5781A; }
+  .submit-btn:disabled { background: rgba(15,17,23,0.2); cursor: not-allowed; }
+
+  .gc-error {
+    color: #E55353; font-size: 13px; margin-top: 12px; min-height: 18px; text-align: center;
   }
-  .security-note {
-    display: flex; align-items: center; gap: 8px;
-    margin: 24px 0 0 0;
-    padding-top: 20px;
-    border-top: 1px solid rgba(15,17,23,0.06);
-    font-size: 12px; color: rgba(15,17,23,0.45);
-    line-height: 1.5;
+
+  .gc-success {
+    color: var(--teal, #0B7A60); font-size: 14px; margin-top: 16px; padding: 14px;
+    background: rgba(11,122,96,0.08); border-radius: 10px; text-align: center; line-height: 1.5;
   }
-  .security-note svg { flex-shrink: 0; }
-  .help-fallback {
-    text-align: center;
-    margin: 16px 0 0 0;
-    font-size: 13px; color: rgba(15,17,23,0.5);
+
+  .login-foot {
+    margin-top: 28px; padding-top: 24px;
+    border-top: 1px solid rgba(15,17,23,0.08);
+    text-align: center; font-size: 14px;
+    color: rgba(15,17,23,0.6);
   }
-  .help-fallback a {
-    color: var(--amber); text-decoration: none;
+  .login-foot a {
+    color: var(--amber); text-decoration: none; font-weight: 500;
     border-bottom: 1px solid rgba(200,134,30,0.4);
   }
+
   @media (max-width: 680px) {
     main { padding-top: 72px; }
-    .card-shell { padding: 36px 24px 32px; margin: 0 16px; }
-    .card-title { font-size: 24px; }
+    .login-card { padding: 0 20px; }
+    .login-title { font-size: 28px; }
   }
+
 </style>
 </head>
 <body>
@@ -139,28 +109,35 @@
 </nav>
 
 <main>
-  <div class="card-shell">
-    <div class="plan-badge" id="gc-plan-name">Builder</div>
-    <h1 class="card-title">Start your 14-day <em>free trial</em></h1>
-    <p class="price-line" id="gc-plan-price">$79 / month after your 14-day trial</p>
-    <p class="trial-note">
-      No charge today. Your card is saved for when the trial ends. Cancel any time before day 14 and you won't be billed.
-    </p>
-    <form id="gc-card-form" novalidate>
-      <label class="field-label" for="gc-card-element">Card details</label>
-      <div id="gc-card-element"></div>
-      <button id="gc-submit-btn" type="submit">Start free trial</button>
-      <p id="gc-card-error" role="alert"></p>
+  <div class="login-card">
+    <div class="login-header">
+      <div class="eyebrow">Almost there</div>
+      <h1 class="login-title">Set a new <em>password</em></h1>
+      <p class="login-subtitle" id="gc-reset-subtitle">Enter your new password below.</p>
+    </div>
+
+    <form id="gc-reset-form" style="display:none;">
+      <div class="field">
+        <label for="gc-password">New password</label>
+        <input type="password" id="gc-password" name="password" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" required>
+      </div>
+
+      <div class="field">
+        <label for="gc-password-confirm">Confirm new password</label>
+        <input type="password" id="gc-password-confirm" name="password_confirm" placeholder="Repeat your new password" autocomplete="new-password" minlength="8" required>
+      </div>
+
+      <button id="gc-submit-btn" type="submit" class="submit-btn">Update password</button>
+
+      <p id="gc-error" class="gc-error"></p>
     </form>
-    <p class="security-note">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-      </svg>
-      Payments processed securely by Stripe. GhostCoach never stores card details.
-    </p>
-    <p class="help-fallback">
-      Trouble with payment? <a href="/contact/">Contact us &rarr;</a>
-    </p>
+
+    <p id="gc-success" class="gc-success" style="display:none;"></p>
+    <p id="gc-invalid"  class="gc-error"   style="display:none;"></p>
+
+    <div class="login-foot">
+      <a href="/login/">Back to log in →</a>
+    </div>
   </div>
 </main>
 
@@ -201,6 +178,8 @@
       <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
       <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
       <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+      <a href="https://getghostcoach.com/cookies/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Policy</a>
+      <a href="#" onclick="GCCookies.open();return false;" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Preferences</a>
     </div>
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
@@ -222,11 +201,13 @@
   </style>
 </footer>
 
+  <!-- v23: GhostCoach JS integration -->
   <script src="/js/config.js"></script>
   <script src="/js/supabase-client.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/webhooks.js"></script>
   <script src="/js/pages/newsletter.js"></script>
-  <script src="/js/pages/card.js"></script>
+  <script src="/js/pages/reset-password.js"></script>
+  <script src="/js/cookie-banner.js"></script>
 </body>
 </html>

@@ -24,7 +24,6 @@ const GC = {
     ONBOARDING:   '/gc-s2-onboarding',
     SESSION_END:  '/gc-s3-session-end',
     CONTACT:      '/gc-s7-contact',
-    NEWSLETTER:   '/gc-s8-signup',
-    SUBSCRIPTION_CREATE: '/gc-card-checkout'  // POSTed from /card/ — n8n creates Stripe customer + subscription
+    NEWSLETTER:   '/gc-s8-signup'
   }
 };
