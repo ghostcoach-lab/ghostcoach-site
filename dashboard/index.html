@@ -463,21 +463,20 @@ async function handleStart(){
       return;
     }
 
-    // 2. POST to n8n S5 to create the subscription
-    const res = await fetch(`${GC.N8N_BASE}/gc-s5-subscribe`, {
+    // 2. Call Supabase Edge Function to create the Stripe subscription
+    const session = await GCAuth.getSession();
+    const res = await fetch(`${GC.SUPABASE_URL}/functions/v1/stripe-setup`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-gc-secret': GC.WEBHOOK_SECRET },
-      body: JSON.stringify({
-        user_id: userId,
-        email: email,
-        payment_method_id: paymentMethod.id,
-        plan: currentPlan,
-        stripe_price_id: priceId
-      })
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({ payment_method_id: paymentMethod.id })
     });
-    if (!res.ok) throw new Error('Could not start. Please try again or contact support.');
+    const resData = await res.json();
+    if (!res.ok) throw new Error(resData.error || 'Could not start. Please try again.');
 
-    // 3. Redirect to onboarding (business profile collection, then /processing/ → /chat/)
+    // 3. Redirect to onboarding
     window.location.href = '/onboarding/';
 
   } catch (err) {
