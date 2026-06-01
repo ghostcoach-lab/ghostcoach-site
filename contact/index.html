@@ -302,6 +302,7 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
             <option value="technical">Technical issue</option>
             <option value="billing">Billing</option>
             <option value="account">Account recovery</option>
+            <option value="privacy">Privacy and cookies</option>
             <option value="press">Press</option>
             <option value="partnership">Partnership</option>
             <option value="other">Other</option>
@@ -425,5 +426,19 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
   })();
   </script>
   <script src="/js/cookie-banner.js"></script>
+  <script>
+    // Pre-select the contact-form category from a ?category= URL param
+    // (used by deep links from the Cookie Policy / Privacy Policy etc.)
+    (function () {
+      try {
+        const cat = new URLSearchParams(window.location.search).get('category');
+        if (!cat) return;
+        const sel = document.getElementById('f-category');
+        if (!sel) return;
+        const match = Array.from(sel.options).find(function (o) { return o.value === cat; });
+        if (match) sel.value = cat;
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
 </body>
 </html>
