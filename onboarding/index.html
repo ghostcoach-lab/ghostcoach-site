@@ -848,7 +848,7 @@
     } catch (e) { /* private mode — continue anyway */ }
 
     // v23: submit via GCWebhook.submitOnboarding() (n8n S2)
-    // Note: firstname/lastname/phone/country are collected on /dashboard/, not here.
+    // Note: firstname/lastname/phone/country are collected on /payment/, not here.
     // n8n S2 INSERTs/UPDATEs the profile row with just the business fields below.
     try {
       await GCWebhook.submitOnboarding(gcUser.id, {

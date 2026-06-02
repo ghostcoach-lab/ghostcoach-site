@@ -32,5 +32,8 @@
 # Confusion between /guides/ and /ai-business-coach/ cluster paths
 /guides/ai-business-coach/pricing/               /ai-business-coach/pricing/             301!
 
-# v29 — single card entry: /card/ retired in favour of /dashboard/
-/card/    /dashboard/    301!
+# v29 — single card entry: /card/ retired in favour of /payment/
+/card/    /payment/    301!
+
+# v48 — /dashboard/ renamed to /payment/ — keep legacy bookmarks working
+/dashboard/    /payment/    301!

@@ -70,7 +70,7 @@ async function handleSocial(provider) {
   try {
     const { error } = await gcSupabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + '/dashboard/?plan=' + GC_SELECTED_PLAN }
+      options: { redirectTo: window.location.origin + '/payment/?plan=' + GC_SELECTED_PLAN }
     });
     if (error) throw error;
   } catch (err) {
@@ -83,7 +83,7 @@ async function handleSocial(provider) {
   gcApplyPlan(GC_SELECTED_PLAN);
 
   // Don't show the signup form to already-logged-in users
-  await GCAuth.redirectIfLoggedIn('/dashboard/');
+  await GCAuth.redirectIfLoggedIn('/payment/');
 
   const form    = document.getElementById('gc-signup-form');
   const emailEl = document.getElementById('gc-email');

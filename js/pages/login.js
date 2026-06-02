@@ -8,7 +8,7 @@ async function handleSocial(provider) {
   try {
     const { error } = await gcSupabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + '/dashboard/' }
+      options: { redirectTo: window.location.origin + '/payment/' }
     });
     if (error) throw error;
   } catch (err) {
@@ -17,7 +17,7 @@ async function handleSocial(provider) {
 }
 
 (async () => {
-  await GCAuth.redirectIfLoggedIn('/dashboard/');
+  await GCAuth.redirectIfLoggedIn('/payment/');
 
   const form    = document.getElementById('gc-login-form');
   const emailEl = document.getElementById('gc-email');
@@ -36,8 +36,8 @@ async function handleSocial(provider) {
     try {
       const data = await GCAuth.signIn(emailEl.value.trim(), passEl.value);
       // Smart redirect: users with an active/trialing subscription go straight to the app;
-      // anyone still in the funnel (e.g. confirmed email but no payment yet) lands on /dashboard/.
-      let target = '/dashboard/';
+      // anyone still in the funnel (e.g. confirmed email but no payment yet) lands on /payment/.
+      let target = '/payment/';
       try {
         const { data: sub } = await gcSupabase
           .from('subscriptions')
@@ -46,7 +46,7 @@ async function handleSocial(provider) {
           .in('status', ['active', 'trialing'])
           .maybeSingle();
         if (sub) target = '/chat/';
-      } catch (_) { /* subscriptions table not populated yet — default to /dashboard/ */ }
+      } catch (_) { /* subscriptions table not populated yet — default to /payment/ */ }
       window.location.href = target;
     } catch (err) {
       errorEl.textContent = err.message === 'Invalid login credentials'

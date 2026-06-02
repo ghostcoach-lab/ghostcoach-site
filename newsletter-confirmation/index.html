@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Newsletter confirmed | GhostCoach</title>
+<meta name="description" content="Your newsletter subscription is confirmed.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://getghostcoach.com/newsletter-confirmation/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+<link rel="stylesheet" href="/fonts/fonts.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --ink: #0F1117; --ink-soft: #1A1D27; --amber: #C8861E; --amber-lt: #E8A832;
+    --cream: #F7F5F0; --teal: #0B7A60; --muted: #8B8A98;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+  main { padding-top: 88px; padding-bottom: 64px; min-height: calc(100vh - 88px); display: flex; align-items: center; justify-content: center; }
+
+  .login-card {
+    max-width: 420px;
+    width: 100%;
+    padding: 0 32px;
+  }
+
+  .login-header { text-align: center; margin-bottom: 32px; }
+  .eyebrow {
+    font-size: 12px; font-weight: 600; color: var(--amber);
+    text-transform: uppercase; letter-spacing: 1.4px; margin-bottom: 12px;
+  }
+  .login-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 36px; font-weight: 500; line-height: 1.15;
+    color: var(--ink); margin: 0 0 12px 0;
+  }
+  .login-title em { font-style: italic; color: var(--amber); }
+  .login-subtitle {
+    font-size: 15px; color: rgba(15,17,23,0.65); margin: 0;
+  }
+
+  .field { margin-bottom: 16px; }
+  .field label {
+    display: block; font-size: 12px; font-weight: 500;
+    color: rgba(15,17,23,0.7); margin-bottom: 6px;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .field input {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px;
+    color: var(--ink); background: white;
+    border: 1px solid rgba(15,17,23,0.18); border-radius: 10px;
+    padding: 12px 14px; transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .field input:focus {
+    outline: none; border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(200,134,30,0.12);
+  }
+
+  .submit-btn {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 15px;
+    font-weight: 600; color: white; background: var(--amber);
+    border: none; border-radius: 999px; padding: 13px 24px;
+    cursor: pointer; transition: background .15s ease;
+    margin-top: 8px;
+  }
+  .submit-btn:hover { background: #B5781A; }
+  .submit-btn:disabled { background: rgba(15,17,23,0.2); cursor: not-allowed; }
+
+  .check-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(200,134,30,0.12); display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 22px;
+  }
+  .check-icon svg { width: 30px; height: 30px; }
+  .body-text {
+    font-size: 14.5px; color: rgba(15,17,23,0.65); line-height: 1.65;
+    margin: 0 auto 28px; max-width: 340px; text-align: center;
+  }
+  .cta-button {
+    display: inline-block;
+    background: var(--amber); color: var(--ink);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600;
+    padding: 12px 26px; border-radius: 999px;
+    text-decoration: none; border: none; cursor: pointer;
+    transition: background .15s;
+  }
+  .cta-button:hover { background: var(--amber-lt); }
+  .center-wrap { text-align: center; }
+
+  .gc-error {
+    color: #E55353; font-size: 13px; margin-top: 12px; min-height: 18px; text-align: center;
+  }
+
+  .login-foot {
+    margin-top: 28px; padding-top: 24px;
+    border-top: 1px solid rgba(15,17,23,0.08);
+    text-align: center; font-size: 14px;
+    color: rgba(15,17,23,0.6);
+  }
+  .login-foot a {
+    color: var(--amber); text-decoration: none; font-weight: 500;
+    border-bottom: 1px solid rgba(200,134,30,0.4);
+  }
+
+  @media (max-width: 680px) {
+    main { padding-top: 72px; }
+    .login-card { padding: 0 20px; }
+    .login-title { font-size: 28px; }
+  }
+
+</style>
+</head>
+<body>
+
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding:12px 24px;display:flex;align-items:center;justify-content:flex-start;height:58px;border-bottom:1px solid rgba(255,255,255,0.06);">
+  <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;line-height:1;">
+    <span style="display:flex;align-items:baseline;">
+      <span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:#F7F5F0;letter-spacing:-0.01em;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:600;color:#C8861E;letter-spacing:-0.01em;font-style:italic;">Coach</span>
+    </span>
+    <span style="font-family:'DM Sans',sans-serif;font-size:9px;font-weight:500;color:rgba(247,245,240,0.55);letter-spacing:0.04em;text-transform:uppercase;">AI business coaching for solo product builders</span>
+  </a>
+</nav>
+
+<main>
+  <div class="login-card">
+    <div class="center-wrap">
+      <div class="check-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 12.5L10 17.5L19 7.5" stroke="#C8861E" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="eyebrow">Welcome</div>
+      <h1 class="login-title">Email <em>confirmed</em></h1>
+      <p class="body-text">Thanks for confirming. You'll now get the GhostCoach newsletter. We've also sent you a welcome email.</p>
+      <a href="/" class="cta-button">Back to home &rarr;</a>
+    </div>
+  </div>
+</main>
+
+<footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
+  <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
+    <div>
+      <a href="https://getghostcoach.com/" style="text-decoration:none;display:inline-block;">
+        <div style="display:flex;align-items:baseline;">
+          <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#F7F5F0;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:#E8A832;">Coach</span>
+        </div>
+      </a>
+      <div style="font-size:12px;color:rgba(247,245,240,0.4);margin-top:10px;line-height:1.6;max-width:210px;">AI business coaching for solopreneurs building digital products.</div>
+      <div style="margin-top:18px;display:flex;gap:14px;">
+        <a href="https://x.com/getghostcoach" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">𝕏 Twitter</a>
+        <a href="https://www.linkedin.com/company/ghostcoach/" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">in LinkedIn</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
+      <a href="https://getghostcoach.com/#faq" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">FAQ</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+      <a href="https://getghostcoach.com/cookies/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Policy</a>
+      <a href="#" onclick="GCCookies.open();return false;" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Preferences</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
+      <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
+      <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
+      </form>
+      <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+    </div>
+  </div>
+  <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
+    <div style="font-size:12px;color:rgba(247,245,240,0.4);">© 2026 GhostCoach. All rights reserved.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:rgba(247,245,240,0.45);">"The product is the easy part."</div>
+  </div>
+  <style>
+    @media(max-width:900px){.gc-footer-grid{grid-template-columns:1fr 1fr !important;gap:28px !important;}}
+    @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
+  </style>
+</footer>
+
+  <!-- v23: GhostCoach JS integration -->
+  <script src="/js/config.js"></script>
+  <script src="/js/supabase-client.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/webhooks.js"></script>
+  <script src="/js/pages/newsletter.js"></script>
+    <script src="/js/cookie-banner.js"></script>
+</body>
+</html>

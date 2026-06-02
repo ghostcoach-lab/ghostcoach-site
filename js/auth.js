@@ -11,7 +11,7 @@ const GCAuth = {
       password,
       options: {
         // Redirect here after clicking the confirmation link in the email
-        emailRedirectTo: window.location.origin + '/dashboard/',
+        emailRedirectTo: window.location.origin + '/payment/',
         // Record the chosen plan on the account — read later by onboarding + n8n S1
         data: { plan: plan || 'builder' }
       }
@@ -31,7 +31,7 @@ const GCAuth = {
   async signInWithMagicLink(email) {
     const { error } = await gcSupabase.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin + '/dashboard/' }
+      options: { emailRedirectTo: window.location.origin + '/payment/' }
     });
     if (error) throw error;
   },
@@ -82,7 +82,7 @@ const GCAuth = {
   },
 
   // Redirect to dashboard if already logged in. Call on login/signup pages.
-  async redirectIfLoggedIn(redirectTo = '/dashboard/') {
+  async redirectIfLoggedIn(redirectTo = '/payment/') {
     const session = await this.getSession();
     if (session) window.location.href = redirectTo;
   },
