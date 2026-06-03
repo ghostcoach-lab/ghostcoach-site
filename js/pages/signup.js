@@ -101,14 +101,11 @@ async function handleSocial(provider) {
 
     try {
       await GCAuth.signUp(emailEl.value.trim(), passEl.value, GC_SELECTED_PLAN);
-      const activate = GC_PLANS[GC_SELECTED_PLAN].trial
-        ? 'Click it to activate your 14-day free trial.'
-        : 'Click it to claim your lifetime access.';
       form.innerHTML =
         '<p style="color:#0F1117;text-align:center;line-height:1.6">' +
           '<strong style="color:#C8861E">Check your inbox.</strong><br>' +
           'We sent a confirmation link to <strong>' + emailEl.value.trim() + '</strong>.<br>' +
-          activate +
+          'Click it to create your account.' +
         '</p>';
     } catch (err) {
       errorEl.textContent = (err && err.message) || 'Something went wrong. Please try again.';
