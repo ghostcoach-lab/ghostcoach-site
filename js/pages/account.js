@@ -165,24 +165,6 @@
     }
   });
 
-  document.getElementById('gc-goal-reset').addEventListener('click', async () => {
-    if (!confirm('Reset your 90-day goal? This sets progress back to 0% and starts a fresh 90-day window.')) return;
-    try {
-      await gcSupabase.from('profiles').upsert({
-        user_id: userId,
-        goal_90_day: val('ac-goal'),
-        goal_progress: 0,
-        goal_start_date: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, { onConflict: 'user_id' });
-      document.getElementById('ac-goal-pct').textContent = '0%';
-      document.getElementById('ac-goal-fill').style.width = '0%';
-      flash('gc-goal-msg');
-    } catch (err) {
-      alert('Could not reset goal: ' + (err?.message || err));
-    }
-  });
-
   // ── 4. Session history + chart ──────────────────────────────────────────────
   renderSessions(sessions);
 
@@ -285,14 +267,13 @@
 
   // Buttons
   const upBtn      = document.getElementById('gc-upgrade');
-  const lifeBtn    = document.getElementById('gc-lifetime');
   const downBtn    = document.getElementById('gc-downgrade');
   const cancelBtn  = document.getElementById('gc-cancel');
   const manageBtn  = document.getElementById('gc-manage-billing');
   const periodEnd  = subscription.current_period_end || null;
 
   function showOnly(buttons) {
-    [upBtn, lifeBtn, downBtn, cancelBtn].forEach(b => { if (b) b.style.display = 'none'; });
+    [upBtn, downBtn, cancelBtn].forEach(b => { if (b) b.style.display = 'none'; });
     buttons.forEach(b => { if (b) b.style.display = ''; });
   }
 
@@ -302,9 +283,9 @@
     const pm = document.getElementById('gc-payment-method');
     if (pm) pm.textContent = 'Lifetime access — no recurring billing.';
   } else if (plan === 'operator') {
-    showOnly([lifeBtn, downBtn, cancelBtn]);
+    showOnly([downBtn, cancelBtn]);
   } else { // builder
-    showOnly([upBtn, lifeBtn, cancelBtn]);
+    showOnly([upBtn, cancelBtn]);
   }
 
   // If a downgrade is already scheduled, surface the persistent notice
@@ -359,29 +340,6 @@
     } catch (e) {
       downBtn.disabled = false;
       showBanner('Could not schedule the downgrade right now. Please try again.', 'error');
-    }
-  });
-
-  // ── Lifetime upgrade: celebratory; handle cap-full failure ──
-  if (lifeBtn) lifeBtn.addEventListener('click', async () => {
-    if (!confirm('Get Lifetime access for $499 (one-time)? Operator features, for life.')) return;
-    lifeBtn.disabled = true;
-    try {
-      const res = await postPlan('lifetime');
-      if (res.status === 409) {
-        // Founding-member cap reached
-        showBanner('All 50 founding-member spots are taken. Lifetime is no longer available.', 'error');
-        lifeBtn.disabled = false;
-        return;
-      }
-      if (!res.ok) throw new Error();
-      document.getElementById('gc-plan-pill').textContent = 'Lifetime';
-      document.getElementById('gc-plan-status').textContent = 'Founding member';
-      showOnly([]);
-      showBanner("You're a founding member — Operator features, for life.", 'celebrate');
-    } catch (e) {
-      lifeBtn.disabled = false;
-      showBanner('Could not complete the Lifetime upgrade right now. Please try again.', 'error');
     }
   });
 
@@ -450,10 +408,29 @@
   const nlToggle = document.getElementById('gc-newsletter-toggle');
   const subscribed = newsletterRow && !newsletterRow.unsubscribed_at;
   nlToggle.checked = !!subscribed;
+
+  // Multi-line confirmation message shown when the newsletter pref changes.
+  function nlMessage(text) {
+    let m = document.getElementById('gc-nl-pref-msg');
+    if (!m) {
+      m = document.createElement('div');
+      m.id = 'gc-nl-pref-msg';
+      m.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);max-width:380px;width:calc(100% - 32px);background:#0F1117;color:#F7F5F0;padding:14px 18px;border-radius:12px;font-size:13px;line-height:1.55;z-index:300;opacity:0;transition:opacity .2s;font-family:"DM Sans",sans-serif;box-shadow:0 4px 20px rgba(15,17,23,0.35);border-left:3px solid #C8861E;';
+      document.body.appendChild(m);
+    }
+    m.textContent = text;
+    m.style.opacity = '1';
+    clearTimeout(m._timer);
+    m._timer = setTimeout(() => { m.style.opacity = '0'; }, 6000);
+  }
+
+  const NL_ON  = "You're in. Weekly insights for solo product builders — one idea, one framework, one move you can make.";
+  const NL_OFF = "Unsubscribed. No more newsletter. Your account and Marcus sessions are untouched — this only stops the weekly email.";
+
   nlToggle.addEventListener('change', () => {
     const wantOn = nlToggle.checked;
-    // Optimistic: flip instantly + toast. Beehiiv sync is fire-and-forget (don't block).
-    toast('Updated ✓');
+    // Optimistic: flip instantly + show the matching message. Beehiiv sync is fire-and-forget.
+    nlMessage(wantOn ? NL_ON : NL_OFF);
     const url = wantOn ? `${GC.N8N_BASE}/gc-s8-signup` : `${GC.N8N_BASE}/gc-s8-unsubscribe`;
     const body = wantOn ? { email, user_id: userId, source: 'account_prefs' } : { email, user_id: userId };
     fetch(url, {

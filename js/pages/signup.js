@@ -63,7 +63,7 @@ function togglePw() {
 }
 
 async function handleSocial(provider) {
-  // OAuth sign-up/in. The Google/Facebook providers must be enabled in the Supabase
+  // OAuth sign-up/in. The Google provider must be enabled in the Supabase
   // dashboard (Authentication -> Providers) for this to complete successfully.
   const ge = document.getElementById('gc-error');
   if (ge) ge.textContent = '';

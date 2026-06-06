@@ -1,7 +1,7 @@
 // GhostCoach — Login page logic
 // Requires: config.js, supabase-client.js, auth.js
 
-// OAuth sign-in. Requires Google/Facebook providers to be enabled in the Supabase dashboard.
+// OAuth sign-in. Requires Google provider to be enabled in the Supabase dashboard.
 async function handleSocial(provider) {
   const errorEl = document.getElementById('gc-error');
   if (errorEl) errorEl.textContent = '';
