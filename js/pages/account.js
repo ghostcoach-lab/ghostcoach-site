@@ -165,8 +165,8 @@
     }
   });
 
-  // ── 4. Session history + chart ──────────────────────────────────────────────
-  renderSessions(sessions);
+  // ── 4. Chat CTA continuity ───────────────────────────────────────────────────
+  // (Session history UI removed for now — S3 summaries not built yet.)
 
   // v30 — chat CTA continuity line (most recent session's commitment)
   (function setChatContinuity() {
@@ -185,73 +185,6 @@
     cont.textContent = 'Marcus is ready when you are.';
     if (sub) sub.textContent = 'Your first session is set up from your onboarding answers.';
   })();
-
-  function renderSessions(rows) {
-    const listEl  = document.getElementById('gc-session-list');
-    const chartEl = document.getElementById('gc-chart-wrap');
-
-    if (!rows || rows.length === 0) {
-      listEl.innerHTML = '<div class="empty-state">No sessions yet. Your first session with Marcus will appear here.</div>';
-      chartEl.innerHTML = '';
-      return;
-    }
-
-    // Chart: goal_progress_score over sessions (simple SVG line)
-    const scores = rows.map(r => (r.goal_progress_score ?? null)).filter(s => s !== null);
-    if (scores.length >= 2) {
-      chartEl.innerHTML = buildChart(rows);
-    } else {
-      chartEl.innerHTML = '';
-    }
-
-    // List (most recent first)
-    const ordered = [...rows].reverse();
-    listEl.innerHTML = ordered.map(r => {
-      const d = r.created_at ? new Date(r.created_at).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '';
-      const num = r.session_number != null ? ('Session ' + r.session_number) : 'Session';
-      const score = (r.goal_progress_score != null)
-        ? `<span class="session-score">Goal progress: ${r.goal_progress_score}%</span>` : '';
-      const action = r.action_committed
-        ? `<div class="session-action"><strong>Committed:</strong> ${esc(r.action_committed)}</div>` : '';
-      const summary = r.summary
-        ? `<p class="session-summary">${esc(r.summary)}</p>` : '<p class="session-summary" style="color:rgba(15,17,23,0.4);">No summary recorded.</p>';
-      return `<div class="session-item">
-        <div class="session-head"><span class="session-num">${esc(num)}</span><span class="session-date">${esc(d)}</span></div>
-        ${summary}${action}${score}
-      </div>`;
-    }).join('');
-  }
-
-  function buildChart(rows) {
-    const W = 680, H = 160, PAD = 28;
-    const pts = rows
-      .map((r, i) => ({ i, score: r.goal_progress_score }))
-      .filter(p => p.score != null);
-    if (pts.length < 2) return '';
-
-    const n = pts.length;
-    const xStep = (W - PAD * 2) / (n - 1);
-    const coords = pts.map((p, idx) => {
-      const x = PAD + idx * xStep;
-      const y = H - PAD - (p.score / 100) * (H - PAD * 2);
-      return { x, y, score: p.score };
-    });
-    const path = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ');
-    const dots = coords.map(c =>
-      `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.5" fill="#C8861E"/>`).join('');
-    // gridlines at 0/50/100
-    const grid = [0, 50, 100].map(v => {
-      const y = H - PAD - (v / 100) * (H - PAD * 2);
-      return `<line x1="${PAD}" y1="${y}" x2="${W-PAD}" y2="${y}" stroke="rgba(15,17,23,0.07)" stroke-width="1"/>` +
-             `<text x="${PAD-8}" y="${y+3}" text-anchor="end" font-size="10" fill="rgba(15,17,23,0.4)" font-family="DM Sans,sans-serif">${v}</text>`;
-    }).join('');
-
-    return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Goal progress over sessions">
-      ${grid}
-      <path d="${path}" fill="none" stroke="#C8861E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
-      ${dots}
-    </svg>`;
-  }
 
   // ── 5. Plan & billing ──────────────────────────────────────────────────────
   const plan = (userRow.plan || subscription.plan || 'builder').toLowerCase();

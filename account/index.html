@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Your account | GhostCoach</title>
-<meta name="description" content="Manage your GhostCoach profile, business details, 90-day goal, session history, plan, and email preferences.">
+<meta name="description" content="Manage your GhostCoach profile, business details, 90-day goal, plan, and email preferences.">
 <meta name="robots" content="noindex,nofollow">
 <link rel="canonical" href="https://getghostcoach.com/account/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
@@ -94,22 +94,6 @@
   .goal-progress-label { display:flex; justify-content:space-between; font-size:13px; color:rgba(15,17,23,0.6); margin-bottom:8px; }
   .goal-progress-track { height:10px; background:rgba(15,17,23,0.08); border-radius:999px; overflow:hidden; }
   .goal-progress-fill { height:100%; background:var(--amber); border-radius:999px; transition:width .3s ease; }
-
-  /* Session history */
-  .chart-wrap { margin:0 0 28px 0; }
-  .session-list { display:flex; flex-direction:column; gap:14px; }
-  .session-item {
-    border:0.5px solid rgba(15,17,23,0.1); border-radius:10px;
-    padding:16px 18px;
-  }
-  .session-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
-  .session-num { font-size:13px; font-weight:600; color:var(--ink); }
-  .session-date { font-size:12px; color:rgba(15,17,23,0.5); }
-  .session-summary { font-size:14px; color:rgba(15,17,23,0.75); line-height:1.6; margin:0 0 8px 0; white-space:pre-line; }
-  .session-action { font-size:13px; color:var(--ink); }
-  .session-action strong { color:var(--amber); }
-  .session-score { display:inline-block; font-size:12px; color:var(--teal); margin-top:6px; }
-  .empty-state { font-size:14px; color:rgba(15,17,23,0.5); text-align:center; padding:24px; }
 
   /* Plan & billing */
   .plan-current { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
@@ -310,16 +294,6 @@
         <span class="save-msg" id="gc-goal-msg">Goal updated ✓</span>
       </div>
     </form>
-  </section>
-
-  <!-- 4. SESSION HISTORY -->
-  <section class="acct-section">
-    <h2>Session history</h2>
-    <p class="section-hint">Your coaching sessions and how your goal progress has moved over time.</p>
-    <div class="chart-wrap" id="gc-chart-wrap"></div>
-    <div class="session-list" id="gc-session-list">
-      <div class="empty-state">Loading your sessions…</div>
-    </div>
   </section>
 
   <!-- 5. PLAN & BILLING -->
