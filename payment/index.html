@@ -95,10 +95,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 
 @media(max-width:720px){
   nav{padding:0 20px;}
-  .page{padding:80px 20px 40px;}
+  .page{padding:72px 20px 40px;}
   .grid{grid-template-columns:1fr;}
   .steps{max-width:100%;}
   .field-row{grid-template-columns:1fr;}
+
+  /* App nav — override inline styles so Log out stays visible */
+  .app-nav{height:52px !important;padding:0 14px !important;gap:10px;}
+  .app-nav-tag{display:none !important;}
+  .app-nav-actions{gap:10px !important;min-width:0;}
+  .app-nav-actions a{white-space:nowrap;}
 }
   /* Stripe Elements card field (v28) */
   #gc-card-element{background:white;border:1px solid rgba(15,17,23,0.18);border-radius:10px;padding:13px 14px;transition:border-color .15s,box-shadow .15s;}
@@ -111,12 +117,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 </head>
 <body>
 
-<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
-  <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
+<nav class="app-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" class="app-nav-brand" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
-    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+    <span class="app-nav-tag" style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
   </a>
-  <div style="display:flex;align-items:center;gap:14px;"><span style="font-size:12px;color:rgba(247,245,240,0.4);font-family:'DM Sans',sans-serif;">Step 2 of 3</span><a href="#" id="gc-logout" style="font-size:12px;color:rgba(247,245,240,0.55);text-decoration:none;border:0.5px solid rgba(247,245,240,0.18);border-radius:6px;padding:5px 11px;font-family:'DM Sans',sans-serif;transition:color .15s,border-color .15s;" onmouseover="this.style.color='#F7F5F0';this.style.borderColor='rgba(247,245,240,0.35)'" onmouseout="this.style.color='rgba(247,245,240,0.55)';this.style.borderColor='rgba(247,245,240,0.18)'">Log out</a></div>
+  <div class="app-nav-actions" style="display:flex;align-items:center;gap:14px;"><span style="font-size:12px;color:rgba(247,245,240,0.4);font-family:'DM Sans',sans-serif;">Step 2 of 3</span><a href="#" id="gc-logout" style="font-size:12px;color:rgba(247,245,240,0.55);text-decoration:none;border:0.5px solid rgba(247,245,240,0.18);border-radius:6px;padding:5px 11px;font-family:'DM Sans',sans-serif;transition:color .15s,border-color .15s;" onmouseover="this.style.color='#F7F5F0';this.style.borderColor='rgba(247,245,240,0.35)'" onmouseout="this.style.color='rgba(247,245,240,0.55)';this.style.borderColor='rgba(247,245,240,0.18)'">Log out</a></div>
 </nav>
 
 <div class="page">

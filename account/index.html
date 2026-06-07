@@ -120,10 +120,24 @@
   .acct-section.danger h2 { color:#C0392B; }
 
   @media (max-width:680px) {
-    main { padding:80px 16px 60px; }
+    main { padding:72px 16px 60px; }
     .acct-h1 { font-size:28px; }
     .acct-section { padding:24px 20px; }
     .field-row { flex-direction:column; gap:0; }
+
+    /* App nav — keep all actions (incl. Log out) on screen */
+    .app-nav { height:52px !important; padding:0 14px !important; gap:10px; }
+    .app-nav-tag { display:none !important; }   /* hide tagline: saves vertical + horizontal space */
+    .app-nav-actions { gap:10px !important; min-width:0; }
+    .app-nav-actions a { font-size:12px !important; white-space:nowrap; }
+    .app-nav-actions a[id="gc-logout"] { padding:6px 12px !important; flex-shrink:0; }
+  }
+
+  @media (max-width:380px) {
+    /* Very narrow: shorten the chat link label so Log out always fits */
+    .app-nav-actions { gap:8px; }
+    .app-nav-actions a:first-child { font-size:0 !important; }   /* hide long label text */
+    .app-nav-actions a:first-child::after { content:"Chat →"; font-size:12px; color:rgba(247,245,240,0.6); }
   }
 
   /* v29 — billing confirmations */
@@ -160,12 +174,12 @@
 </head>
 <body>
 
-<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
-  <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
+<nav class="app-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" class="app-nav-brand" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
-    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+    <span class="app-nav-tag" style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
   </a>
-  <div style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
+  <div class="app-nav-actions" style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
     <a href="/chat/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;font-family:'DM Sans',sans-serif;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.6)'">Chat with Marcus →</a>
     <a href="#" id="gc-logout" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;">Log out</a>
   </div>
