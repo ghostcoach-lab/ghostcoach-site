@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Your account | GhostCoach</title>
-<meta name="description" content="Manage your GhostCoach profile, business details, 90-day goal, plan, and email preferences.">
+<meta name="description" content="Manage your GhostCoach profile, business details, 90-day goal, session history, plan, and email preferences.">
 <meta name="robots" content="noindex,nofollow">
 <link rel="canonical" href="https://getghostcoach.com/account/">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
@@ -95,6 +95,22 @@
   .goal-progress-track { height:10px; background:rgba(15,17,23,0.08); border-radius:999px; overflow:hidden; }
   .goal-progress-fill { height:100%; background:var(--amber); border-radius:999px; transition:width .3s ease; }
 
+  /* Session history */
+  .chart-wrap { margin:0 0 28px 0; }
+  .session-list { display:flex; flex-direction:column; gap:14px; }
+  .session-item {
+    border:0.5px solid rgba(15,17,23,0.1); border-radius:10px;
+    padding:16px 18px;
+  }
+  .session-head { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .session-num { font-size:13px; font-weight:600; color:var(--ink); }
+  .session-date { font-size:12px; color:rgba(15,17,23,0.5); }
+  .session-summary { font-size:14px; color:rgba(15,17,23,0.75); line-height:1.6; margin:0 0 8px 0; white-space:pre-line; }
+  .session-action { font-size:13px; color:var(--ink); }
+  .session-action strong { color:var(--amber); }
+  .session-score { display:inline-block; font-size:12px; color:var(--teal); margin-top:6px; }
+  .empty-state { font-size:14px; color:rgba(15,17,23,0.5); text-align:center; padding:24px; }
+
   /* Plan & billing */
   .plan-current { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
   .plan-pill { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--amber); background:rgba(200,134,30,0.08); padding:5px 12px; border-radius:999px; }
@@ -120,24 +136,10 @@
   .acct-section.danger h2 { color:#C0392B; }
 
   @media (max-width:680px) {
-    main { padding:72px 16px 60px; }
+    main { padding:80px 16px 60px; }
     .acct-h1 { font-size:28px; }
     .acct-section { padding:24px 20px; }
     .field-row { flex-direction:column; gap:0; }
-
-    /* App nav — keep all actions (incl. Log out) on screen */
-    .app-nav { height:52px !important; padding:0 14px !important; gap:10px; }
-    .app-nav-tag { display:none !important; }   /* hide tagline: saves vertical + horizontal space */
-    .app-nav-actions { gap:10px !important; min-width:0; }
-    .app-nav-actions a { font-size:12px !important; white-space:nowrap; }
-    .app-nav-actions a[id="gc-logout"] { padding:6px 12px !important; flex-shrink:0; }
-  }
-
-  @media (max-width:380px) {
-    /* Very narrow: shorten the chat link label so Log out always fits */
-    .app-nav-actions { gap:8px; }
-    .app-nav-actions a:first-child { font-size:0 !important; }   /* hide long label text */
-    .app-nav-actions a:first-child::after { content:"Chat →"; font-size:12px; color:rgba(247,245,240,0.6); }
   }
 
   /* v29 — billing confirmations */
@@ -174,12 +176,12 @@
 </head>
 <body>
 
-<nav class="app-nav" style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
-  <a href="https://getghostcoach.com/" class="app-nav-brand" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
+<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+  <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
-    <span class="app-nav-tag" style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
+    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
   </a>
-  <div class="app-nav-actions" style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
+  <div style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
     <a href="/chat/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;font-family:'DM Sans',sans-serif;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.6)'">Chat with Marcus →</a>
     <a href="#" id="gc-logout" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;">Log out</a>
   </div>
@@ -305,9 +307,20 @@
       </div>
       <div class="save-row">
         <button type="submit" class="btn btn-primary" id="gc-goal-save">Save goal</button>
+        <button type="button" class="btn btn-ghost" id="gc-goal-reset">Reset goal</button>
         <span class="save-msg" id="gc-goal-msg">Goal updated ✓</span>
       </div>
     </form>
+  </section>
+
+  <!-- 4. SESSION HISTORY -->
+  <section class="acct-section">
+    <h2>Session history</h2>
+    <p class="section-hint">Your coaching sessions and how your goal progress has moved over time.</p>
+    <div class="chart-wrap" id="gc-chart-wrap"></div>
+    <div class="session-list" id="gc-session-list">
+      <div class="empty-state">Loading your sessions…</div>
+    </div>
   </section>
 
   <!-- 5. PLAN & BILLING -->
@@ -323,6 +336,7 @@
     </div>
     <div class="billing-actions" id="gc-billing-actions">
       <button type="button" class="btn btn-primary" id="gc-upgrade" data-action="upgrade">Upgrade to Operator</button>
+      <button type="button" class="btn btn-ghost" id="gc-lifetime" data-action="lifetime">Get Lifetime access</button>
       <button type="button" class="btn btn-ghost" id="gc-downgrade" data-action="downgrade">Downgrade to Builder</button>
       <button type="button" class="btn btn-ghost" id="gc-cancel" data-action="cancel">Cancel subscription</button>
     </div>

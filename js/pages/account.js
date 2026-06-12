@@ -165,8 +165,26 @@
     }
   });
 
-  // ── 4. Chat CTA continuity ───────────────────────────────────────────────────
-  // (Session history UI removed for now — S3 summaries not built yet.)
+  document.getElementById('gc-goal-reset').addEventListener('click', async () => {
+    if (!confirm('Reset your 90-day goal? This sets progress back to 0% and starts a fresh 90-day window.')) return;
+    try {
+      await gcSupabase.from('profiles').upsert({
+        user_id: userId,
+        goal_90_day: val('ac-goal'),
+        goal_progress: 0,
+        goal_start_date: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+      document.getElementById('ac-goal-pct').textContent = '0%';
+      document.getElementById('ac-goal-fill').style.width = '0%';
+      flash('gc-goal-msg');
+    } catch (err) {
+      alert('Could not reset goal: ' + (err?.message || err));
+    }
+  });
+
+  // ── 4. Session history + chart ──────────────────────────────────────────────
+  renderSessions(sessions);
 
   // v30 — chat CTA continuity line (most recent session's commitment)
   (function setChatContinuity() {
@@ -186,6 +204,73 @@
     if (sub) sub.textContent = 'Your first session is set up from your onboarding answers.';
   })();
 
+  function renderSessions(rows) {
+    const listEl  = document.getElementById('gc-session-list');
+    const chartEl = document.getElementById('gc-chart-wrap');
+
+    if (!rows || rows.length === 0) {
+      listEl.innerHTML = '<div class="empty-state">No sessions yet. Your first session with Marcus will appear here.</div>';
+      chartEl.innerHTML = '';
+      return;
+    }
+
+    // Chart: goal_progress_score over sessions (simple SVG line)
+    const scores = rows.map(r => (r.goal_progress_score ?? null)).filter(s => s !== null);
+    if (scores.length >= 2) {
+      chartEl.innerHTML = buildChart(rows);
+    } else {
+      chartEl.innerHTML = '';
+    }
+
+    // List (most recent first)
+    const ordered = [...rows].reverse();
+    listEl.innerHTML = ordered.map(r => {
+      const d = r.created_at ? new Date(r.created_at).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' }) : '';
+      const num = r.session_number != null ? ('Session ' + r.session_number) : 'Session';
+      const score = (r.goal_progress_score != null)
+        ? `<span class="session-score">Goal progress: ${r.goal_progress_score}%</span>` : '';
+      const action = r.action_committed
+        ? `<div class="session-action"><strong>Committed:</strong> ${esc(r.action_committed)}</div>` : '';
+      const summary = r.summary
+        ? `<p class="session-summary">${esc(r.summary)}</p>` : '<p class="session-summary" style="color:rgba(15,17,23,0.4);">No summary recorded.</p>';
+      return `<div class="session-item">
+        <div class="session-head"><span class="session-num">${esc(num)}</span><span class="session-date">${esc(d)}</span></div>
+        ${summary}${action}${score}
+      </div>`;
+    }).join('');
+  }
+
+  function buildChart(rows) {
+    const W = 680, H = 160, PAD = 28;
+    const pts = rows
+      .map((r, i) => ({ i, score: r.goal_progress_score }))
+      .filter(p => p.score != null);
+    if (pts.length < 2) return '';
+
+    const n = pts.length;
+    const xStep = (W - PAD * 2) / (n - 1);
+    const coords = pts.map((p, idx) => {
+      const x = PAD + idx * xStep;
+      const y = H - PAD - (p.score / 100) * (H - PAD * 2);
+      return { x, y, score: p.score };
+    });
+    const path = coords.map((c, i) => (i === 0 ? 'M' : 'L') + c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ');
+    const dots = coords.map(c =>
+      `<circle cx="${c.x.toFixed(1)}" cy="${c.y.toFixed(1)}" r="3.5" fill="#C8861E"/>`).join('');
+    // gridlines at 0/50/100
+    const grid = [0, 50, 100].map(v => {
+      const y = H - PAD - (v / 100) * (H - PAD * 2);
+      return `<line x1="${PAD}" y1="${y}" x2="${W-PAD}" y2="${y}" stroke="rgba(15,17,23,0.07)" stroke-width="1"/>` +
+             `<text x="${PAD-8}" y="${y+3}" text-anchor="end" font-size="10" fill="rgba(15,17,23,0.4)" font-family="DM Sans,sans-serif">${v}</text>`;
+    }).join('');
+
+    return `<svg viewBox="0 0 ${W} ${H}" width="100%" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Goal progress over sessions">
+      ${grid}
+      <path d="${path}" fill="none" stroke="#C8861E" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+      ${dots}
+    </svg>`;
+  }
+
   // ── 5. Plan & billing ──────────────────────────────────────────────────────
   const plan = (userRow.plan || subscription.plan || 'builder').toLowerCase();
   const status = userRow.status || subscription.status || 'trial';
@@ -200,13 +285,14 @@
 
   // Buttons
   const upBtn      = document.getElementById('gc-upgrade');
+  const lifeBtn    = document.getElementById('gc-lifetime');
   const downBtn    = document.getElementById('gc-downgrade');
   const cancelBtn  = document.getElementById('gc-cancel');
   const manageBtn  = document.getElementById('gc-manage-billing');
   const periodEnd  = subscription.current_period_end || null;
 
   function showOnly(buttons) {
-    [upBtn, downBtn, cancelBtn].forEach(b => { if (b) b.style.display = 'none'; });
+    [upBtn, lifeBtn, downBtn, cancelBtn].forEach(b => { if (b) b.style.display = 'none'; });
     buttons.forEach(b => { if (b) b.style.display = ''; });
   }
 
@@ -216,9 +302,9 @@
     const pm = document.getElementById('gc-payment-method');
     if (pm) pm.textContent = 'Lifetime access — no recurring billing.';
   } else if (plan === 'operator') {
-    showOnly([downBtn, cancelBtn]);
+    showOnly([lifeBtn, downBtn, cancelBtn]);
   } else { // builder
-    showOnly([upBtn, cancelBtn]);
+    showOnly([upBtn, lifeBtn, cancelBtn]);
   }
 
   // If a downgrade is already scheduled, surface the persistent notice
@@ -273,6 +359,29 @@
     } catch (e) {
       downBtn.disabled = false;
       showBanner('Could not schedule the downgrade right now. Please try again.', 'error');
+    }
+  });
+
+  // ── Lifetime upgrade: celebratory; handle cap-full failure ──
+  if (lifeBtn) lifeBtn.addEventListener('click', async () => {
+    if (!confirm('Get Lifetime access for $499 (one-time)? Operator features, for life.')) return;
+    lifeBtn.disabled = true;
+    try {
+      const res = await postPlan('lifetime');
+      if (res.status === 409) {
+        // Founding-member cap reached
+        showBanner('All 50 founding-member spots are taken. Lifetime is no longer available.', 'error');
+        lifeBtn.disabled = false;
+        return;
+      }
+      if (!res.ok) throw new Error();
+      document.getElementById('gc-plan-pill').textContent = 'Lifetime';
+      document.getElementById('gc-plan-status').textContent = 'Founding member';
+      showOnly([]);
+      showBanner("You're a founding member — Operator features, for life.", 'celebrate');
+    } catch (e) {
+      lifeBtn.disabled = false;
+      showBanner('Could not complete the Lifetime upgrade right now. Please try again.', 'error');
     }
   });
 
@@ -341,29 +450,10 @@
   const nlToggle = document.getElementById('gc-newsletter-toggle');
   const subscribed = newsletterRow && !newsletterRow.unsubscribed_at;
   nlToggle.checked = !!subscribed;
-
-  // Multi-line confirmation message shown when the newsletter pref changes.
-  function nlMessage(text) {
-    let m = document.getElementById('gc-nl-pref-msg');
-    if (!m) {
-      m = document.createElement('div');
-      m.id = 'gc-nl-pref-msg';
-      m.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);max-width:380px;width:calc(100% - 32px);background:#0F1117;color:#F7F5F0;padding:14px 18px;border-radius:12px;font-size:13px;line-height:1.55;z-index:300;opacity:0;transition:opacity .2s;font-family:"DM Sans",sans-serif;box-shadow:0 4px 20px rgba(15,17,23,0.35);border-left:3px solid #C8861E;';
-      document.body.appendChild(m);
-    }
-    m.textContent = text;
-    m.style.opacity = '1';
-    clearTimeout(m._timer);
-    m._timer = setTimeout(() => { m.style.opacity = '0'; }, 6000);
-  }
-
-  const NL_ON  = "You're in. Weekly insights for solo product builders — one idea, one framework, one move you can make.";
-  const NL_OFF = "Unsubscribed. No more newsletter. Your account and Marcus sessions are untouched — this only stops the weekly email.";
-
   nlToggle.addEventListener('change', () => {
     const wantOn = nlToggle.checked;
-    // Optimistic: flip instantly + show the matching message. Beehiiv sync is fire-and-forget.
-    nlMessage(wantOn ? NL_ON : NL_OFF);
+    // Optimistic: flip instantly + toast. Beehiiv sync is fire-and-forget (don't block).
+    toast('Updated ✓');
     const url = wantOn ? `${GC.N8N_BASE}/gc-s8-signup` : `${GC.N8N_BASE}/gc-s8-unsubscribe`;
     const body = wantOn ? { email, user_id: userId, source: 'account_prefs' } : { email, user_id: userId };
     fetch(url, {

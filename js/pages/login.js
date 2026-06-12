@@ -8,7 +8,7 @@ async function handleSocial(provider) {
   try {
     const { error } = await gcSupabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: window.location.origin + '/account/' }
+      options: { redirectTo: window.location.origin + '/payment/' }
     });
     if (error) throw error;
   } catch (err) {
@@ -17,23 +17,7 @@ async function handleSocial(provider) {
 }
 
 (async () => {
-  // If already logged in, route the same way a fresh login does:
-  // paid/trialing → /account/, still-in-funnel → /payment/.
-  const existing = await GCAuth.getSession();
-  if (existing) {
-    let target = '/payment/';
-    try {
-      const { data: sub } = await gcSupabase
-        .from('subscriptions')
-        .select('status')
-        .eq('user_id', existing.user.id)
-        .in('status', ['active', 'trialing'])
-        .maybeSingle();
-      if (sub) target = '/account/';
-    } catch (_) { /* subscriptions table not populated yet — default to /payment/ */ }
-    window.location.href = target;
-    return;
-  }
+  await GCAuth.redirectIfLoggedIn('/payment/');
 
   const form    = document.getElementById('gc-login-form');
   const emailEl = document.getElementById('gc-email');
@@ -51,7 +35,7 @@ async function handleSocial(provider) {
 
     try {
       const data = await GCAuth.signIn(emailEl.value.trim(), passEl.value);
-      // Smart redirect: users with an active/trialing subscription go to their account;
+      // Smart redirect: users with an active/trialing subscription go straight to the app;
       // anyone still in the funnel (e.g. confirmed email but no payment yet) lands on /payment/.
       let target = '/payment/';
       try {
@@ -61,7 +45,7 @@ async function handleSocial(provider) {
           .eq('user_id', data.user.id)
           .in('status', ['active', 'trialing'])
           .maybeSingle();
-        if (sub) target = '/account/';
+        if (sub) target = '/chat/';
       } catch (_) { /* subscriptions table not populated yet — default to /payment/ */ }
       window.location.href = target;
     } catch (err) {
