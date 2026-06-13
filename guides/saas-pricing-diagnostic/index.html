@@ -65,8 +65,13 @@
   .select-input { width: 100%; padding: 14px 16px; border: 1px solid rgba(15,17,23,0.15); border-radius: 10px; font: 15px 'DM Sans', sans-serif; color: var(--ink); background: #fff; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238B8A98' stroke-width='2.5'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
   .select-input:focus { outline: none; border-color: var(--amber); }
 
+  /* Global back link (top of tool card, hidden on first step) */
+  .tool-back { background: none; border: none; padding: 0; font: 500 13px 'DM Sans', sans-serif; color: rgba(15,17,23,0.55); cursor: pointer; margin-bottom: 20px; display: none; align-items: center; gap: 4px; transition: color .15s; }
+  .tool-back.visible { display: inline-flex; }
+  .tool-back:hover { color: var(--ink); }
+
   /* Step navigation */
-  .step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; }
+  .step-nav { display: flex; justify-content: flex-end; align-items: center; margin-top: 28px; }
   .back-link { font-size: 13px; color: rgba(15,17,23,0.5); cursor: pointer; background: none; border: none; padding: 0; font-family: inherit; }
   .back-link:hover { color: var(--ink); }
   .next-btn { background: var(--amber); color: var(--ink); border: none; border-radius: 999px; padding: 12px 28px; font: 600 14px 'DM Sans', sans-serif; cursor: pointer; transition: background .15s; }
@@ -175,7 +180,7 @@
   <div class="container">
     <span class="eyebrow">SaaS Guides · Pricing Diagnostic</span>
     <h1>Stop guessing your price. <em>Get a specific number.</em></h1>
-    <p class="hero-sub">Six questions. One recommendation from Marcus: your pricing model, a starting price, your packaging shape, and the first thing to fix. No signup to see it.</p>
+    <p class="hero-sub">Six questions. One clear recommendation: your pricing model, a starting price, your packaging shape, and the first thing to fix. No signup to see it.</p>
   </div>
 </section>
 
@@ -183,6 +188,7 @@
 <section class="tool-section">
   <div class="container">
     <div class="tool-card" id="tool-card">
+      <button class="tool-back" id="tool-back" type="button">← Back</button>
       <div class="progress"><div class="progress-bar" id="progress-bar"></div></div>
 
       <!-- Step 1: Stage (shared, branches everything) -->
@@ -213,7 +219,6 @@
           </select>
         </div>
         <div class="step-nav">
-          <button class="back-link">← Back</button>
           <button class="next-btn" data-validate="planned">Continue →</button>
         </div>
       </div>
@@ -224,7 +229,6 @@
         <p class="step-help">One line. The narrower, the better the diagnosis.</p>
         <input type="text" class="text-input" id="i-target" placeholder="Solo founders shipping their first SaaS with AI tools" maxlength="180">
         <div class="step-nav">
-          <button class="back-link">← Back</button>
           <button class="next-btn" data-validate="target">Continue →</button>
         </div>
       </div>
@@ -268,7 +272,6 @@
           </select>
         </div>
         <div class="step-nav">
-          <button class="back-link">← Back</button>
           <button class="next-btn" data-validate="current-jl">Continue →</button>
         </div>
       </div>
@@ -322,7 +325,6 @@
           </select>
         </div>
         <div class="step-nav">
-          <button class="back-link">← Back</button>
           <button class="next-btn" data-validate="current-gs">Continue →</button>
         </div>
       </div>
@@ -396,7 +398,7 @@
 
     <!-- Soft handoff (light card) — honest, quieter than a hard CTA -->
     <div class="handoff" id="handoff">
-      <p class="handoff-text">This is a quick read from five answers. The trial walks the full business picture, sharpens the range into a number you can stand behind, and holds it as you test and grow.</p>
+      <p class="handoff-text">Pricing is one decision. Building a software business solo means a dozen more — what to charge, how to package it, why trials don't convert, where growth stalls, what to fix first. GhostCoach's free 14-day trial gives you a coach for all of it: it learns your product and goal, gives you one clear move at a time, and stays with you as you test, ship, and grow.</p>
       <div class="handoff-cta">
         <a href="/signup/?plan=builder" class="handoff-link">Start the trial →</a>
         <p class="handoff-fine">14-day free trial · cancel anytime</p>
@@ -548,6 +550,15 @@
     if (target) target.classList.add('active');
     currentStep = stepName;
     updateProgress();
+    updateBackButton();
+  }
+
+  function updateBackButton() {
+    // Show back when there's a previous step and we're not in a terminal state
+    const onFirstStep = currentStep === 'stage' || stack.length <= 1;
+    const showingResult = resultEl.classList.contains('active') || thinkingEl.classList.contains('active');
+    const shouldShow = !onFirstStep && !showingResult;
+    $('#tool-back').classList.toggle('visible', shouldShow);
   }
 
   function pickStepEl(stepName) {
@@ -620,7 +631,8 @@
     });
   });
 
-  $$('.back-link').forEach(btn => btn.addEventListener('click', goBack));
+  // Global back link (top of tool card)
+  $('#tool-back').addEventListener('click', goBack);
 
   function validateField(key) {
     if (key === 'planned') {
@@ -658,6 +670,7 @@
     errorEl.classList.remove('active');
     thinkingEl.classList.add('active');
     progressBar.style.width = '100%';
+    updateBackButton();
     startThinkingRotation();
 
     try {
@@ -725,6 +738,7 @@
 
     resultEl.classList.add('active');
     handoffEl.classList.add('active');
+    updateBackButton();
     // Smooth scroll to result
     setTimeout(() => resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
   }
