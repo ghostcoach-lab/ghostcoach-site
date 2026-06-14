@@ -337,8 +337,25 @@ if(saved.firstname){
   emailEl.style.background = '#f5f5f0';
   emailEl.style.cursor = 'not-allowed';
 })();
+// Plan resolution order (most reliable first):
+//   1. Supabase user metadata — set at signup in auth.js, survives the email-confirmation
+//      redirect and the Google OAuth round trip (URL params + sessionStorage do not).
+//   2. ?plan= URL param — present on the direct OAuth redirect, absent after email confirm.
+//   3. gc_signup sessionStorage — last-ditch, same-tab only.
+// Render Builder immediately so the page isn't blank, then upgrade once metadata loads.
 if(saved.plan) currentPlan = saved.plan;
 selectPlan(currentPlan);
+
+(async () => {
+  try {
+    const user = await GCAuth.getUser();
+    const metaPlan = user && user.user_metadata && user.user_metadata.plan;
+    if (metaPlan && metaPlan !== currentPlan) {
+      currentPlan = metaPlan;
+      selectPlan(currentPlan);
+    }
+  } catch (e) { /* no session yet — keep the fallback plan already rendered */ }
+})();
 
 // ── Phone field filter: digits, +, spaces, hyphens, parens only ───
 function filterPhone(el){
