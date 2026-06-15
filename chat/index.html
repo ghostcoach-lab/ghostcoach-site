@@ -256,10 +256,13 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 .gc-message--user{background:#C8861E;color:#0F1117;margin-left:auto;border-bottom-right-radius:4px;}
 .gc-message--assistant{background:rgba(247,245,240,0.06);color:#F7F5F0;border:0.5px solid rgba(247,245,240,0.08);border-bottom-left-radius:4px;}
 .gc-message--thinking{color:rgba(247,245,240,0.5);font-style:italic;}
-#gc-goal-bar-wrap{padding:10px 20px 0;}
+#gc-goal-bar-wrap{padding:10px 20px 0;display:none;}
+#gc-goal-bar-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+#gc-goal-bar-label{font-size:11px;color:rgba(247,245,240,0.4);font-family:'DM Sans',sans-serif;letter-spacing:.03em;text-transform:uppercase;}
+#gc-goal-bar-pct{font-size:11px;color:rgba(247,245,240,0.7);font-weight:600;font-family:'DM Sans',sans-serif;}
 #gc-goal-bar-track{height:5px;background:rgba(247,245,240,0.08);border-radius:999px;overflow:hidden;}
-#gc-goal-bar{height:100%;width:0%;background:#C8861E;border-radius:999px;transition:width .4s ease;}
-#gc-goal-bar-label{font-size:11px;color:rgba(247,245,240,0.4);margin-top:5px;font-family:'DM Sans',sans-serif;}
+#gc-goal-bar{height:100%;width:0%;background:#C8861E;border-radius:999px;transition:width .6s ease;}
+#gc-goal-bar-meta{font-size:11px;color:rgba(247,245,240,0.4);margin-top:6px;font-family:'DM Sans',sans-serif;line-height:1.5;}
 
 </style>
 </head>
@@ -284,10 +287,14 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
     </div>
   </div>
 
-  <!-- Optional goal progress bar -->
+  <!-- Goal progress bar — hidden until GC.GOAL_BAR_ENABLED and a session exists -->
   <div id="gc-goal-bar-wrap">
+    <div id="gc-goal-bar-head">
+      <span id="gc-goal-bar-label">90-day goal progress</span>
+      <span id="gc-goal-bar-pct">0%</span>
+    </div>
     <div id="gc-goal-bar-track"><div id="gc-goal-bar"></div></div>
-    <div id="gc-goal-bar-label">90-day goal progress</div>
+    <div id="gc-goal-bar-meta"></div>
   </div>
 
   <!-- Messages -->

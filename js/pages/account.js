@@ -142,9 +142,49 @@
 
   // ── 3. 90-day goal ──────────────────────────────────────────────────────────
   set('ac-goal', profile.goal_90_day);
-  const goalPct = Math.max(0, Math.min(100, profile.goal_progress ?? 0));
-  document.getElementById('ac-goal-pct').textContent = goalPct + '%';
-  document.getElementById('ac-goal-fill').style.width = goalPct + '%';
+
+  // Goal progress bar — shown only when the feature flag is on. Renders the
+  // ABSOLUTE persisted score (no client accumulation). Direction-agnostic: the
+  // CSS width transition animates a drop exactly like a rise, no drop-specific
+  // styling. 0% is a calm, intentional state — never "broken".
+  const goalWrap = document.querySelector('.goal-progress-wrap');
+  function renderAccountGoal(score, hasSessions) {
+    let pct = Number(score);
+    if (!Number.isFinite(pct)) pct = 0;
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    const pctEl  = document.getElementById('ac-goal-pct');
+    const fillEl = document.getElementById('ac-goal-fill');
+    const metaEl = document.getElementById('ac-goal-meta');
+    if (pctEl)  pctEl.textContent = pct + '%';
+    if (fillEl) fillEl.style.width = pct + '%';
+    if (metaEl) {
+      metaEl.textContent = pct === 0
+        ? (hasSessions
+            ? 'No real-world progress yet — that\u2019s normal early on. The score moves when your business does.'
+            : 'Your progress will appear here after your first session with Marcus.')
+        : 'This reflects real progress toward your 90-day goal — it moves only when your business does.';
+    }
+  }
+
+  if (GC.GOAL_BAR_ENABLED && goalWrap) {
+    let hasSessions = false;
+    try {
+      const { count } = await gcSupabase
+        .from('sessions').select('id', { count: 'exact', head: true }).eq('user_id', userId);
+      hasSessions = (count ?? 0) > 0;
+    } catch (_) { /* non-fatal; treat as no sessions */ }
+    goalWrap.style.display = 'block';
+    renderAccountGoal(profile.goal_progress ?? 0, hasSessions);
+
+    // Live update if S3 overwrites the score while the page is open (up or down).
+    gcSupabase
+      .channel('acct-goal-' + userId)
+      .on('postgres_changes', {
+        event: 'UPDATE', schema: 'public', table: 'profiles',
+        filter: `user_id=eq.${userId}`
+      }, (payload) => renderAccountGoal(payload.new.goal_progress ?? 0, true))
+      .subscribe();
+  }
 
   document.getElementById('gc-goal-form').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -175,8 +215,7 @@
         goal_start_date: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
-      document.getElementById('ac-goal-pct').textContent = '0%';
-      document.getElementById('ac-goal-fill').style.width = '0%';
+      renderAccountGoal(0, true);
       flash('gc-goal-msg');
     } catch (err) {
       alert('Could not reset goal: ' + (err?.message || err));

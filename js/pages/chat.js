@@ -7,7 +7,7 @@
 //   #gc-send-btn        — send button
 //   #gc-end-btn         — "End session" button
 //   #gc-session-status  — optional status text element
-//   #gc-goal-bar        — optional <progress> or div for goal progress
+//   #gc-goal-bar-wrap   — goal progress bar (hidden unless GC.GOAL_BAR_ENABLED)
 
 (async () => {
   const session = await GCAuth.requireAuth('/login/');
@@ -21,7 +21,10 @@
   const sendBtn    = document.getElementById('gc-send-btn');
   const endBtn     = document.getElementById('gc-end-btn');
   const statusEl   = document.getElementById('gc-session-status');
-  const goalBar    = document.getElementById('gc-goal-bar');
+  const goalWrap   = document.getElementById('gc-goal-bar-wrap');
+  const goalFill   = document.getElementById('gc-goal-bar');
+  const goalPctEl  = document.getElementById('gc-goal-bar-pct');
+  const goalMetaEl = document.getElementById('gc-goal-bar-meta');
 
   // ── Session state ────────────────────────────────────────────────────────────
   let sessionId   = null;
@@ -155,9 +158,43 @@
     window.location.href = '/session-complete/';
   }
 
-  // ── Real-time goal bar update ─────────────────────────────────────────────────
-  function subscribeToGoalProgress() {
-    if (!goalBar) return;
+  // ── Goal progress bar ─────────────────────────────────────────────────────────
+  // Renders the ABSOLUTE persisted score (profiles.goal_progress, integer 0–100).
+  // No client accumulation — whatever's stored is the truth. Direction-agnostic:
+  // the CSS width transition animates a drop exactly like a rise, with no
+  // drop-specific "warning" styling. 0% is a calm, intentional state.
+  function renderGoalBar(score, hasSessions) {
+    if (!goalFill) return;
+    let pct = Number(score);
+    if (!Number.isFinite(pct)) pct = 0;            // safety net; never invent a value
+    pct = Math.max(0, Math.min(100, Math.round(pct)));
+    goalFill.style.width = pct + '%';
+    if (goalPctEl) goalPctEl.textContent = pct + '%';
+    if (goalMetaEl) {
+      goalMetaEl.textContent = pct === 0
+        ? (hasSessions
+            ? 'No real-world progress yet — that\u2019s normal early on. The score moves when your business does.'
+            : 'Your progress will appear here after your first session.')
+        : 'This reflects real progress toward your 90-day goal — it moves only when your business does.';
+    }
+  }
+
+  // Show the bar only when the feature flag is on. Reads the persisted score so
+  // it survives refresh, then subscribes to Realtime so S3 writes (up OR down)
+  // re-render it live.
+  async function setupGoalBar() {
+    if (!GC.GOAL_BAR_ENABLED || !goalWrap) return;
+    try {
+      const [{ data: prof }, { count }] = await Promise.all([
+        gcSupabase.from('profiles').select('goal_progress').eq('user_id', userId).single(),
+        gcSupabase.from('sessions').select('id', { count: 'exact', head: true }).eq('user_id', userId)
+      ]);
+      goalWrap.style.display = 'block';
+      renderGoalBar(prof?.goal_progress ?? 0, (count ?? 0) > 0);
+    } catch (err) {
+      console.warn('Goal bar: could not load score:', err?.message || err);
+      return; // leave the bar hidden rather than show a broken/guessed value
+    }
     gcSupabase
       .channel('profile-goal-' + userId)
       .on('postgres_changes', {
@@ -166,12 +203,7 @@
         table:  'profiles',
         filter: `user_id=eq.${userId}`
       }, (payload) => {
-        const progress = payload.new.goal_progress ?? 0;
-        if (goalBar.tagName === 'PROGRESS') {
-          goalBar.value = progress;
-        } else {
-          goalBar.style.width = progress + '%';
-        }
+        renderGoalBar(payload.new.goal_progress ?? 0, true);
       })
       .subscribe();
   }
@@ -195,13 +227,13 @@
     if (statusEl) statusEl.textContent = '';  // bubble is doing the talking now
 
     // createSession + loadProfile don't depend on each other — run in parallel
-    // to save ~150-300ms. Realtime subscribe is fire-and-forget.
+    // to save ~150-300ms. Goal bar setup is fire-and-forget.
     const [sessionIdResult, profile] = await Promise.all([
       createSession(),
       loadProfile()
     ]);
     sessionId = sessionIdResult;
-    subscribeToGoalProgress();
+    setupGoalBar();
 
     // Ask the Edge Function for a context-aware opener (empty messages = opener).
     // First-timers: opener reflects onboarding. Regulars: opener reflects history.

@@ -90,10 +90,11 @@
   .save-msg.show { opacity:1; }
 
   /* 90-day goal progress bar */
-  .goal-progress-wrap { margin:18px 0; }
+  .goal-progress-wrap { margin:18px 0; display:none; }
   .goal-progress-label { display:flex; justify-content:space-between; font-size:13px; color:rgba(15,17,23,0.6); margin-bottom:8px; }
   .goal-progress-track { height:10px; background:rgba(15,17,23,0.08); border-radius:999px; overflow:hidden; }
-  .goal-progress-fill { height:100%; background:var(--amber); border-radius:999px; transition:width .3s ease; }
+  .goal-progress-fill { height:100%; background:var(--amber); border-radius:999px; transition:width .6s ease; }
+  .goal-progress-meta { font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5; }
 
   /* Plan & billing */
   .plan-current { display:flex; align-items:center; gap:12px; margin-bottom:20px; }
@@ -288,6 +289,7 @@
         <div class="goal-progress-track">
           <div class="goal-progress-fill" id="ac-goal-fill" style="width:0%"></div>
         </div>
+        <div class="goal-progress-meta" id="ac-goal-meta"></div>
       </div>
       <div class="save-row">
         <button type="submit" class="btn btn-primary" id="gc-goal-save">Save goal</button>
