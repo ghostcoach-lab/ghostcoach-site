@@ -116,28 +116,43 @@
     isEnding = true;
     endBtn.disabled = true;
     sendBtn.disabled = true;
-    if (statusEl) statusEl.textContent = 'Processing your session…';
+    if (statusEl) statusEl.textContent = 'Wrapping up your session…';
 
+    const transcriptText = transcript
+      .map(m => `${m.role === 'user' ? 'Founder' : 'Marcus'}: ${m.content}`)
+      .join('\n\n');
+
+    // Hand the session id to /session-complete/ BEFORE the webhook fires, so
+    // the destination page always finds it — even if we navigate before the
+    // webhook resolves.
+    try { sessionStorage.setItem('gc_last_session', sessionId); } catch (e) {}
+
+    // Race the webhook against a 2s timeout.
+    //  - If n8n S3 acks quickly (recommended: webhook node set to "Respond
+    //    immediately"), we navigate within a few hundred ms.
+    //  - If S3 is set to "Respond when last node finishes" (full Anthropic
+    //    summary + DB writes + email = 5-15s), we navigate after 2s. The
+    //    request continues in the background — webhooks.js sets keepalive:true
+    //    so the browser guarantees delivery even after navigation.
+    //  - If the webhook FAST-FAILS within 2s (network down, 5xx, etc.), we
+    //    catch the rejection and let the user retry — better than navigating
+    //    to a dead-end /session-complete/ with no data.
+    //
+    // /session-complete/ handles all three cases: immediate read on load,
+    // realtime subscribe for live updates, polling backup, "check your inbox"
+    // fallback after ~32s if no summary lands.
     try {
-      const transcriptText = transcript
-        .map(m => `${m.role === 'user' ? 'Founder' : 'Marcus'}: ${m.content}`)
-        .join('\n\n');
-
-      await GCWebhook.endSession(sessionId, userId, transcriptText);
-
-      if (statusEl) statusEl.textContent = 'Session complete — taking you to your recap…';
-
-      // Hand the session id to the summary page, then go there.
-      // n8n S3 writes the 3-bullet summary + emails the recap server-side;
-      // /session-complete/ shows the summary (or a "check your inbox" fallback)
-      // and links on to /account/.
-      try { sessionStorage.setItem('gc_last_session', sessionId); } catch (e) {}
-      window.location.href = '/session-complete/';
+      const webhookPromise = GCWebhook.endSession(sessionId, userId, transcriptText);
+      const timeoutPromise = new Promise(resolve => setTimeout(resolve, 2000));
+      await Promise.race([webhookPromise, timeoutPromise]);
     } catch (err) {
       if (statusEl) statusEl.textContent = 'Could not save session. Your transcript is preserved.';
       endBtn.disabled = false;
       isEnding = false;
+      return;
     }
+
+    window.location.href = '/session-complete/';
   }
 
   // ── Real-time goal bar update ─────────────────────────────────────────────────
@@ -162,14 +177,31 @@
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
+  // Clear the welcome card immediately so the chat area is visible.
+  const welcome = document.getElementById('chat-welcome');
+  if (welcome) welcome.remove();
+
+  // Show inline "…" thinking bubble RIGHT AWAY so the user sees Marcus is
+  // composing — without this, the page feels dead for the 3-8s it takes
+  // Anthropic to generate the opener. Declared outside the try so the catch
+  // block can clean it up if anything below fails.
+  const thinking = document.createElement('div');
+  thinking.className = 'gc-message gc-message--assistant gc-message--thinking';
+  thinking.textContent = '…';
+  messagesEl.appendChild(thinking);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+
   try {
-    // Show the loading-context state while we set up
-    if (statusEl) statusEl.textContent = 'Marcus is loading your context…';
+    if (statusEl) statusEl.textContent = '';  // bubble is doing the talking now
 
-    sessionId = await createSession();
+    // createSession + loadProfile don't depend on each other — run in parallel
+    // to save ~150-300ms. Realtime subscribe is fire-and-forget.
+    const [sessionIdResult, profile] = await Promise.all([
+      createSession(),
+      loadProfile()
+    ]);
+    sessionId = sessionIdResult;
     subscribeToGoalProgress();
-
-    const profile = await loadProfile();
 
     // Ask the Edge Function for a context-aware opener (empty messages = opener).
     // First-timers: opener reflects onboarding. Regulars: opener reflects history.
@@ -181,10 +213,11 @@
       opener = `Hey ${name}. What's on your mind today?`;
     }
 
-    // Clear the welcome/loading card, then show Marcus's opener
-    const welcome = document.getElementById('chat-welcome');
-    if (welcome) welcome.remove();
+    // Swap the thinking bubble for the real opener and add to transcript
+    // so Marcus has context of his own opening line when the user replies.
+    thinking.remove();
     appendMessage('assistant', opener);
+    transcript.push({ role: 'assistant', content: opener });
 
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', (e) => {
@@ -193,6 +226,7 @@
     endBtn.addEventListener('click', endSession);
 
   } catch (err) {
+    thinking.remove();
     if (statusEl) statusEl.textContent = err.message;
   }
 })();

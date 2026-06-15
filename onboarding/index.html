@@ -867,6 +867,30 @@
       // Continue anyway — sessionStorage has the data as a fallback
     }
 
+    // v60: Also write the business fields directly to profiles. n8n S2 should
+    // do this server-side, but we mirror it client-side so the data is
+    // guaranteed to land in /account/ even if S2 misses a column or hasn't
+    // been redeployed with the latest schema. Last-write-wins via upsert.
+    // marcus_ready_at is left for n8n S2 to set — that's what gates /chat/.
+    try {
+      await gcSupabase.from('profiles').upsert({
+        user_id:            gcUser.id,
+        product:            profile.product,
+        stage:              profile.stage,
+        business_model:     profile.business_model,
+        tools:              profile.tools,
+        bottleneck:         profile.bottleneck,
+        tried:              profile.tried,
+        goal_90_day:        profile.goal_90_day,
+        replaces:           profile.replaces,
+        additional_context: profile.additional_context,
+        updated_at:         new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    } catch (e) {
+      console.warn('Profile upsert (business fields) failed:', e?.message || e);
+      // Non-blocking — n8n S2 is the canonical writer and should still land.
+    }
+
     // Clear partial state
     try { sessionStorage.removeItem('gc_onboarding_partial'); } catch (e) {}
 

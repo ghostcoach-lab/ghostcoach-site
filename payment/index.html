@@ -493,7 +493,27 @@ async function handleStart(){
     const resData = await res.json();
     if (!res.ok) throw new Error(resData.error || 'Could not start. Please try again.');
 
-    // 3. Redirect to onboarding
+    // 3. Persist personal info to profiles BEFORE onboarding redirects.
+    //    Without this write, the Supabase profile row only has user_id; the
+    //    name/phone/country live in sessionStorage only and never reach /account/.
+    //    n8n S2 (onboarding) later UPDATEs the same row with business fields.
+    try {
+      if (userId) {
+        await gcSupabase.from('profiles').upsert({
+          user_id:    userId,
+          firstname:  profile.firstname,
+          lastname:   profile.lastname,
+          phone:      profile.phone,
+          country:    profile.country,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+      }
+    } catch (e) {
+      console.warn('Profile upsert (personal info) failed:', e?.message || e);
+      // Non-blocking — keep going to /onboarding/. User can re-enter on /account/.
+    }
+
+    // 4. Redirect to onboarding
     window.location.href = '/onboarding/';
 
   } catch (err) {

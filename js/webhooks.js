@@ -3,7 +3,11 @@
 
 const GCWebhook = {
 
-  // Internal: POST to an n8n webhook endpoint
+  // Internal: POST to an n8n webhook endpoint.
+  // `keepalive:true` guarantees the request completes even if the page navigates
+  // away mid-flight — critical for /chat/ endSession which fires the webhook
+  // then immediately redirects to /session-complete/. Body limit for keepalive
+  // is 64KB; all GC webhook payloads are well under that.
   async _post(path, body) {
     const url = GC.N8N_BASE + path;
     const res = await fetch(url, {
@@ -12,7 +16,8 @@ const GCWebhook = {
         'Content-Type': 'application/json',
         'x-gc-secret':  GC.WEBHOOK_SECRET
       },
-      body: JSON.stringify(body)
+      body: JSON.stringify(body),
+      keepalive: true
     });
     if (!res.ok) {
       const text = await res.text();
