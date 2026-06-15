@@ -35,6 +35,14 @@ async function handleSocial(provider) {
 
     try {
       const data = await GCAuth.signIn(emailEl.value.trim(), passEl.value);
+      // If we were sent here with ?next=/some/path, return there after login
+      // (used by the contact page so the user lands back on the form, prefilled).
+      // Only allow same-site root-relative paths — never an absolute/external URL.
+      const nextParam = new URLSearchParams(window.location.search).get('next');
+      if (nextParam && /^\/[^/]/.test(nextParam)) {
+        window.location.href = nextParam;
+        return;
+      }
       // Smart redirect: users with an active/trialing subscription go straight to the app;
       // anyone still in the funnel (e.g. confirmed email but no payment yet) lands on /payment/.
       let target = '/payment/';

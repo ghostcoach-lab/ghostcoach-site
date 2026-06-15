@@ -458,6 +458,14 @@ async function handleStart(){
   try {
     const session = await GCAuth.getSession();
     if (session) { userId = session.user.id; email = session.user.email || email; }
+    // Fallback: getSession can return null before the session has hydrated,
+    // even when the user is authenticated. getUser() often resolves in that
+    // window. Without this, userId stays null and the personal-info write
+    // below is skipped — name/phone/country then never reach /account/.
+    if (!userId) {
+      const user = await GCAuth.getUser();
+      if (user) { userId = user.id; email = user.email || email; }
+    }
   } catch (e) { /* not signed in — n8n S5 can match by email */ }
 
   // Pick the Stripe price for the selected plan

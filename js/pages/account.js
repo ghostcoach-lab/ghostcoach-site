@@ -82,6 +82,33 @@
   set('ac-phone',     profile.phone);
   set('ac-country',   profile.country);
 
+  // Backfill safety net: if the profiles row is missing personal fields but the
+  // payment step left them in sessionStorage (gc_profile), populate the form
+  // from there and write them back so the data sticks. Recovers users whose
+  // /payment/ write was skipped because their session hadn't hydrated yet.
+  try {
+    const stashed = JSON.parse(sessionStorage.getItem('gc_profile') || '{}');
+    const missing = !profile.firstname && !profile.lastname && !profile.phone && !profile.country;
+    const haveStash = stashed.firstname || stashed.lastname || stashed.phone || stashed.country;
+    if (missing && haveStash) {
+      set('ac-firstname', stashed.firstname);
+      set('ac-lastname',  stashed.lastname);
+      set('ac-phone',     stashed.phone);
+      set('ac-country',   stashed.country);
+      // Persist so it survives the sessionStorage being cleared (tab close).
+      await gcSupabase.from('profiles').upsert({
+        user_id:    userId,
+        firstname:  stashed.firstname || null,
+        lastname:   stashed.lastname  || null,
+        phone:      stashed.phone     || null,
+        country:    stashed.country   || null,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    }
+  } catch (e) {
+    console.warn('Personal-info backfill skipped:', e?.message || e);
+  }
+
   document.getElementById('gc-personal-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('gc-personal-save');
