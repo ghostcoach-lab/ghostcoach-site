@@ -400,58 +400,67 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
   <script src="/js/pages/contact.js"></script>
 
   <script>
-  // v30 — show "Chat with Marcus" in the nav only when logged in
+  // Logged-in users: hide the "Log in" nav link + the login gate, swap in a
+  // "Chat with Marcus" nav link, and prefill name/email. Written as one flat,
+  // independently-guarded flow so a failure in any single step (e.g. the profile
+  // fetch) can never prevent the earlier UI hide from completing.
   (function () {
-    function injectChatLink() {
-      var login = document.querySelector('a[href="/login/"]');
-      if (!login || document.getElementById('gc-nav-chat')) return;
-      var chat = document.createElement('a');
-      chat.id = 'gc-nav-chat';
-      chat.href = '/chat/';
-      chat.textContent = 'Chat with Marcus →';
-      chat.className = login.className;
-      chat.setAttribute('style', login.getAttribute('style') || '');
-      login.parentNode.insertBefore(chat, login);
-      login.style.display = 'none'; // logged-in users don't need "Log in"
-    }
-    // For a logged-in user: hide the login gate and prefill name + email so
-    // they don't retype what we already know. Email comes from the auth session;
-    // name comes from their profile (firstname/lastname), falling back to the
-    // sessionStorage stash left by signup/payment if the profile row is thin.
-    async function prefillFromAccount(session) {
-      var gate = document.getElementById('login-gate');
-      if (gate) gate.style.display = 'none';
-
-      var emailEl = document.getElementById('gc-email');
-      var nameEl  = document.getElementById('f-name');
-      if (emailEl && session.user && session.user.email) emailEl.value = session.user.email;
-
+    async function run() {
+      var session = null;
       try {
-        var res = await gcSupabase
-          .from('profiles')
-          .select('firstname, lastname')
-          .eq('user_id', session.user.id)
-          .single();
-        var p = res.data || {};
-        var full = [p.firstname, p.lastname].filter(Boolean).join(' ').trim();
+        if (window.GCAuth && GCAuth.getSession) session = await GCAuth.getSession();
+      } catch (e) { return; }
+      if (!session) return;
+
+      // 1. Hide the login gate (do this FIRST — never blocked by anything below).
+      try {
+        var gate = document.getElementById('login-gate');
+        if (gate) gate.style.display = 'none';
+      } catch (e) {}
+
+      // 2. Replace the nav "Log in" link with "Chat with Marcus".
+      try {
+        var login = document.querySelector('nav a[href="/login/"]');
+        if (login && !document.getElementById('gc-nav-chat')) {
+          var chat = document.createElement('a');
+          chat.id = 'gc-nav-chat';
+          chat.href = '/chat/';
+          chat.textContent = 'Chat with Marcus →';
+          chat.className = login.className;
+          chat.setAttribute('style', login.getAttribute('style') || '');
+          if (login.parentNode) login.parentNode.insertBefore(chat, login);
+          login.style.display = 'none';
+        }
+      } catch (e) {}
+
+      // 3. Prefill email from the session.
+      try {
+        var emailEl = document.getElementById('gc-email');
+        if (emailEl && session.user && session.user.email) emailEl.value = session.user.email;
+      } catch (e) {}
+
+      // 4. Prefill name from profile, falling back to the signup/payment stash.
+      try {
+        var nameEl = document.getElementById('f-name');
+        var full = '';
+        try {
+          var res = await gcSupabase
+            .from('profiles').select('firstname, lastname')
+            .eq('user_id', session.user.id).single();
+          var p = (res && res.data) || {};
+          full = [p.firstname, p.lastname].filter(Boolean).join(' ').trim();
+        } catch (e) {}
         if (!full) {
-          var stash = {};
-          try { stash = JSON.parse(sessionStorage.getItem('gc_profile') || '{}'); } catch (e) {}
-          full = [stash.firstname, stash.lastname].filter(Boolean).join(' ').trim();
+          try {
+            var stash = JSON.parse(sessionStorage.getItem('gc_profile') || '{}');
+            full = [stash.firstname, stash.lastname].filter(Boolean).join(' ').trim();
+          } catch (e) {}
         }
         if (nameEl && full) nameEl.value = full;
-      } catch (e) { /* leave name blank — user can type it */ }
-    }
-    function check() {
-      try {
-        if (!window.GCAuth || !GCAuth.getSession) return;
-        GCAuth.getSession().then(function (s) {
-          if (s) { injectChatLink(); prefillFromAccount(s); }
-        }).catch(function(){});
       } catch (e) {}
     }
-    if (document.readyState !== 'loading') check();
-    else document.addEventListener('DOMContentLoaded', check);
+    if (document.readyState !== 'loading') run();
+    else document.addEventListener('DOMContentLoaded', run);
   })();
   </script>
   <script src="/js/cookie-banner.js"></script>
