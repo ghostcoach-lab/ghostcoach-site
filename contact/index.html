@@ -205,7 +205,8 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
     <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
   </a>
   <div style="display:flex;align-items:center;gap:22px;flex-shrink:0;">
-    <a href="/login/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;font-family:'DM Sans',sans-serif;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.6)'">Log in</a>
+    <a href="/login/?next=/contact/" id="gc-nav-login" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;font-family:'DM Sans',sans-serif;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.6)'">Log in</a>
+    <a href="#" id="gc-nav-logout" style="display:none;font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;font-family:'DM Sans',sans-serif;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.6)'">Log out</a>
     <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;font-family:'DM Sans',sans-serif;">← Back to home</a>
   </div>
 </nav>
@@ -400,11 +401,21 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
   <script src="/js/pages/contact.js"></script>
 
   <script>
-  // Logged-in users: hide the "Log in" nav link + the login gate, swap in a
-  // "Chat with Marcus" nav link, and prefill name/email. Written as one flat,
-  // independently-guarded flow so a failure in any single step (e.g. the profile
-  // fetch) can never prevent the earlier UI hide from completing.
+  // Logged-in state on /contact/: hide the login gate + nav "Log in", show nav
+  // "Log out", prefill name/email. Toggles elements that ALREADY exist in the
+  // markup by id — no DOM creation, no querySelector, no cross-scope calls — so
+  // there's nothing that can throw and block the UI update.
   (function () {
+    // Wire logout immediately (safe even if logged out — the link is hidden).
+    var logoutEl = document.getElementById('gc-nav-logout');
+    if (logoutEl) {
+      logoutEl.addEventListener('click', async function (e) {
+        e.preventDefault();
+        try { if (window.GCAuth && GCAuth.signOut) await GCAuth.signOut(); } catch (err) {}
+        window.location.href = '/contact/';
+      });
+    }
+
     async function run() {
       var session = null;
       try {
@@ -412,41 +423,24 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
       } catch (e) { return; }
       if (!session) return;
 
-      // 1. Hide the login gate (do this FIRST — never blocked by anything below).
-      try {
-        var gate = document.getElementById('login-gate');
-        if (gate) gate.style.display = 'none';
-      } catch (e) {}
+      // Hide gate, swap nav Log in -> Log out. Each guarded independently.
+      try { var g = document.getElementById('login-gate'); if (g) g.style.display = 'none'; } catch (e) {}
+      try { var li = document.getElementById('gc-nav-login');  if (li) li.style.display = 'none'; } catch (e) {}
+      try { var lo = document.getElementById('gc-nav-logout'); if (lo) lo.style.display = ''; } catch (e) {}
 
-      // 2. Replace the nav "Log in" link with "Chat with Marcus".
-      try {
-        var login = document.querySelector('nav a[href="/login/"]');
-        if (login && !document.getElementById('gc-nav-chat')) {
-          var chat = document.createElement('a');
-          chat.id = 'gc-nav-chat';
-          chat.href = '/chat/';
-          chat.textContent = 'Chat with Marcus →';
-          chat.className = login.className;
-          chat.setAttribute('style', login.getAttribute('style') || '');
-          if (login.parentNode) login.parentNode.insertBefore(chat, login);
-          login.style.display = 'none';
-        }
-      } catch (e) {}
-
-      // 3. Prefill email from the session.
+      // Prefill email from session.
       try {
         var emailEl = document.getElementById('gc-email');
         if (emailEl && session.user && session.user.email) emailEl.value = session.user.email;
       } catch (e) {}
 
-      // 4. Prefill name from profile, falling back to the signup/payment stash.
+      // Prefill name from profile, fall back to signup/payment stash.
       try {
         var nameEl = document.getElementById('f-name');
         var full = '';
         try {
-          var res = await gcSupabase
-            .from('profiles').select('firstname, lastname')
-            .eq('user_id', session.user.id).single();
+          var res = await gcSupabase.from('profiles')
+            .select('firstname, lastname').eq('user_id', session.user.id).single();
           var p = (res && res.data) || {};
           full = [p.firstname, p.lastname].filter(Boolean).join(' ').trim();
         } catch (e) {}
