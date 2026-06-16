@@ -416,13 +416,10 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
       });
     }
 
-    async function run() {
-      var session = null;
-      try {
-        if (window.GCAuth && GCAuth.getSession) session = await GCAuth.getSession();
-      } catch (e) { return; }
-      if (!session) return;
-
+    var applied = false;
+    function applyLoggedInUI(session) {
+      if (applied || !session) return;
+      applied = true;
       // Hide gate, swap nav Log in -> Log out. Each guarded independently.
       try { var g = document.getElementById('login-gate'); if (g) g.style.display = 'none'; } catch (e) {}
       try { var li = document.getElementById('gc-nav-login');  if (li) li.style.display = 'none'; } catch (e) {}
@@ -435,8 +432,13 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
       } catch (e) {}
 
       // Prefill name from profile, fall back to signup/payment stash.
+      prefillName(session);
+    }
+
+    async function prefillName(session) {
       try {
         var nameEl = document.getElementById('f-name');
+        if (!nameEl) return;
         var full = '';
         try {
           var res = await gcSupabase.from('profiles')
@@ -450,7 +452,27 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
             full = [stash.firstname, stash.lastname].filter(Boolean).join(' ').trim();
           } catch (e) {}
         }
-        if (nameEl && full) nameEl.value = full;
+        if (full) nameEl.value = full;
+      } catch (e) {}
+    }
+
+    async function run() {
+      // Try an immediate read...
+      try {
+        if (window.gcSupabase) {
+          var r = await gcSupabase.auth.getSession();
+          if (r && r.data && r.data.session) { applyLoggedInUI(r.data.session); return; }
+        }
+      } catch (e) {}
+      // ...and also subscribe, because on a cold load getSession() can resolve
+      // null before the session hydrates; SIGNED_IN / INITIAL_SESSION fire once
+      // it's ready. The `applied` guard makes this idempotent.
+      try {
+        if (window.gcSupabase) {
+          gcSupabase.auth.onAuthStateChange(function (_event, session) {
+            if (session) applyLoggedInUI(session);
+          });
+        }
       } catch (e) {}
     }
     if (document.readyState !== 'loading') run();
