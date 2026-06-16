@@ -407,12 +407,19 @@ footer{background:var(--ink);border-top:0.5px solid rgba(247,245,240,0.06);paddi
   // there's nothing that can throw and block the UI update.
   (function () {
     // Wire logout immediately (safe even if logged out — the link is hidden).
+    // Mirrors the working /account/ logout: GCAuth.signOut() clears the session
+    // AND redirects to '/' itself, so we must NOT set location ourselves (doing
+    // so would override its redirect and leave the user on /contact/).
     var logoutEl = document.getElementById('gc-nav-logout');
     if (logoutEl) {
       logoutEl.addEventListener('click', async function (e) {
         e.preventDefault();
-        try { if (window.GCAuth && GCAuth.signOut) await GCAuth.signOut(); } catch (err) {}
-        window.location.href = '/contact/';
+        try {
+          await GCAuth.signOut();
+        } catch (err) {
+          // If signOut throws before its own redirect, force it home anyway.
+          window.location.href = '/';
+        }
       });
     }
 
