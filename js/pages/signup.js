@@ -93,6 +93,11 @@ async function handleSocial(provider) {
 
   if (!form) return;
 
+  // Arrived here because a deleted account tried to log in — explain why.
+  if (new URLSearchParams(window.location.search).get('deleted') === '1' && errorEl) {
+    errorEl.textContent = 'That account has been deleted. Please create a new account to continue.';
+  }
+
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
     errorEl.textContent = '';

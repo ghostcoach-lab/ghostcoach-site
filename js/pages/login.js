@@ -26,27 +26,32 @@ async function handleSocial(provider) {
 }
 
 (async () => {
-  // Decide where a logged-in user should land. ?next= always wins; otherwise
-  // trialing/active -> /account/, everyone else -> /payment/. Shared by the
-  // already-logged-in check below and the post-login handler.
+  // Decide where a logged-in user should land. Rules by users.status:
+  //   trialing / active            -> /account/
+  //   canceled                     -> /account/  (resubscribe flow comes later)
+  //   past_due                     -> /account/  (better handling comes later)
+  //   pending                      -> /payment/  (signed up, card not validated)
+  //   deleted                      -> NO ACCESS  (sign out, must make a new account)
+  //   anything else / unknown      -> /account/  (safe default for a logged-in user)
+  // ?next= still wins for everything EXCEPT deleted (a deleted user is blocked
+  // regardless of where they were headed).
+  // Returns a path string, or the sentinel '__BLOCKED__' for deleted accounts.
   async function routeFor(uid) {
-    const nextParam = new URLSearchParams(window.location.search).get('next');
-    if (nextParam && /^\/[^/]/.test(nextParam)) return nextParam;
-    let paid = false;
+    let status = null;
     try {
       const { data: u } = await gcSupabase
         .from('users').select('status').eq('id', uid).maybeSingle();
-      if (u && (u.status === 'active' || u.status === 'trialing')) paid = true;
+      if (u) status = u.status;
     } catch (_) {}
-    if (!paid) {
-      try {
-        const { data: sub } = await gcSupabase
-          .from('subscriptions').select('status').eq('user_id', uid)
-          .in('status', ['active', 'trialing']).maybeSingle();
-        if (sub) paid = true;
-      } catch (_) {}
-    }
-    return paid ? '/account/' : '/payment/';
+
+    if (status === 'deleted') return '__BLOCKED__';
+
+    const nextParam = new URLSearchParams(window.location.search).get('next');
+    if (nextParam && /^\/[^/]/.test(nextParam)) return nextParam;
+
+    if (status === 'pending') return '/payment/';
+    // trialing, active, canceled, past_due, null/unknown -> account
+    return '/account/';
   }
 
   // Already logged in? Route them correctly instead of always bouncing to /payment/.
@@ -58,7 +63,16 @@ async function handleSocial(provider) {
   async function routeAndGo(uid) {
     if (routed) return;
     routed = true;
-    window.location.href = await routeFor(uid);
+    const dest = await routeFor(uid);
+    if (dest === '__BLOCKED__') {
+      // Deleted account: no access. Clear the session and send them to signup.
+      // Use the raw client signOut (GCAuth.signOut() force-redirects to '/',
+      // which would override the destination below).
+      try { await gcSupabase.auth.signOut(); } catch (_) {}
+      window.location.href = '/signup/?deleted=1';
+      return;
+    }
+    window.location.href = dest;
   }
   try {
     const existing = await GCAuth.getSession();
