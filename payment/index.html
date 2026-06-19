@@ -156,7 +156,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
       <div class="field-row">
         <div class="field">
           <label>First name <span class="req">*</span></label>
-          <input type="text" id="p-firstname" placeholder="Lars" autocomplete="given-name" oninput="filterName(this); updateAvatar()">
+          <input type="text" id="p-firstname" placeholder="Lars" autocomplete="given-name" oninput="filterName(this); updateAvatar(); validateCard()">
         </div>
         <div class="field">
           <label>Last name</label>
@@ -176,7 +176,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 
       <div class="field">
         <label>Country <span class="req">*</span></label>
-        <select id="p-country">
+        <select id="p-country" onchange="validateCard()">
           <option value="">Select your country</option>
           <option>Afghanistan</option><option>Albania</option><option>Algeria</option><option>Andorra</option><option>Angola</option><option>Argentina</option><option>Armenia</option><option>Australia</option><option>Austria</option><option>Azerbaijan</option><option>Bahamas</option><option>Bahrain</option><option>Bangladesh</option><option>Belarus</option><option>Belgium</option><option>Belize</option><option>Bolivia</option><option>Bosnia</option><option>Botswana</option><option>Brazil</option><option>Bulgaria</option><option>Cambodia</option><option>Cameroon</option><option>Canada</option><option>Chile</option><option>China</option><option>Colombia</option><option>Costa Rica</option><option>Croatia</option><option>Cyprus</option><option>Czech Republic</option><option>Denmark</option><option>Ecuador</option><option>Egypt</option><option>Estonia</option><option>Ethiopia</option><option>Finland</option><option>France</option><option>Georgia</option><option>Germany</option><option>Ghana</option><option>Greece</option><option>Guatemala</option><option>Hungary</option><option>Iceland</option><option>India</option><option>Indonesia</option><option>Ireland</option><option>Israel</option><option>Italy</option><option>Japan</option><option>Jordan</option><option>Kazakhstan</option><option>Kenya</option><option>Latvia</option><option>Lebanon</option><option>Lithuania</option><option>Luxembourg</option><option>Malaysia</option><option>Malta</option><option>Mexico</option><option>Moldova</option><option>Morocco</option><option>Netherlands</option><option>New Zealand</option><option>Nigeria</option><option>Norway</option><option>Pakistan</option><option>Peru</option><option>Philippines</option><option>Poland</option><option>Portugal</option><option>Romania</option><option>Russia</option><option>Saudi Arabia</option><option>Senegal</option><option>Serbia</option><option>Singapore</option><option>Slovakia</option><option>Slovenia</option><option>South Africa</option><option>South Korea</option><option>Spain</option><option>Sri Lanka</option><option>Sweden</option><option>Switzerland</option><option>Tanzania</option><option>Thailand</option><option>Tunisia</option><option>Turkey</option><option>Uganda</option><option>Ukraine</option><option>United Arab Emirates</option><option>United Kingdom</option><option>United States</option><option>Uruguay</option><option>Uzbekistan</option><option>Venezuela</option><option>Vietnam</option><option>Zimbabwe</option>
         </select>
@@ -432,7 +432,9 @@ cardElement.on('change', (event) => {
 // ── Validation ────────────────────────────────────────────────
 function validateCard(){
   const btn = document.getElementById('cta-btn');
-  btn.disabled = !cardComplete;
+  const firstname = document.getElementById('p-firstname').value.trim();
+  const country = document.getElementById('p-country').value;
+  btn.disabled = !(cardComplete && firstname && country);
 }
 
 // ── Start trial (v28: Stripe createPaymentMethod → n8n S5) ─────
