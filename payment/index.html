@@ -520,7 +520,7 @@ async function handleStart(){
     //    n8n S2 (onboarding) later UPDATEs the same row with business fields.
     try {
       if (userId) {
-        await gcSupabase.from('profiles').upsert({
+        const { error: profileError } = await gcSupabase.from('profiles').upsert({
           user_id:    userId,
           firstname:  profile.firstname,
           lastname:   profile.lastname,
@@ -528,9 +528,12 @@ async function handleStart(){
           country:    profile.country,
           updated_at: new Date().toISOString()
         }, { onConflict: 'user_id' });
+        if (profileError) {
+          console.warn('Profile upsert (personal info) failed:', profileError.message, profileError);
+        }
       }
     } catch (e) {
-      console.warn('Profile upsert (personal info) failed:', e?.message || e);
+      console.warn('Profile upsert (personal info) threw:', e?.message || e);
       // Non-blocking — keep going to /onboarding/. User can re-enter on /account/.
     }
 
