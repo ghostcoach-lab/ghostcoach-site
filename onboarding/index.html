@@ -609,6 +609,25 @@
     if (!session) return;
     // v24: no need to recreate the client — supabase-client.js already created window.gcSupabase
     gcUser = { id: session.user.id, email: session.user.email };
+
+    // If the user has already completed onboarding, they shouldn't see the form
+    // again (e.g. they followed a "set up your business" email link or hit back).
+    // Send them to /account/, where the business profile can be edited.
+    //
+    // Signal: profile.product is filled. We use this rather than marcus_ready_at
+    // because the onboarding submit writes the business fields (incl. product)
+    // directly to profiles, whereas marcus_ready_at is set by n8n S2 — so product
+    // is the reliable "they've onboarded" marker. (The onboarding form itself
+    // uses the same `data.product` check to decide whether to pre-fill.)
+    try {
+      const { data: existing } = await gcSupabase
+        .from('profiles').select('product').eq('user_id', gcUser.id).maybeSingle();
+      if (existing && existing.product) {
+        window.location.href = '/account/';
+        return;
+      }
+    } catch (e) { /* can't tell — fall through and show the form */ }
+
     // Pre-load any existing profile so user can re-onboard without losing data
     try { await loadExistingProfile(); } catch (e) { /* first-time onboarding */ }
 

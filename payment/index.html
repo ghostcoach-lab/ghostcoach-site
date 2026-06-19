@@ -501,6 +501,19 @@ async function handleStart(){
     const resData = await res.json();
     if (!res.ok) throw new Error(resData.error || 'Could not start. Please try again.');
 
+    // Re-resolve userId from the session we just confirmed works (used above for
+    // stripe-setup). The earlier getSession() at the top of handleStart() can
+    // return null if the session hadn't finished hydrating on page load — common
+    // right after an email-confirmation redirect. When that happens, userId stays
+    // null and the personal-info upsert below is silently skipped by its
+    // `if (userId)` guard, leaving firstname/lastname/phone/country null in the DB.
+    if (session?.user?.id) {
+      userId = session.user.id;
+    } else {
+      const freshUser = await GCAuth.getUser();
+      if (freshUser) userId = freshUser.id;
+    }
+
     // 3. Persist personal info to profiles BEFORE onboarding redirects.
     //    Without this write, the Supabase profile row only has user_id; the
     //    name/phone/country live in sessionStorage only and never reach /account/.
