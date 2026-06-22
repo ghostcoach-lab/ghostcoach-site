@@ -102,6 +102,8 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 }
   /* Stripe Elements card field (v28) */
   #gc-card-element{background:white;border:1px solid rgba(15,17,23,0.18);border-radius:10px;padding:13px 14px;transition:border-color .15s,box-shadow .15s;}
+  /* Stripe injects an iframe; pin its height so it can't balloon on mobile Safari */
+  #gc-card-element .__PrivateStripeElement, #gc-card-element iframe{height:20px !important;}
   #gc-card-element.StripeElement--focus{border-color:#C8861E;box-shadow:0 0 0 3px rgba(200,134,30,0.12);}
   #gc-card-element.StripeElement--invalid{border-color:#E55353;}
   #gc-card-error{color:#E55353;font-size:12px;margin-top:6px;display:none;}
@@ -408,6 +410,7 @@ const cardElement = elements.create('card', {
     base: {
       fontFamily: '"DM Sans", sans-serif',
       fontSize: '15px',
+      lineHeight: '20px',
       color: '#0F1117',
       '::placeholder': { color: '#8B8A98' }
     },

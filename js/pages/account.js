@@ -449,17 +449,33 @@
   const nlToggle = document.getElementById('gc-newsletter-toggle');
   const subscribed = newsletterRow && !newsletterRow.unsubscribed_at;
   nlToggle.checked = !!subscribed;
-  nlToggle.addEventListener('change', () => {
+  nlToggle.addEventListener('change', async () => {
     const wantOn = nlToggle.checked;
-    // Optimistic: flip instantly + toast. Beehiiv sync is fire-and-forget (don't block).
     toast('Updated ✓');
+
+    // Persist directly to the newsletter table so the state survives logout —
+    // n8n S8 is the canonical Beehiiv writer but doesn't reliably write this row,
+    // so the toggle was resetting on reload. Frontend write makes it stick.
+    // subscribed = a row with unsubscribed_at = null; unsubscribed = timestamp set.
+    try {
+      await gcSupabase.from('newsletter').upsert({
+        user_id:         userId,
+        email:           email,
+        source:          'account_prefs',
+        unsubscribed_at: wantOn ? null : new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    } catch (err) {
+      console.warn('Newsletter pref save failed:', err?.message || err);
+    }
+
+    // Also fire the n8n webhook for Beehiiv sync (fire-and-forget, non-blocking).
     const url = wantOn ? `${GC.N8N_BASE}/gc-s8-signup` : `${GC.N8N_BASE}/gc-s8-unsubscribe`;
     const body = wantOn ? { email, user_id: userId, source: 'account_prefs' } : { email, user_id: userId };
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-gc-secret': GC.WEBHOOK_SECRET },
       body: JSON.stringify(body)
-    }).catch(err => console.warn('Newsletter pref sync failed (non-blocking):', err?.message || err));
+    }).catch(err => console.warn('Newsletter Beehiiv sync failed (non-blocking):', err?.message || err));
   });
 
   // ── 7. Danger zone ──────────────────────────────────────────────────────────
