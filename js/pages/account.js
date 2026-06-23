@@ -463,7 +463,7 @@
         email:           email,
         source:          'account_prefs',
         unsubscribed_at: wantOn ? null : new Date().toISOString()
-      }, { onConflict: 'user_id' });
+      }, { onConflict: 'email' });
     } catch (err) {
       console.warn('Newsletter pref save failed:', err?.message || err);
     }
