@@ -2,6 +2,10 @@
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Merchant of Record vs Stripe — Which Should Indie SaaS Founders Choose? | GhostCoach</title>
 <meta name="description" content="Merchant of record vs Stripe for indie SaaS. Paddle, Lemon Squeezy, and Dodo Payments compared. Which handles VAT, which gives you control, and which is right for a solo founder.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getghostcoach.com/guides/merchant-of-record-vs-stripe/">
+<meta property="og:title" content="Merchant of Record vs Stripe — Which Should Indie SaaS Founders Choose? | GhostCoach">
+<meta property="og:description" content="Merchant of record vs Stripe for indie SaaS. Paddle, Lemon Squeezy, and Dodo Payments compared. Which handles VAT, which gives you control, and which is right for a solo founder.">
 <link rel="canonical" href="https://getghostcoach.com/guides/merchant-of-record-vs-stripe/">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
@@ -61,6 +65,15 @@ footer{background:#0F1117;padding:32px 0;}
 .corp-footer{background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);padding:56px 40px 36px;}.corp-footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;gap:40px;margin-bottom:44px;}.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}.cf-link:hover{color:#F7F5F0;}.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}.cf-nl-row{display:flex;gap:6px;}.cf-nl-input{flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:10px 12px;font-size:12px;color:#F7F5F0;outline:none;}.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}.cf-nl-btn{background:#C8861E;color:#0F1117;font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;}.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}.corp-footer-bottom{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);}.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}.cfb-links{display:flex;gap:20px;}.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;}@media(max-width:900px){.corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}}@media(max-width:520px){.corp-footer{padding:40px 20px 28px;}.corp-footer-grid{grid-template-columns:1fr;gap:24px;}}
 </style><link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "GhostCoach",
+  "url": "https://getghostcoach.com/",
+  "description": "AI business coaching for solo SaaS founders."
+}
+</script>
 </head><body>
 <nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
   <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">

@@ -1,0 +1,23 @@
+# robots.txt for getghostcoach.com
+
+User-agent: *
+Allow: /
+
+# Funnel / app / account pages — no SEO value, keep out of the index
+Disallow: /signup/
+Disallow: /login/
+Disallow: /payment/
+Disallow: /onboarding/
+Disallow: /processing/
+Disallow: /activating/
+Disallow: /chat/
+Disallow: /account/
+Disallow: /session-complete/
+Disallow: /forgot-password/
+Disallow: /reset-password/
+Disallow: /newsletter-confirmation/
+
+# Internal (should never be served, but belt-and-braces)
+Disallow: /_internal/
+
+Sitemap: https://getghostcoach.com/sitemap.xml
