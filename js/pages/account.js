@@ -65,7 +65,7 @@
         .eq('user_id', userId).order('created_at', { ascending: true }),
       gcSupabase.from('subscriptions').select('plan, status, current_period_end, cancel_at_period_end')
         .eq('user_id', userId).order('current_period_end', { ascending: false }).limit(1).maybeSingle(),
-      gcSupabase.from('newsletter').select('id, unsubscribed_at').eq('user_id', userId).maybeSingle()
+      gcSupabase.from('newsletter').select('id, unsubscribed_at').eq('email', email).maybeSingle()
     ]);
     profile      = pRes.data || {};
     userRow      = uRes.data || {};
