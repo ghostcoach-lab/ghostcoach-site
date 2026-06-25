@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Building a Micro-SaaS — From Product to Business | GhostCoach</title>
+<meta name="description" content="How to build a micro-SaaS that's a real business, not just a working app: pricing, customers, churn, and the five decisions that matter. Start free.">
+<meta property="og:title" content="Building a Micro-SaaS — From Product to Business | GhostCoach">
+<meta property="og:description" content="How to build a micro-SaaS that's a real business, not just a working app: pricing, customers, churn, and the five decisions that matter. Start free.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getghostcoach.com/vibe/micro-saas/">
+<link rel="canonical" href="https://getghostcoach.com/vibe/micro-saas/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<style>
+  :root{
+    --ink:#0F1117;
+    --amber:#C8861E;
+    --amber-light:#E8A832;
+    --cream:#F7F5F0;
+    --teal:#0B7A60;
+    --muted:#8B8A98;
+    --border:#E2DFD8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{
+    font-family:'DM Sans',system-ui,-apple-system,sans-serif;
+    color:var(--ink);
+    background:var(--cream);
+    line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--amber);text-decoration:none;}
+  a:hover{text-decoration:underline;}
+  em{font-style:italic;}
+
+  /* NAV */
+  nav{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:1rem;flex-wrap:wrap;
+    padding:1.1rem 1.5rem;
+    background:var(--ink);
+    color:var(--cream);
+  }
+  nav .wordmark{font-family:'Playfair Display',serif;font-weight:700;font-size:1.2rem;color:var(--cream);}
+  nav .wordmark span{color:var(--amber-light);}
+  nav .position{font-size:.82rem;color:var(--muted);flex:1;min-width:180px;}
+  nav .nav-cta{
+    background:var(--amber);color:var(--ink);font-weight:700;font-size:.85rem;
+    padding:.55rem 1rem;border-radius:6px;white-space:nowrap;
+  }
+  nav .nav-cta:hover{background:var(--amber-light);text-decoration:none;}
+
+  /* HERO */
+  .hero{
+    background:var(--ink);color:var(--cream);
+    padding:3.5rem 1.5rem 3rem;text-align:center;
+  }
+  .hero .eyebrow{
+    text-transform:uppercase;letter-spacing:.14em;font-size:.78rem;
+    color:var(--amber-light);font-weight:700;margin-bottom:1rem;
+  }
+  .hero h1{
+    font-family:'Playfair Display',serif;font-weight:700;
+    font-size:clamp(2rem,5vw,3.2rem);line-height:1.15;
+    max-width:14ch;margin:0 auto 1rem;
+  }
+  .hero h1 em{color:var(--amber-light);}
+  .hero-sub{color:var(--muted);font-size:1.05rem;max-width:46ch;margin:0 auto;}
+
+  /* ARTICLE */
+  .article{max-width:760px;margin:0 auto;padding:2.5rem 1.5rem 1rem;}
+  .article h2{
+    font-family:'Playfair Display',serif;font-weight:700;
+    font-size:1.7rem;line-height:1.25;margin:2.6rem 0 1rem;
+  }
+  .article h3{font-size:1.18rem;font-weight:700;margin:1.8rem 0 .6rem;}
+  .article p{margin:0 0 1rem;}
+  .article ol,.article ul{margin:0 0 1.2rem 1.3rem;}
+  .article li{margin:0 0 .7rem;}
+
+  /* TOC */
+  .toc{
+    background:#fff;border:1px solid var(--border);border-left:4px solid var(--amber);border-radius:6px;
+    padding:1.5rem 1.75rem;margin-bottom:3rem;
+  }
+  .toc .toc-title{
+    text-transform:uppercase;letter-spacing:.1em;font-size:.7rem;
+    color:var(--muted);font-weight:600;margin-bottom:.85rem;
+  }
+  .toc ol{padding-left:1.2rem;}
+  .toc li{margin-bottom:.35rem;font-size:.92rem;}
+  .toc a{color:var(--ink);text-decoration:none;border-bottom:1px solid transparent;transition:border-color .15s,color .15s;}
+  .toc a:hover{color:var(--amber);border-bottom-color:var(--amber);}
+
+  /* MARCUS QUOTE */
+  .marcus-says{
+    background:var(--ink);border-radius:8px;padding:2rem 2.25rem;margin:2.5rem 0;
+  }
+  .marcus-says .ml{
+    font-size:.68rem;text-transform:uppercase;letter-spacing:.14em;
+    color:var(--amber);font-weight:600;margin-bottom:.75rem;
+  }
+  .marcus-says .mq{
+    font-family:'Playfair Display',serif;font-style:italic;
+    font-size:1.15rem;color:var(--cream);line-height:1.65;
+  }
+
+  /* CALLOUT / EXAMPLE PROMPT */
+  .callout{
+    background:#fff;border:1px solid var(--border);border-radius:6px;
+    padding:1.5rem 1.75rem;margin:2rem 0;
+  }
+  .callout .callout-label{
+    text-transform:uppercase;letter-spacing:.1em;font-size:.68rem;
+    color:var(--teal);font-weight:600;margin-bottom:.6rem;
+  }
+  .callout p{font-size:.95rem;font-style:italic;color:var(--ink);margin:0;}
+
+  /* CTA BOX */
+  .cta-box{
+    background:var(--ink);color:var(--cream);
+    border-radius:14px;padding:2.2rem 1.8rem;margin:3rem 0 2rem;
+    text-align:center;
+  }
+  .cta-box h3{
+    font-family:'Playfair Display',serif;font-size:1.5rem;
+    color:var(--cream);margin:0 0 .6rem;
+  }
+  .cta-box p{color:var(--muted);margin:0 0 1.3rem;}
+  .cta-btn{
+    display:inline-block;background:var(--amber);color:var(--ink);
+    font-weight:700;padding:.85rem 1.6rem;border-radius:8px;font-size:1rem;
+  }
+  .cta-btn:hover{background:var(--amber-light);text-decoration:none;}
+  .cta-box .fine{font-size:.82rem;color:var(--muted);margin:1rem 0 0;}
+
+  /* RELATED */
+  .related-box{margin:2.5rem 0 1rem;}
+  .related-box .related-label{
+    font-family:'Playfair Display',serif;font-size:1.25rem;margin-bottom:1rem;
+  }
+  .related-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+  .related-grid a{
+    display:block;background:#fff;border:1px solid #e7e3da;border-radius:10px;
+    padding:1rem 1.1rem;color:var(--ink);
+  }
+  .related-grid a:hover{border-color:var(--amber);text-decoration:none;}
+  .related-grid .rg-title{font-weight:700;color:var(--amber);margin-bottom:.2rem;}
+  .related-grid .rg-sub{font-size:.85rem;color:var(--muted);}
+  @media(max-width:560px){.related-grid{grid-template-columns:1fr;}}
+
+  /* FOOTER */
+  footer{
+    background:var(--ink);color:var(--muted);
+    padding:2.4rem 1.5rem;margin-top:2rem;font-size:.88rem;
+  }
+  footer .foot-wrap{max-width:760px;margin:0 auto;}
+  footer .foot-brand{font-family:'Playfair Display',serif;color:var(--cream);font-size:1.1rem;margin-bottom:.4rem;}
+  footer .foot-brand span{color:var(--amber-light);}
+  footer a{color:var(--muted);}
+  footer a:hover{color:var(--amber-light);}
+  footer .foot-links{margin:1rem 0;display:flex;flex-wrap:wrap;gap:.4rem 1.1rem;}
+  footer .foot-copy{font-size:.8rem;margin-top:1rem;color:#5d5c68;}
+</style>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "GhostCoach",
+  "url": "https://getghostcoach.com/",
+  "description": "AI business coaching for solo SaaS founders."
+}
+</script>
+</head>
+<body>
+
+<nav>
+  <span class="wordmark">Ghost<span>Coach</span></span>
+  <span class="position">AI business coaching for solo product builders</span>
+  <a class="nav-cta" href="https://getghostcoach.com/#pricing">Start free trial</a>
+</nav>
+
+<section class="hero">
+  <div class="eyebrow">Vibe Coding · Micro-SaaS</div>
+  <h1>Building a <em>Micro-SaaS</em> That's Actually a Business</h1>
+  <p class="hero-sub">Vibe coding gives you a product. The business — pricing, customers, retention — is the part nobody handed you. Here's how to build it.</p>
+</section>
+
+<section class="article">
+
+  <div class="toc">
+    <div class="toc-title">In this guide</div>
+    <ol>
+      <li><a href="#what-is">What a micro-SaaS actually is</a></li>
+      <li><a href="#product-vs-business">Product is not the same as business</a></li>
+      <li><a href="#five-decisions">The five decisions that build the business</a></li>
+      <li><a href="#first-90">What to build in your first 90 days</a></li>
+      <li><a href="#one-person">How one person runs the whole thing</a></li>
+      <li><a href="#where-ghostcoach">Where GhostCoach fits</a></li>
+    </ol>
+  </div>
+
+  <p>A micro-SaaS is a small subscription software product run by one person, or a very small team, targeting a narrow problem for a specific audience. Low overhead, no funding, no employees. The whole point is that one founder can build it, sell it, and run it.</p>
+
+  <p>The build has never been easier. Cursor, Bolt.new, and Lovable collapse weeks of work into a weekend. The problem is what comes after. A working app is not a business. The business is the layer the vibe coding tools don't ship with — and it's the layer that decides whether you ever cross $1k MRR.</p>
+
+  <h2 id="what-is">What a Micro-SaaS Actually Is</h2>
+
+  <p>Micro-SaaS has three defining traits. It solves one narrow problem, not a broad platform of problems. It runs on recurring revenue, so customers pay monthly or yearly rather than once. And it's operated by a solo founder or tiny team, which means every system has to work without a support department behind it.</p>
+
+  <p>The narrowness is the advantage, not the limitation. A broad product competes with funded companies. A narrow one — a Stripe reconciliation tool for bookkeepers, a screenshot annotator for support teams — can own a specific audience that bigger players ignore. That's where a solo founder wins.</p>
+
+  <p>What it is not: a side project with a Stripe button bolted on. The difference between a micro-SaaS and an abandoned weekend build is the business decisions underneath it. Those don't come from the code.</p>
+
+  <p>It's also distinct from a venture-scale startup. A startup raises money to chase a large market and hires a team to capture it. A micro-SaaS deliberately stays small, profitable, and owned by you. The goal isn't a billion-dollar exit — it's a few thousand dollars a month in recurring revenue that one person controls. That changes every decision: you optimise for margin and simplicity, not growth at any cost.</p>
+
+  <div class="marcus-says">
+    <div class="ml">Marcus</div>
+    <div class="mq">"I recommend deciding who your micro-SaaS is for before you decide what it does. A narrow audience you understand beats a broad feature set you guessed at. The narrowness is what makes a one-person business defensible."</div>
+  </div>
+
+  <h2 id="product-vs-business">Product Is Not the Same as Business</h2>
+
+  <p>This is the gap that catches almost every vibe coder. You shipped something that works. People can sign up, the core feature does its job, the thing is real. So why is MRR flat at $87?</p>
+
+  <p>Because a product answers "does it work?" A business answers four harder questions. Who pays for it, and why? How do they find it, repeatably? What makes them stay past month two? And does the price reflect the value, or did you copy a competitor and hope?</p>
+
+  <p>None of those are technical questions. None of them get solved by shipping another feature — which is the trap most builders fall into, because building is the part they're good at. The walls that stop a micro-SaaS are pricing, positioning, acquisition, and churn. We cover the full transition in the guide on <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/">what to do after vibe coding</a>.</p>
+
+  <h2 id="five-decisions">The Five Decisions That Build the Business</h2>
+
+  <p>A micro-SaaS becomes a business through a small number of decisions, made deliberately. These map to the Ghost OS framework — the five pillars Marcus applies to every session. Get them right early and the rest gets easier.</p>
+
+  <h3>1. Offer architecture — pricing and packaging</h3>
+  <p>What you charge, what each tier includes, and who it's for. Most micro-SaaS founders under-price by 40–60% on the first attempt, because they price the cost of the code rather than the value of the outcome. Pricing is the single highest-leverage decision you'll make. Start with the <a href="https://getghostcoach.com/guides/how-to-price-saas-product/">SaaS pricing framework</a> before you set a number.</p>
+
+  <h3>2. Acquisition system — one repeatable channel</h3>
+  <p>Not channels. Channel. Pick one owned way to reach the people with the problem and build it until it works before adding a second. A Product Hunt launch is an event, not a channel. The work is finding the one repeatable source of customers — covered in <a href="https://getghostcoach.com/vibe/get-customers/">getting customers for a vibe-coded app</a>.</p>
+
+  <h3>3. AI delivery stack — onboarding and support</h3>
+  <p>The path from sign-up to first value, and how you handle support as one person. For a micro-SaaS, onboarding is where trials convert or die. If a user doesn't reach a moment where the product feels indispensable, no amount of email sequence saves the sale.</p>
+
+  <h3>4. Automation layer — billing and trial follow-up</h3>
+  <p>Billing, failed-payment recovery, trial-expiry nudges, and churn alerts. As a solo operator, anything you do manually is something you'll eventually stop doing. The automation layer is what lets one person run a real subscription business without drowning.</p>
+
+  <h3>5. Revenue protection — churn and expansion</h3>
+  <p>Trial-to-paid conversion, monthly churn, and expansion revenue. A micro-SaaS with 8% monthly churn leaks faster than a solo founder can refill it. Knowing your viable churn number is what tells you whether to invest in acquisition or retention next.</p>
+
+  <h2 id="first-90">What to Build in Your First 90 Days</h2>
+
+  <p>You don't build all five pillars at once. There's an order. Here's the sequence Marcus recommends for a micro-SaaS that's shipped but hasn't found its footing.</p>
+
+  <ol>
+    <li><strong>Weeks 1–2: Talk to every paying customer.</strong> Twenty-minute conversations, not surveys. What did they expect, what surprised them, what almost stopped them from paying? This is your positioning and pricing data, and it's free.</li>
+    <li><strong>Weeks 3–4: Fix pricing and the offer.</strong> Reset your price against the value customers described, not the competitor you copied. Make the tier structure match the jobs they're hiring the product for.</li>
+    <li><strong>Weeks 5–8: Pick and build one acquisition channel.</strong> Commit for 30 days. Define what "working" looks like before you start. Master one channel before touching a second.</li>
+    <li><strong>Weeks 9–12: Close the churn loop.</strong> Build a churned-user interview process and a basic automation layer — failed-payment recovery and a trial-expiry nudge at minimum.</li>
+  </ol>
+
+  <div class="callout">
+    <div class="callout-label">Example prompt for Marcus</div>
+    <p>"My micro-SaaS has 12 paying customers at $19/mo after two months. Two churned last month. I don't know whether to focus on getting more customers or stopping the ones I have from leaving. What should I work on first?"</p>
+  </div>
+
+  <h2 id="one-person">How One Person Runs the Whole Thing</h2>
+
+  <p>The constraint that defines micro-SaaS is also its hardest part: one person does everything. Product, sales, support, billing, marketing. The founders who survive aren't the ones who work the most hours — they're the ones who decide what not to do.</p>
+
+  <p>That means saying no to features that don't move the number. It means automating anything repetitive before it becomes a daily tax on your time. And it means picking the one bottleneck that matters this month and ignoring the other four until it's solved. Spreading yourself across all five pillars at once is how solo founders stall. If you're chasing your first dollars, the focused tactics in <a href="https://getghostcoach.com/vibe/make-money/">making money from a vibe-coded app</a> are the place to start.</p>
+
+  <p>The freedom of a one-person business is real, but it's earned by discipline, not effort. Every system you build to run without you buys back time you can spend on the two things only you can do: talking to customers and deciding what to build next.</p>
+
+  <div class="marcus-says">
+    <div class="ml">Marcus</div>
+    <div class="mq">"The most common mistake I see in solo founders is working on all five pillars at once and finishing none. I recommend naming your single biggest bottleneck this month and giving it everything until it moves — then re-diagnosing."</div>
+  </div>
+
+  <h2 id="where-ghostcoach">Where GhostCoach Fits</h2>
+
+  <p>GhostCoach is an AI business coach built for solo founders building subscription software. The coaching intelligence is called Marcus, and every session runs on the Ghost OS framework — the same five pillars laid out above.</p>
+
+  <p>What makes it different from asking Claude or ChatGPT the same questions: Marcus already knows your product, your stage, your biggest bottleneck, and your 90-day goal before you type. That context is injected into every session, so you don't re-explain yourself each time. You get one specific recommendation per session — not a menu of options to weigh on your own.</p>
+
+  <p>For a micro-SaaS founder, that's the difference between generic advice and a next action. Marcus opens every recommendation with "I recommend," names the one move most likely to shift your number in the next 30 days, and holds the context so the next session builds on the last.</p>
+
+  <div class="cta-box">
+    <h3>Your micro-SaaS works. Now make it a business.</h3>
+    <p>Tell Marcus what you've built and where you're stuck. You'll leave with one specific thing to do this week.</p>
+    <a class="cta-btn" href="https://claude.ai/project/019d85e3-e7e7-7364-b031-234e78b0691a">Talk to Marcus free →</a>
+    <p class="fine">14-day free trial · Builder plan from $79/mo · cancel anytime</p>
+  </div>
+
+  <div class="related-box">
+    <div class="related-label">Related guides</div>
+    <div class="related-grid">
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/">
+        <div class="rg-title">What to Do After Vibe Coding →</div>
+        <div class="rg-sub">From a shipped app to a real business</div>
+      </a>
+      <a href="https://getghostcoach.com/vibe/get-customers/">
+        <div class="rg-title">Get Customers for a Vibe-Coded App →</div>
+        <div class="rg-sub">Acquisition for solo founders</div>
+      </a>
+      <a href="https://getghostcoach.com/vibe/make-money/">
+        <div class="rg-title">Make Money From a Vibe-Coded App →</div>
+        <div class="rg-sub">Pricing, packaging, and first revenue</div>
+      </a>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/">
+        <div class="rg-title">How to Price a SaaS Product →</div>
+        <div class="rg-sub">The complete pricing framework</div>
+      </a>
+    </div>
+  </div>
+
+</section>
+
+<footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
+  <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
+    <div>
+      <a href="https://getghostcoach.com/" style="text-decoration:none;display:inline-block;">
+        <div style="display:flex;align-items:baseline;">
+          <span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;color:#F7F5F0;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:20px;font-weight:400;font-style:italic;color:#E8A832;">Coach</span>
+        </div>
+      </a>
+      <div style="font-size:12px;color:rgba(247,245,240,0.4);margin-top:10px;line-height:1.6;max-width:210px;">AI business coaching for solopreneurs building digital products.</div>
+      <div style="margin-top:18px;display:flex;gap:14px;">
+        <a href="https://x.com/getghostcoach" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">𝕏 Twitter</a>
+        <a href="https://www.linkedin.com/company/ghostcoach/" target="_blank" rel="noopener noreferrer" style="font-size:12px;color:rgba(247,245,240,0.45);text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.45)'">in LinkedIn</a>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
+      <a href="https://getghostcoach.com/#faq" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">FAQ</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+      <a href="https://getghostcoach.com/guides/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">All guides →</a>
+      <a href="https://getghostcoach.com/ai-business-coach/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">AI business coach hub →</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">AI self-coaching hub →</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+      <a href="https://getghostcoach.com/cookies/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Policy</a>
+      <a href="#" onclick="GCCookies.open();return false;" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Preferences</a>
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
+      <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo product builders. Free, no fluff.</p>
+      <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
+      </form>
+      <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
+    </div>
+  </div>
+  <div style="max-width:1080px;margin:36px auto 0;padding-top:24px;border-top:0.5px solid rgba(247,245,240,0.06);display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap;" class="gc-footer-bot">
+    <div style="font-size:12px;color:rgba(247,245,240,0.4);">© 2026 GhostCoach. All rights reserved.</div>
+    <div style="font-family:'Playfair Display',serif;font-size:13px;font-style:italic;color:rgba(247,245,240,0.45);">"The product is the easy part."</div>
+  </div>
+  <style>
+    @media(max-width:900px){.gc-footer-grid{grid-template-columns:1fr 1fr !important;gap:28px !important;}}
+    @media(max-width:520px){.gc-footer-grid{grid-template-columns:1fr !important;gap:24px !important;}footer{padding:48px 20px 28px !important;}.gc-footer-bot{flex-direction:column;align-items:flex-start !important;gap:10px !important;}}
+  </style>
+</footer>
+
+
+</body>
+</html>
