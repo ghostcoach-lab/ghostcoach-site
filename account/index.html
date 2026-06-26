@@ -454,5 +454,15 @@
   <script src="/js/pages/newsletter.js"></script>
   <script src="/js/pages/account.js"></script>
   <script src="/js/cookie-banner.js"></script>
+<!-- Cancel confirmation modal (shown by js/pages/account.js; hidden by default) -->
+<div id="gc-cancel-modal" style="display:none;position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,0.55);align-items:center;justify-content:center;padding:20px;">
+  <div role="dialog" aria-modal="true" aria-labelledby="gc-cancel-modal-title" style="background:#0F1117;border-radius:16px;padding:32px 32px 24px;max-width:440px;width:100%;font-family:'DM Sans',sans-serif;box-sizing:border-box;">
+    <div id="gc-cancel-modal-title" style="font-family:'Playfair Display',serif;font-size:22px;color:#F7F5F0;margin-bottom:12px;">Cancel your subscription?</div>
+    <p style="font-size:14px;line-height:1.6;color:#C9C8D3;margin:0 0 8px;">You'll keep full access until <span id="gc-cancel-modal-date" style="color:#F7F5F0;font-weight:500;">the end of your current period</span>.</p>
+    <p style="font-size:14px;line-height:1.6;color:#8B8A98;margin:0 0 24px;">After that date your subscription ends and you won't be charged again. Nothing happens today.</p>
+    <button type="button" id="gc-cancel-modal-keep" style="width:100%;background:#C8861E;color:#0F1117;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;margin-bottom:10px;">Keep my subscription</button>
+    <button type="button" id="gc-cancel-modal-confirm" style="width:100%;background:transparent;color:#8B8A98;border:0.5px solid rgba(247,245,240,0.2);border-radius:10px;padding:13px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;">Cancel anyway</button>
+  </div>
+</div>
 </body>
 </html>

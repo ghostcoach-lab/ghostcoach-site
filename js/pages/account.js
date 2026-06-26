@@ -385,8 +385,18 @@
   });
 
   // ── Cancel: ends at period end + win-back ──
-  if (cancelBtn) cancelBtn.addEventListener('click', async () => {
-    if (!confirm('Cancel your subscription? You keep access until the end of your current period.')) return;
+  // Cancel: open the branded confirmation modal instead of a raw confirm().
+  // The modal's "Cancel anyway" runs doCancel() — the same webhook call that
+  // worked before; only the confirmation UI changed.
+  const cancelModal     = document.getElementById('gc-cancel-modal');
+  const cancelModalDate = document.getElementById('gc-cancel-modal-date');
+  const cancelModalKeep = document.getElementById('gc-cancel-modal-keep');
+  const cancelModalGo   = document.getElementById('gc-cancel-modal-confirm');
+
+  function closeCancelModal() { if (cancelModal) cancelModal.style.display = 'none'; }
+
+  async function doCancel() {
+    closeCancelModal();
     cancelBtn.disabled = true;
     try {
       const res = await postPlan('cancel');
@@ -418,6 +428,18 @@
       cancelBtn.disabled = false;
       showBanner('Could not cancel right now. Please try again or contact support.', 'error');
     }
+  }
+
+  if (cancelBtn) cancelBtn.addEventListener('click', () => {
+    // Fill the real period-end date into the modal (passed in, never hardcoded).
+    if (cancelModalDate && periodEnd) cancelModalDate.textContent = fmtDate(periodEnd);
+    if (cancelModal) cancelModal.style.display = 'flex';
+  });
+  if (cancelModalKeep) cancelModalKeep.addEventListener('click', closeCancelModal);
+  if (cancelModalGo)   cancelModalGo.addEventListener('click', doCancel);
+  if (cancelModal) cancelModal.addEventListener('click', (e) => {
+    // Click on the dim backdrop (not the dialog) closes — same as "Keep".
+    if (e.target === cancelModal) closeCancelModal();
   });
 
   // ── Manage billing & invoices → Stripe Customer Portal ──
