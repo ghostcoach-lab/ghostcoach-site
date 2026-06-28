@@ -6,7 +6,7 @@
 // ── Plan definitions ───────────────────────────────────────────────
 const GC_PLANS = {
   builder:  { label: 'Builder — $79/mo',   title: "What's in Builder",  operatorFeatures: false, price: '$79/month',   trial: true  },
-  operator: { label: 'Operator — $149/mo', title: "What's in Operator", operatorFeatures: true,  price: '$149/month',  trial: true  },
+  operator: { label: 'Operator — $99/mo', title: "What's in Operator", operatorFeatures: true,  price: '$99/month',  trial: true  },
   lifetime: { label: 'Lifetime — $499 once', title: "What's in Lifetime", operatorFeatures: true, price: '$499 one-time', trial: false }
 };
 

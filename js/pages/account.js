@@ -326,7 +326,7 @@
 
   // ── Upgrade (Builder → Operator): immediate effect, optimistic UI ──
   if (upBtn) upBtn.addEventListener('click', async () => {
-    if (!confirm('Upgrade to Operator ($149/mo)? This takes effect immediately.')) return;
+    if (!confirm('Upgrade to Operator ($99/mo)? This takes effect immediately.')) return;
     upBtn.disabled = true;
     try {
       const res = await postPlan('upgrade');
