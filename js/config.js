@@ -26,7 +26,7 @@ const GC = {
 
   // Stripe price IDs (fill in after creating prices in Stripe dashboard)
   STRIPE_PRICE_BUILDER:  'price_1TXNfhCwJBxjKaPH83K906vP',   // e.g. price_xxx
-  STRIPE_PRICE_OPERATOR: 'price_1TXNfsCwJBxjKaPHMuxbSnsu',
+  STRIPE_PRICE_OPERATOR: 'price_1Tnb9dCwJBxjKaPHEvMu7HKp',
 
   // Webhook paths
   WEBHOOK: {

@@ -329,7 +329,7 @@
     if (!confirm('Upgrade to Operator ($99/mo)? This takes effect immediately.')) return;
     upBtn.disabled = true;
     try {
-      const res = await postPlan('upgrade');
+      const res = await postPlan('upgrade', { new_price_id: GC.STRIPE_PRICE_OPERATOR });
       if (!res.ok) throw new Error();
       document.getElementById('gc-plan-pill').textContent = 'Operator';
       document.getElementById('gc-plan-status').textContent = 'Active';
