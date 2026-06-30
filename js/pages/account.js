@@ -63,7 +63,7 @@
       gcSupabase.from('users').select('plan, status, stripe_customer_id').eq('id', userId).single(),
       gcSupabase.from('sessions').select('session_number, created_at, summary, action_committed, goal_progress_score')
         .eq('user_id', userId).order('created_at', { ascending: true }),
-      gcSupabase.from('subscriptions').select('plan, status, current_period_end, cancel_at_period_end')
+      gcSupabase.from('subscriptions').select('plan, status, current_period_end, cancel_at_period_end, stripe_sub_id')
         .eq('user_id', userId).order('current_period_end', { ascending: false }).limit(1).maybeSingle(),
       gcSupabase.from('newsletter').select('id, unsubscribed_at').eq('email', email).maybeSingle()
     ]);
@@ -316,10 +316,10 @@
   }
 
   async function postPlan(type, extra) {
-    const res = await fetch(`${GC.N8N_BASE}/gc-s6-plan`, {
+    const res = await fetch(`${GC.N8N_BASE}/gc-s6-plan-change`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-gc-secret': GC.WEBHOOK_SECRET },
-      body: JSON.stringify(Object.assign({ type, user_id: userId, email }, extra || {}))
+      body: JSON.stringify(Object.assign({ action: type, user_id: userId, email }, extra || {}))
     });
     return res;
   }
@@ -329,7 +329,7 @@
     if (!confirm('Upgrade to Operator ($99/mo)? This takes effect immediately.')) return;
     upBtn.disabled = true;
     try {
-      const res = await postPlan('upgrade', { new_price_id: GC.STRIPE_PRICE_OPERATOR });
+      const res = await postPlan('upgrade', { new_price_id: GC.STRIPE_PRICE_OPERATOR, stripe_subscription_id: subscription.stripe_sub_id });
       if (!res.ok) throw new Error();
       document.getElementById('gc-plan-pill').textContent = 'Operator';
       document.getElementById('gc-plan-status').textContent = 'Active';
@@ -346,7 +346,7 @@
     if (!confirm('Downgrade to Builder at the end of your current period?')) return;
     downBtn.disabled = true;
     try {
-      const res = await postPlan('downgrade');
+      const res = await postPlan('downgrade', { new_price_id: GC.STRIPE_PRICE_BUILDER, stripe_subscription_id: subscription.stripe_sub_id });
       if (!res.ok) throw new Error();
       const dateStr = fmtDate(periodEnd);
       showBanner('Your plan changes to Builder on ' + dateStr + '. You keep Operator access until then.', 'success');
@@ -399,7 +399,7 @@
     closeCancelModal();
     cancelBtn.disabled = true;
     try {
-      const res = await postPlan('cancel');
+      const res = await postPlan('cancel', { stripe_subscription_id: subscription.stripe_sub_id });
       if (!res.ok) throw new Error();
       const dateStr = fmtDate(periodEnd);
       showBanner('Your subscription ends ' + dateStr + '. Access continues until then.', 'success');
