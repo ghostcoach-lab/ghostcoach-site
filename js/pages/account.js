@@ -334,6 +334,8 @@
       document.getElementById('gc-plan-pill').textContent = 'Operator';
       document.getElementById('gc-plan-status').textContent = 'Active';
       showOnly([downBtn, cancelBtn]);
+      // Reveal the pricing audit block now that they're Operator — no reload needed.
+      renderPricingAudit('operator');
       showBanner("You're now on Operator — weekly digest and pricing audit unlocked.", 'success');
     } catch (e) {
       upBtn.disabled = false;
@@ -377,6 +379,8 @@
       document.getElementById('gc-plan-pill').textContent = 'Lifetime';
       document.getElementById('gc-plan-status').textContent = 'Founding member';
       showOnly([]);
+      // Lifetime also grants audit access — reveal the block, no reload needed.
+      renderPricingAudit('lifetime');
       showBanner("You're a founding member — Operator features, for life.", 'celebrate');
     } catch (e) {
       lifeBtn.disabled = false;
@@ -487,12 +491,13 @@
     return { state: null, is_welcome_audit: null, next_eligible_date: null, last_completed_at: null };
   }
 
-  (async function renderPricingAudit() {
+  async function renderPricingAudit(planOverride) {
+    const effectivePlan = planOverride || plan;
     const section = document.getElementById('gc-audit-section');
     if (!section) return;
 
     // Entitlement gate (State C): only Operator / Lifetime ever see the block.
-    if (plan !== 'operator' && plan !== 'lifetime') {
+    if (effectivePlan !== 'operator' && effectivePlan !== 'lifetime') {
       section.style.display = 'none';
       return;
     }
@@ -533,7 +538,8 @@
       if (nextEl) nextEl.textContent = elig.next_eligible_date ? showDate(elig.next_eligible_date) : 'Available now';
       if (ctaEl) ctaEl.style.display = '';
     }
-  })();
+  }
+  renderPricingAudit();
 
   // ── 6. Email preferences ─────────────────────────────────────────────────────
   const nlToggle = document.getElementById('gc-newsletter-toggle');
