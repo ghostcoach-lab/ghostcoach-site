@@ -467,6 +467,74 @@
     }
   });
 
+  // ── 5b. Quarterly pricing audit ─────────────────────────────────────────────
+  // Visible only to Operator / Lifetime. The block READS a computed eligibility
+  // result and renders State A (eligible) / B (gated) / C (not shown). It does
+  // NOT compute the 90-day math client-side — that lives backend-side and would
+  // drift from the server clock if duplicated here.
+  //
+  // ⚠ CONTRACT SEAM (frontend-spec §2): the eligibility read is NOT built yet.
+  // loadAuditEligibility() below is a STUB. When the backend endpoint/RPC exists,
+  // replace its body with the real call and map the response fields. Until then
+  // it returns nulls, so dates render as "—" (we never fabricate a date).
+  //
+  // Expected (proposed) shape — CONFIRM with backend before wiring for real:
+  //   { state: 'A'|'B'|'C', is_welcome_audit: bool,
+  //     next_eligible_date: 'YYYY-MM-DD'|null, last_completed_at: 'YYYY-MM-DD'|null }
+  async function loadAuditEligibility() {
+    // STUB — backend eligibility read not built yet (frontend-spec §7 item 1).
+    // Do not compute dates here. Return nulls until the real read is wired.
+    return { state: null, is_welcome_audit: null, next_eligible_date: null, last_completed_at: null };
+  }
+
+  (async function renderPricingAudit() {
+    const section = document.getElementById('gc-audit-section');
+    if (!section) return;
+
+    // Entitlement gate (State C): only Operator / Lifetime ever see the block.
+    if (plan !== 'operator' && plan !== 'lifetime') {
+      section.style.display = 'none';
+      return;
+    }
+    section.style.display = 'block';
+
+    const lastEl  = document.getElementById('gc-audit-last');
+    const nextEl  = document.getElementById('gc-audit-next');
+    const ctaEl   = document.getElementById('gc-audit-cta');
+    const gatedEl = document.getElementById('gc-audit-gated');
+
+    let elig;
+    try { elig = await loadAuditEligibility(); }
+    catch (e) { elig = null; }
+
+    // fmtDate takes a raw ISO value; for the audit we want "—" when empty,
+    // not fmtDate's billing-specific fallback string.
+    const showDate = (d) => (d ? fmtDate(d) : '—');
+
+    if (lastEl) lastEl.textContent = elig ? showDate(elig.last_completed_at) : '—';
+
+    if (!elig || elig.state == null) {
+      // Read not wired yet: show the block structure, CTA enabled, dates as "—".
+      if (nextEl) nextEl.textContent = '—';
+      return;
+    }
+
+    if (elig.state === 'B') {
+      // Gated: no CTA into the surface; show the next eligible date.
+      if (nextEl) nextEl.textContent = showDate(elig.next_eligible_date);
+      if (ctaEl) { ctaEl.style.display = 'none'; }
+      if (gatedEl) {
+        gatedEl.style.display = 'block';
+        gatedEl.textContent = 'Your next pricing audit will be available on '
+          + showDate(elig.next_eligible_date) + '.';
+      }
+    } else {
+      // State A (eligible): CTA active. next date is "—" (they can start now).
+      if (nextEl) nextEl.textContent = elig.next_eligible_date ? showDate(elig.next_eligible_date) : 'Available now';
+      if (ctaEl) ctaEl.style.display = '';
+    }
+  })();
+
   // ── 6. Email preferences ─────────────────────────────────────────────────────
   const nlToggle = document.getElementById('gc-newsletter-toggle');
   const subscribed = newsletterRow && !newsletterRow.unsubscribed_at;

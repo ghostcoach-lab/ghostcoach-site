@@ -110,6 +110,10 @@
   /* Email prefs toggle */
   .pref-row { display:flex; align-items:center; justify-content:space-between; padding:14px 0; border-bottom:1px solid rgba(15,17,23,0.06); }
   .pref-row:last-child { border-bottom:none; }
+  .audit-date-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid rgba(15,17,23,0.06); }
+  .audit-date-row:last-child { border-bottom:none; }
+  .audit-date-label { font-size:14px; color:var(--muted,#8B8A98); }
+  .audit-date-value { font-size:14px; font-weight:500; color:var(--ink,#0F1117); }
   .pref-label { font-size:14px; color:var(--ink); }
   .pref-sub { font-size:12px; color:rgba(15,17,23,0.5); margin-top:2px; }
   .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
@@ -333,6 +337,30 @@
       <button type="button" class="btn btn-ghost" id="gc-manage-billing">Manage billing &amp; invoices</button>
     </div>
     <div id="gc-winback" class="winback" style="display:none;"></div>
+  </section>
+
+  <!-- 4. QUARTERLY PRICING AUDIT (Operator / Lifetime only; shown by account.js) -->
+  <section class="acct-section" id="gc-audit-section" style="display:none;">
+    <h2>Quarterly pricing audit</h2>
+    <p class="section-hint">A focused pricing verdict from Marcus, once a quarter.</p>
+
+    <!-- State B (gated) informational note; shown by JS when not yet eligible -->
+    <div id="gc-audit-gated" class="scheduled-notice" style="display:none;"></div>
+
+    <div class="audit-dates" style="margin:14px 0;">
+      <div class="audit-date-row">
+        <span class="audit-date-label">Last audit</span>
+        <span class="audit-date-value" id="gc-audit-last">—</span>
+      </div>
+      <div class="audit-date-row">
+        <span class="audit-date-label">Next audit possible on</span>
+        <span class="audit-date-value" id="gc-audit-next">—</span>
+      </div>
+    </div>
+
+    <div class="billing-actions">
+      <a href="/account/audit/" class="btn btn-primary" id="gc-audit-cta">Start pricing audit</a>
+    </div>
   </section>
 
   <!-- 6. EMAIL PREFERENCES -->
