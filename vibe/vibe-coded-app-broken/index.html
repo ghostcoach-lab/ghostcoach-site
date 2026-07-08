@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>My Vibe-Coded App Is Broken — Ask This Before You Fix It | GhostCoach</title>
-<meta name="description" content="Before you spend $2,000 fixing a broken vibe-coded app, answer one question: do you have paying customers? Here's how to diagnose what's actually broken.">
+<title>Your Vibe-Coded App Is Broken: A Diagnostic | GhostCoach</title>
+<meta name="description" content="Your vibe-coded app is broken and you can't fix it? A calm diagnostic to decide what to repair, what to ignore, and when to rebuild. Start free.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://getghostcoach.com/vibe/vibe-coded-app-broken/">
-<meta property="og:title" content="My Vibe-Coded App Is Broken — Ask This Before You Fix It | GhostCoach">
-<meta property="og:description" content="Before you spend $2,000 fixing a broken vibe-coded app, answer one question: do you have paying customers? Here&#x27;s how to diagnose what&#x27;s actually broken.">
+<meta property="og:title" content="Your Vibe-Coded App Is Broken: A Diagnostic | GhostCoach">
+<meta property="og:description" content="A calm diagnostic for when your vibe-coded app breaks: what to fix, what to ignore, and when to rebuild.">
 <link rel="canonical" href="https://getghostcoach.com/vibe/vibe-coded-app-broken/">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
@@ -18,7 +18,6 @@
     --cream: #F7F5F0; --teal: #0B7A60; --muted: #8B8A98;
     --border: #E2DFD8; --serif: 'Playfair Display', Georgia, serif;
     --sans: 'DM Sans', system-ui, sans-serif;
-    --red: #C0392B;
   }
   html { scroll-behavior: smooth; }
   body { font-family: var(--sans); background: var(--cream); color: var(--ink); font-size: 17px; line-height: 1.7; }
@@ -32,7 +31,7 @@
   .eyebrow { font-size: 0.72rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--amber); font-weight: 600; margin-bottom: 1.25rem; }
   .hero h1 { font-family: var(--serif); font-size: clamp(2rem, 5vw, 3.2rem); line-height: 1.2; max-width: 780px; margin: 0 auto 1.25rem; font-weight: 700; }
   .hero h1 em { font-style: italic; color: var(--amber-lt); }
-  .hero-sub { font-size: 1.1rem; color: rgba(247,245,240,0.72); max-width: 580px; margin: 0 auto; line-height: 1.6; }
+  .hero-sub { font-size: 1.1rem; color: rgba(247,245,240,0.72); max-width: 560px; margin: 0 auto; line-height: 1.6; }
   .article { max-width: 740px; margin: 0 auto; padding: 3rem 1.5rem 5rem; }
   .toc { background: white; border: 1px solid var(--border); border-left: 4px solid var(--amber); border-radius: 6px; padding: 1.5rem 1.75rem; margin-bottom: 3rem; }
   .toc-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; margin-bottom: 0.85rem; }
@@ -51,17 +50,15 @@
   .callout { background: white; border: 1px solid var(--border); border-radius: 6px; padding: 1.5rem 1.75rem; margin: 2rem 0; }
   .callout-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--teal); font-weight: 600; margin-bottom: 0.6rem; }
   .callout p { font-size: 0.95rem; color: var(--ink); margin-bottom: 0; font-style: italic; }
-  .warning-box { background: #FFF8F0; border: 1px solid #E8A832; border-left: 4px solid var(--amber); border-radius: 6px; padding: 1.5rem 1.75rem; margin: 2rem 0; }
-  .warning-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--amber); font-weight: 600; margin-bottom: 0.6rem; }
-  .warning-box p { font-size: 0.97rem; color: var(--ink); margin-bottom: 0; }
-  .decision-tree { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 2rem; margin: 2rem 0; }
-  .decision-tree h4 { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1.25rem; color: var(--ink); }
-  .decision-step { display: flex; gap: 1rem; margin-bottom: 1.25rem; align-items: flex-start; }
-  .decision-num { background: var(--ink); color: var(--cream); width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; margin-top: 2px; }
-  .decision-step p { margin-bottom: 0; font-size: 0.95rem; }
-  .decision-step strong { color: var(--ink); }
   .article ol, .article ul { padding-left: 1.4rem; margin-bottom: 1.25rem; }
   .article li { margin-bottom: 0.55rem; color: #2a2930; }
+  .pricing-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0 2rem; font-size: 0.92rem; }
+  .pricing-table th { background: var(--ink); color: var(--cream); padding: 0.75rem 1rem; text-align: left; font-weight: 600; font-size: 0.8rem; letter-spacing: 0.04em; }
+  .pricing-table td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .pricing-table tr:nth-child(even) td { background: white; }
+  .pricing-table tr:last-child td { border-bottom: none; }
+  .tag-good { color: var(--teal); font-weight: 600; font-size: 0.8rem; }
+  .tag-warn { color: var(--amber); font-weight: 600; font-size: 0.8rem; }
   .cta-box { background: var(--ink); border-radius: 10px; padding: 2.5rem 2.25rem; margin: 3.5rem 0 2.5rem; text-align: center; }
   .cta-box h3 { font-family: var(--serif); font-size: 1.6rem; color: var(--cream); margin-bottom: 0.75rem; line-height: 1.3; font-weight: 700; }
   .cta-box p { color: rgba(247,245,240,0.7); font-size: 0.97rem; margin-bottom: 1.5rem; }
@@ -85,22 +82,12 @@
   a.cta-btn { color: var(--ink) !important; }
 
   </style>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjxwYXRoIGQ9Ik04IDE0YTggOCAwIDAgMSAxNiAwdjkuNSBRMjIuNSAyMi41IDIxIDIzLjUgUTE5LjUgMjQuNSAxOCAyMy41IFExNi41IDIyLjUgMTUgMjMuNSBRMTMuNSAyNC41IDEyIDIzLjUgUTEwLjUgMjIuNSA5IDIzLjUgTDggMjNaIiBmaWxsPSIjRjdGNUYwIi8+PGNpcmNsZSBjeD0iMTMiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PGNpcmNsZSBjeD0iMTkiIGN5PSIxNiIgcj0iMS42IiBmaWxsPSIjQzg4NjFFIi8+PHBhdGggZD0iTTEzLjUgMTkuNSBRMTYgMjEgMTguNSAxOS41IiBzdHJva2U9IiNDODg2MUUiIHN0cm9rZS13aWR0aD0iMS4yIiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48L3N2Zz4=">
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "GhostCoach",
-  "url": "https://getghostcoach.com/",
-  "description": "AI business coaching for solo SaaS founders."
-}
-</script>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iNyIgZmlsbD0iIzBGMTExNyIvPjwvc3ZnPg==">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "My Vibe-Coded App Is Broken \u2014 Ask This Before You Fix It",
+  "headline": "Your Vibe-Coded App Is Broken: A Diagnostic",
   "author": { "@type": "Organization", "name": "GhostCoach" },
   "publisher": { "@type": "Organization", "name": "GhostCoach" },
   "mainEntityOfPage": "https://getghostcoach.com/vibe/vibe-coded-app-broken/"
@@ -114,13 +101,13 @@
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
     <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo product builders</span>
   </a>
-  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
+  <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">&larr; Back to home</a>
 </nav>
 
 <section class="hero">
-  <div class="eyebrow">Vibe Coding · When Things Go Wrong</div>
-  <h1>My Vibe-Coded App Is Broken.<br><em>Is It Worth Fixing?</em></h1>
-  <p class="hero-sub">Before you hire a developer to rescue your app, answer one question. The answer changes everything about what you do next.</p>
+  <div class="eyebrow">Vibe Coding &middot; Diagnostic</div>
+  <h1>Your Vibe-Coded App<br><em>Is Broken. Now What?</em></h1>
+  <p class="hero-sub">The build got you 80% of the way. Then it broke and you couldn't fix it. Here's how to decide what to repair, what to ignore, and when to walk away.</p>
 </section>
 
 <section class="article">
@@ -128,133 +115,108 @@
   <div class="toc">
     <div class="toc-title">On this page</div>
     <ol>
-      <li><a href="#the-question">The one question to ask before you hire anyone</a></li>
-      <li><a href="#code-vs-business">Is this a code problem or a business problem?</a></li>
-      <li><a href="#the-rescue-trap">The rescue trap: how founders waste $2,000</a></li>
-      <li><a href="#decision-framework">The decision framework: fix, pause, or pivot</a></li>
-      <li><a href="#if-you-fix">If you do fix it: what to build before you relaunch</a></li>
-      <li><a href="#if-you-dont">If you don't fix it: what to do instead</a></li>
+      <li><a href="#the-wall">The wall every vibe coder hits</a></li>
+      <li><a href="#diagnose">Diagnose the break before you touch it</a></li>
+      <li><a href="#triage">Severity triage: critical vs cosmetic</a></li>
+      <li><a href="#cost-benefit">The fix-it cost-benefit template</a></li>
+      <li><a href="#rebuild">When to rebuild instead of repair</a></li>
+      <li><a href="#business">The break that isn't technical</a></li>
     </ol>
   </div>
 
-  <p>Your vibe-coded app crashed in production. Or it's throwing errors users can't get past. Or it worked on your machine but something's broken for everyone else. You're looking at Upwork listings, thinking about hiring a developer, maybe already got a couple of quotes.</p>
-  <p>Stop. Before you spend money on a fix, answer one question.</p>
+  <p>A vibe-coded app is one you built fast with a tool like Cursor, Bolt, or Lovable &mdash; describing what you wanted and letting AI generate it. It works right up until it doesn't, and then you're staring at an error you didn't write and can't read.</p>
+  <p>This is the most common wall in vibe coding. It's not a sign you failed. It's a sign you've reached the edge of what "build it fast" gets you. What matters now is the decision, not the panic.</p>
 
-  <div class="warning-box">
-    <div class="warning-label">The question</div>
-    <p><strong>Do you have paying customers who are actively blocked by this bug?</strong></p>
-  </div>
-
-  <p>If the answer is yes: fix it immediately. Paying customers are your most important asset. Every hour they're blocked is churn risk. Get it fixed today.</p>
-  <p>If the answer is no: read the rest of this guide before you do anything else. You may be about to make a very expensive mistake.</p>
-
-  <h2 id="the-question">The One Question to Ask Before You Hire Anyone</h2>
-
-  <p>Most vibe-coded apps that "break" break in one of two ways. Either a technical failure genuinely blocks users from using the product — and that's a real emergency. Or the app has rough edges, errors in edge cases, or things that don't work perfectly — but no one is actually blocked from getting value.</p>
-  <p>The second kind feels like a crisis. It usually isn't. Founders with no paying customers often spend weeks (and hundreds to thousands of dollars) fixing technical debt in a product that no one has validated yet.</p>
-  <p>You cannot determine whether your app is worth fixing with technical data alone. You need business data: paying customers, conversion rate, trial engagement. If you don't have any of those, fixing the code is premature.</p>
+  <h2 id="the-wall">The Wall Every Vibe Coder Hits</h2>
+  <p>The pattern is predictable. The app works in the demo. You get users. Then a change breaks something, the AI's fix breaks something else, and each attempt digs the hole deeper. You've spent a weekend re-breaking the same feature.</p>
+  <p>The instinct is to keep prompting until it's fixed. Sometimes that works. Often it burns days on a problem that a five-minute decision should have settled: is this worth fixing at all, right now?</p>
 
   <div class="marcus-says">
-    <div class="ml">Marcus · GhostCoach AI</div>
-    <div class="mq">"I recommend treating a broken app as a business decision, not a technical one. The question is never 'how do I fix this?' first. The question is 'does fixing this unlock revenue?' — and if you don't have paying customers yet, the answer is almost certainly no."</div>
+    <div class="ml">Marcus</div>
+    <div class="mq">"I recommend you stop fixing and start triaging. Not every broken thing is worth your time, and the ones that are rarely get fixed by the tenth panicked prompt. Decide severity first, cost second, then act."</div>
   </div>
 
-  <h2 id="code-vs-business">Is This a Code Problem or a Business Problem?</h2>
-
-  <p>This is the most important diagnosis you can run. They look similar from the outside — stalled growth, no conversions, users leaving — but they require completely different fixes.</p>
-
-  <h3>Signs it's a code problem</h3>
-  <ul>
-    <li>Paying customers are reporting specific errors that prevent them from completing tasks</li>
-    <li>Sign-ups are dropping off at the same step in your onboarding flow consistently</li>
-    <li>Your product is functional for you but breaks for users with different setups</li>
-    <li>You have a clear error log showing what's failing and when</li>
-  </ul>
-
-  <h3>Signs it's a business problem in disguise</h3>
-  <ul>
-    <li>You have visitors and sign-ups but almost no one pays</li>
-    <li>You have a few paying customers but they're not engaging with the core feature</li>
-    <li>Users drop off early in the trial but leave no bug reports</li>
-    <li>The "broken" parts of your app are edge cases that your target customer hasn't hit</li>
-    <li>You haven't had a real conversation with a churned user in the last 30 days</li>
-  </ul>
-
-  <p>Business problems are far more common than code problems at the stage most vibe coders are at. Before you spend a dollar on development, spend two hours talking to your users — paying and churned. You will almost always find the answer you need in those conversations.</p>
-  <p>Our guide on <a href="/vibe/after-vibe-coding-what-next/">what to do after vibe coding</a> covers the first-week diagnosis framework in full.</p>
-
-  <h2 id="the-rescue-trap">The Rescue Trap: How Founders Waste $2,000</h2>
-
-  <p>Here's the scenario that plays out dozens of times a week in the vibe coding community right now.</p>
-  <p>A founder builds an app over a weekend. Launches on Product Hunt. Gets 200 upvotes, 40 sign-ups, zero paying customers. The app has some rough edges. The founder, frustrated by the zero conversions and uncomfortable with the ambiguity, decides the technical imperfection is the problem. Hires a developer for $1,500–$3,000 to clean up the code, fix the edge cases, make it production-grade.</p>
-  <p>The polished app relaunches. Still zero paying customers.</p>
-  <p>The technical problems were real. But they weren't the reason no one was paying. The reason no one was paying was: wrong positioning, no acquisition channel, and an onboarding flow that never created a moment where paying felt necessary. None of those things got fixed.</p>
-  <p>$2,000 in development fees later, the business problem is identical. The code is cleaner.</p>
-
-  <h2 id="decision-framework">The Decision Framework: Fix, Pause, or Pivot</h2>
-
-  <div class="decision-tree">
-    <h4>Run this before you hire anyone</h4>
-
-    <div class="decision-step">
-      <div class="decision-num">1</div>
-      <p><strong>Do you have paying customers blocked by this issue?</strong> If yes → fix immediately, no further questions. If no → continue.</p>
-    </div>
-    <div class="decision-step">
-      <div class="decision-num">2</div>
-      <p><strong>Have you had 5+ conversations with target customers in the last 30 days?</strong> If no → do that first. You cannot make a good fix/pause decision without this data.</p>
-    </div>
-    <div class="decision-step">
-      <div class="decision-num">3</div>
-      <p><strong>Is the broken thing on the critical path to first value?</strong> If a new user cannot reach the core value of your product because of this issue → fix it. If they can get value despite it → pause.</p>
-    </div>
-    <div class="decision-step">
-      <div class="decision-num">4</div>
-      <p><strong>Do you have evidence people want this product enough to pay?</strong> If no paying customers and no strong qualitative signal from conversations → pivot before you fix. You may be fixing the wrong product.</p>
-    </div>
-    <div class="decision-step">
-      <div class="decision-num">5</div>
-      <p><strong>What would $2,000 in business investment buy you instead?</strong> SEO content, a paid acquisition test, a designer to fix your positioning, three months of <a href="/ai-business-coach/pricing/">GhostCoach Operator</a>. Weigh these against the development cost explicitly.</p>
-    </div>
-  </div>
-
-  <h2 id="if-you-fix">If You Do Fix It: What to Build Before You Relaunch</h2>
-
-  <p>If you've run the framework and the right decision is to fix the code, do these things before the developer touches a line.</p>
+  <h2 id="diagnose">Diagnose the Break Before You Touch It</h2>
+  <p>Before you write another prompt, name what kind of break this is. Three questions settle it.</p>
   <ol>
-    <li><strong>Talk to your existing users.</strong> Ask what's broken for them specifically. Don't describe what you think is broken — let them show you. You'll discover things the developer needs to know, and things you thought were broken that aren't blocking anyone.</li>
-    <li><strong>Define "fixed" with a user outcome.</strong> Not "no more errors in the console." "A new user can complete onboarding and reach X outcome without hitting a blocker." Give this definition to your developer. It scopes the work and prevents scope creep.</li>
-    <li><strong>Fix your positioning at the same time.</strong> The technical relaunch is a second launch. It deserves a sharp message, a clearer homepage, and a better onboarding sequence. If you're spending $2,000 on development, spend another $200 on the business layer that makes the development worth it.</li>
-    <li><strong>Plan your acquisition for the relaunch day.</strong> A quiet relaunch of a fixed product is nearly as disappointing as the original launch. Know exactly where you're announcing, to whom, and what you want them to do.</li>
+    <li><strong>Who hits it?</strong> Every user, or an edge case one person found? A bug on the signup flow is not the same as a bug in a setting nobody uses.</li>
+    <li><strong>Does it block money?</strong> Can people still sign up, pay, and get the core value? If yes, the break is annoying, not fatal.</li>
+    <li><strong>Is it getting worse?</strong> A cosmetic glitch is stable. A data or billing bug compounds every day you leave it.</li>
   </ol>
+  <p>Those three answers feed directly into the triage list below.</p>
 
-  <h2 id="if-you-dont">If You Don't Fix It: What to Do Instead</h2>
-
-  <p>If the framework tells you this is a business problem disguised as a code problem, here's the 30-day plan.</p>
-  <p>Weeks 1–2: talk to 10 people who signed up but didn't pay. Ask what they expected, what they found, why they left. Don't defend the product. Just listen and take notes. The pattern in those conversations is your next move.</p>
-  <p>Week 3: rewrite your positioning based on what you heard. Homepage headline, first paragraph, pricing page. Show the rewrite to three of the people you spoke to. Ask if it sounds like something they'd pay for.</p>
-  <p>Week 4: test conversion with the new positioning before you fix anything technical. Send 50 targeted visitors to the new page. If the conversion rate improves, you've found the problem. Now you know which fix to invest in first.</p>
-  <p>If you want a structured framework for this process, Marcus runs through exactly this diagnosis in a single session. See our guide on <a href="/vibe/get-customers/">how to get customers for a vibe-coded app</a> for the acquisition side of the same problem.</p>
+  <h2 id="triage">Severity Triage: Critical vs Cosmetic</h2>
+  <p>Sort every broken thing into one of these tiers before you fix anything. Work top-down. Never let a Tier 3 item eat a day while a Tier 1 sits open.</p>
+  <table class="pricing-table">
+    <thead>
+      <tr><th>Tier</th><th>What it looks like</th><th>Action</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="tag-warn">Tier 1 &mdash; Critical / blocking</span></td><td>Signup broken, payment fails, app won't load, data loss, security or billing bug</td><td>Stop everything. Fix now or take the feature offline until you can.</td></tr>
+      <tr><td><span class="tag-warn">Tier 2 &mdash; Core-value degraded</span></td><td>Main feature works but is unreliable; a common flow errors intermittently</td><td>Fix this week. It's capping conversion and trust even if no one complains.</td></tr>
+      <tr><td><span class="tag-good">Tier 3 &mdash; Cosmetic / edge</span></td><td>Misaligned button, rare edge case, a nice-to-have that errors, ugly-but-working UI</td><td>Write it down. Do not fix now. Batch it for later or never.</td></tr>
+    </tbody>
+  </table>
+  <p>The trap is Tier 3 disguised as Tier 1 by your own anxiety. A wonky layout feels urgent at 11pm. It isn't. If it doesn't block a user or your revenue and it isn't getting worse, it's Tier 3 &mdash; no matter how much it bothers you.</p>
 
   <div class="callout">
-    <div class="callout-label">Example prompt for Marcus</div>
-    <p>"My app has some bugs and I'm considering hiring a developer to fix it. I have 0 paying customers but 30 sign-ups. I don't know if the bugs are the reason people aren't paying or if there's something else wrong. What should I investigate before I spend money on development?"</p>
+    <div class="callout-label">Prompt for Marcus</div>
+    <p>"Here are the three things broken in my app: [list]. Help me sort them into critical, core-value, and cosmetic &mdash; and tell me the one to fix first."</p>
+  </div>
+
+  <h2 id="cost-benefit">The Fix-It Cost-Benefit Template</h2>
+  <p>For any Tier 1 or Tier 2 break, run this before you spend a single hour on it. It replaces gut feeling with a number.</p>
+  <p>Fill in five lines:</p>
+  <ol>
+    <li><strong>Hours to fix (honest estimate):</strong> ____ hours</li>
+    <li><strong>Your hourly value:</strong> what an hour of your time is worth. If you'd bill clients $80/hr, use $80.</li>
+    <li><strong>Cost to fix:</strong> hours &times; hourly value.</li>
+    <li><strong>Monthly upside:</strong> revenue this unblocks or churn it prevents, per month.</li>
+    <li><strong>Payback:</strong> cost to fix &divide; monthly upside = months to break even.</li>
+  </ol>
+  <p>A worked example. A checkout bug takes an estimated 6 hours to fix. Your time is worth $80/hr, so the cost to fix is $480. The bug is quietly costing you two lost signups a month at $40/mo each &mdash; $80/mo in upside. Payback: $480 &divide; $80 = 6 months. That's still worth it, because it's a Tier 1 revenue blocker that compounds.</p>
+  <p>Now flip it. A cosmetic dashboard glitch takes an estimated 5 hours ($400 of your time) and unblocks $0 of revenue. Payback: never. That's a Tier 3 item you should not be touching this month, no matter how much it nags.</p>
+  <table class="pricing-table">
+    <thead>
+      <tr><th>Break</th><th>Cost to fix</th><th>Monthly upside</th><th>Verdict</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Checkout bug (Tier 1)</td><td>6 hrs &times; $80 = $480</td><td>$80/mo &amp; rising</td><td class="tag-good">Fix now</td></tr>
+      <tr><td>Flaky core feature (Tier 2)</td><td>4 hrs &times; $80 = $320</td><td>~$150/mo (trust/churn)</td><td class="tag-good">Fix this week</td></tr>
+      <tr><td>Cosmetic glitch (Tier 3)</td><td>5 hrs &times; $80 = $400</td><td>$0</td><td class="tag-warn">Defer / skip</td></tr>
+    </tbody>
+  </table>
+  <p>Use your own hourly number and your own upside estimates. The point isn't precision &mdash; it's forcing "is this worth it?" into daylight before the panic answers for you.</p>
+
+  <h2 id="rebuild">When to Rebuild Instead of Repair</h2>
+  <p>Sometimes the honest answer is that the codebase is fighting you and every fix costs more than the last. Rebuild is on the table when three things are true: you can't make a small change without breaking two others, you don't understand enough of the code to reason about it, and the app has proven that people want it.</p>
+  <p>That last one matters most. Don't rebuild an app no one is paying for &mdash; that's not a technical decision, it's a business one. If you have paying users and a codebase you can't maintain, a clean rebuild with better structure (or a developer) can be the cheaper path over three months, even though it feels like going backward.</p>
+  <p>If you're not sure the app has earned a rebuild, the real question is demand, not code. Our guide on <a href="/vibe/after-vibe-coding-what-next/">after vibe coding, what next</a> helps you tell the difference.</p>
+
+  <h2 id="business">The Break That Isn't Technical</h2>
+  <p>Here's the uncomfortable part. For a lot of founders who land on this page, the app isn't the thing that's actually broken. The business layer is. The product runs fine &mdash; there's just no pricing, no positioning, and no way to get customers.</p>
+  <p>A working app with two paying users doesn't have a bug. It has a monetisation gap. Fixing the code won't fix that, and you can lose months polishing an app that a pricing change would have moved further in a week.</p>
+  <p>If your app runs but the revenue doesn't, the fix is elsewhere: see <a href="/vibe/make-money/">how to make money from your vibe-coded app</a> and, once it's earning, <a href="/vibe/get-customers/">how to get customers for a vibe-coded app</a>.</p>
+
+  <div class="marcus-says">
+    <div class="ml">Marcus</div>
+    <div class="mq">"I recommend asking one blunt question before another repair: if this bug vanished tonight, would you have a business tomorrow? If the honest answer is no, the code was never the problem."</div>
   </div>
 
   <div class="cta-box">
-    <h3>Code problem or business problem?<br>Marcus can tell the difference.</h3>
-    <p>One session with Marcus diagnoses whether your app's problem is technical, strategic, or both — before you spend money on the wrong fix.</p>
-    <a href="https://getghostcoach.com/#pricing" class="cta-btn">Talk to Marcus free →</a>
-    <span class="cta-note">14-day free trial · Builder plan from $79/mo · cancel anytime</span>
+    <h3>Not sure if it's the app or the business that's broken?</h3>
+    <p>Marcus diagnoses the real bottleneck &mdash; technical or commercial &mdash; and gives you one specific thing to do next.</p>
+    <a href="https://getghostcoach.com/#pricing" class="cta-btn">Talk to Marcus free &rarr;</a>
+    <span class="cta-note">14-day free trial &middot; Builder from $79/mo &middot; cancel anytime</span>
   </div>
 
   <div class="related-box">
     <div class="related-title">Related guides</div>
     <div class="related-grid">
-      <a href="/vibe/after-vibe-coding-what-next/" class="related-link">After Vibe Coding, What Next?<span>The post-ship diagnosis</span></a>
-      <a href="/vibe/get-customers/" class="related-link">How to Get Customers for a Vibe-Coded App<span>Once you've fixed the business layer</span></a>
-      <a href="/guides/saas-trial-to-paid-conversion/" class="related-link">Trial-to-Paid Conversion<span>Turn sign-ups into revenue</span></a>
-      <a href="/vibe/make-money/" class="related-link">How to Make Money From Your Vibe-Coded App<span>Pricing and first payment</span></a>
+      <a href="/vibe/after-vibe-coding-what-next/" class="related-link">After Vibe Coding, What Next?<span>The post-ship roadmap</span></a>
+      <a href="/vibe/make-money/" class="related-link">Make Money From Your Vibe-Coded App<span>Fix the monetisation gap</span></a>
+      <a href="/vibe/get-customers/" class="related-link">Get Customers for a Vibe-Coded App<span>Acquisition that repeats</span></a>
+      <a href="/vibe/saas/" class="related-link">Turn Your Vibe-Coded App Into a SaaS<span>The business layer, step by step</span></a>
     </div>
   </div>
 
@@ -323,7 +285,7 @@
   </style>
 </footer>
 
-  <!-- v23: GhostCoach JS integration -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="/js/config.js"></script>
   <script src="/js/supabase-client.js"></script>
   <script src="/js/auth.js"></script>
