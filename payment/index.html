@@ -199,6 +199,11 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
       </div>
 
       <div class="field">
+        <label>How did you first find GhostCoach?</label>
+        <input type="text" id="p-referral-source" placeholder="Optional — I read every one of these" autocomplete="off" maxlength="200">
+      </div>
+
+      <div class="field">
         <label>Your plan</label>
         <div class="plan-row">
           <div class="plan-opt sel" id="opt-builder" onclick="selectPlan('builder')">
@@ -471,6 +476,8 @@ async function handleStart(){
     email: document.getElementById('p-email').value.trim(),
     phone: document.getElementById('p-phone').value.trim(),
     country: document.getElementById('p-country').value,
+    // Optional free-text: "How did you first find GhostCoach?" — may be an empty string.
+    referral_source: document.getElementById('p-referral-source').value.trim(),
     plan: currentPlan,
   };
   sessionStorage.setItem('gc_profile', JSON.stringify(profile));
@@ -542,14 +549,32 @@ async function handleStart(){
     //    n8n S2 (onboarding) later UPDATEs the same row with business fields.
     try {
       if (userId) {
-        const { error: profileError } = await gcSupabase.from('profiles').upsert({
+        // Core personal fields — these must always save.
+        const corePayload = {
           user_id:    userId,
           firstname:  profile.firstname,
           lastname:   profile.lastname,
           phone:      profile.phone,
           country:    profile.country,
           updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
+        };
+        // Optional field — store null (not '') when the user leaves it blank,
+        // so "didn't answer" is distinguishable from "answered with nothing".
+        const withReferral = Object.assign({}, corePayload, {
+          referral_source: profile.referral_source || null
+        });
+
+        let { error: profileError } = await gcSupabase.from('profiles')
+          .upsert(withReferral, { onConflict: 'user_id' });
+
+        // If the referral_source column doesn't exist yet (migration not run),
+        // don't let it take the core personal-info write down with it — retry
+        // without the optional field. Remove this fallback once the column ships.
+        if (profileError && /referral_source/i.test(profileError.message || '')) {
+          console.warn('referral_source column missing — retrying without it. Run the migration.');
+          ({ error: profileError } = await gcSupabase.from('profiles')
+            .upsert(corePayload, { onConflict: 'user_id' }));
+        }
         if (profileError) {
           console.warn('Profile upsert (personal info) failed:', profileError.message, profileError);
         }
