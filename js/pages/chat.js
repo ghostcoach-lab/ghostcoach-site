@@ -53,13 +53,100 @@
     return data.id;
   }
 
+  // ── Markdown rendering for Marcus messages ───────────────────────────────────
+  // SECURITY: Marcus's text is model-generated. We escape ALL HTML first, then
+  // apply a deliberately tiny Markdown pass over the escaped string. Raw model
+  // output never reaches the DOM. Supported: **bold**, *italic*, line breaks,
+  // and simple "- " / "* " lists. Nothing else — no links, no images, no HTML.
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
+  function renderMarkdown(raw) {
+    // 1. Escape first — everything after this point operates on safe text.
+    let s = escapeHtml(raw);
+
+    // 2. Bold before italic, so **x** isn't eaten by the single-asterisk rule.
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*/g, '$1<em>$2</em>');
+
+    // 3. Lists: consecutive "- " or "* " lines become a <ul>.
+    const lines = s.split('\n');
+    let out = [], buf = [];
+    const flush = () => {
+      if (buf.length) {
+        out.push('<ul>' + buf.map(li => '<li>' + li + '</li>').join('') + '</ul>');
+        buf = [];
+      }
+    };
+    for (const line of lines) {
+      const m = line.match(/^\s*[-*]\s+(.*)$/);
+      if (m) { buf.push(m[1]); } else { flush(); out.push(line); }
+    }
+    flush();
+    s = out.join('\n');
+
+    // 4. Paragraphs on blank lines; single newlines become <br>.
+    //    Lists must never be wrapped in <p> (invalid HTML — the browser would
+    //    auto-close the <p> and break the styling), so split each block around
+    //    any <ul> it contains and emit those as siblings.
+    return s.split(/\n{2,}/)
+      .map(block => block.trim())
+      .filter(Boolean)
+      .map(block => block
+        .split(/(<ul>[\s\S]*?<\/ul>)/)
+        .filter(Boolean)
+        .map(part => {
+          if (part.startsWith('<ul>')) return part;
+          const text = part.replace(/^\n+|\n+$/g, '');
+          return text ? '<p>' + text.replace(/\n/g, '<br>') + '</p>' : '';
+        })
+        .join('')
+      )
+      .join('');
+  }
+
   // ── Render a chat bubble ──────────────────────────────────────────────────────
   function appendMessage(role, content) {
     const div = document.createElement('div');
     div.className = `gc-message gc-message--${role}`;
-    div.textContent = content;
+
+    if (role === 'assistant') {
+      // Marcus: escaped + markdown-rendered, plus a copy affordance.
+      div.innerHTML = renderMarkdown(content);
+      div.appendChild(buildCopyButton(content));
+    } else {
+      // User: plain text. No markdown, no HTML — textContent is inherently safe.
+      div.textContent = content;
+    }
+
     messagesEl.appendChild(div);
     messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+
+  // Copy button — writes the RAW Marcus string (pre-Markdown) as plaintext, so
+  // it pastes as plain black text in any editor rather than white-on-white HTML.
+  function buildCopyButton(rawText) {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'copy';
+    btn.textContent = 'COPY';
+    btn.setAttribute('aria-label', 'Copy Marcus\u2019s message to clipboard');
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(rawText);
+      } catch (e) {
+        return; // clipboard blocked — say nothing rather than lie about success
+      }
+      btn.textContent = 'COPIED';
+      setTimeout(() => { btn.textContent = 'COPY'; }, 1500);
+    });
+    return btn;
   }
 
   // ── Call Anthropic (Marcus) via Supabase Edge Function ───────────────────────

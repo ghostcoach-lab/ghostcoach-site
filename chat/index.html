@@ -252,14 +252,91 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
   .cw-chip{font-size:12px;padding:6px 12px;}
 }
 
+/* Briefing §5 — 375px target. Copy button always visible: no hover on touch. */
+@media (max-width:480px){
+  .gc-message--assistant{
+    max-width:100%;
+    padding:20px 18px;
+    font-size:14px;
+  }
+  .gc-message--user{max-width:80%;}
+  .gc-message--assistant .copy{opacity:1;}
+}
+
 /* Adjust chat-page top padding for fixed nav */
 .chat-page{padding-top:52px !important;}
 
 /* v30 — gc-message bubbles (rendered by chat.js) */
-.gc-message{max-width:80%;padding:13px 17px;border-radius:14px;font-size:14.5px;line-height:1.62;margin-bottom:14px;white-space:pre-wrap;word-wrap:break-word;}
-.gc-message--user{background:#C8861E;color:#0F1117;margin-left:auto;border-bottom-right-radius:4px;}
-.gc-message--assistant{background:rgba(247,245,240,0.06);color:#F7F5F0;border:0.5px solid rgba(247,245,240,0.08);border-bottom-left-radius:4px;}
-.gc-message--thinking{color:rgba(247,245,240,0.5);font-style:italic;}
+.gc-message{max-width:80%;border-radius:14px;margin-bottom:14px;word-wrap:break-word;}
+
+/* User messages recede — amber is reserved for actions (CTAs), never for chrome. */
+.gc-message--user{
+  background:rgba(247,245,240,0.04);
+  border:0.5px solid rgba(247,245,240,0.08);
+  color:rgba(247,245,240,0.65);
+  font:400 14px/1.65 'DM Sans',sans-serif;
+  border-radius:12px;
+  padding:12px 16px;
+  max-width:68%;
+  margin-left:auto;
+  white-space:pre-wrap;   /* plain text — preserve the user's own line breaks */
+}
+
+/* Marcus carries the weight: room to be read, not scanned. */
+.gc-message--assistant{
+  position:relative;
+  background:#1A1D27;
+  color:#F7F5F0;
+  border-radius:14px;
+  padding:28px 32px;
+  max-width:78%;
+  font:400 15px/1.7 'DM Sans',sans-serif;
+  /* no pre-wrap: content is real <p>/<br> markup from renderMarkdown() */
+}
+.gc-message--assistant p{margin:0;}
+.gc-message--assistant p + p{margin-top:20px;}
+.gc-message--assistant ul{margin:20px 0 0;padding-left:1.2em;}
+.gc-message--assistant li{margin-bottom:6px;}
+.gc-message--assistant strong{font-weight:500;color:#E8A832;}
+.gc-message--assistant em{font-style:italic;}
+
+/* Copy affordance — appears on hover (desktop), always visible on touch. */
+.gc-message--assistant .copy{
+  opacity:0;
+  transition:opacity 0.2s ease;
+  display:block;
+  margin-top:16px;
+  font:500 11px/1 'DM Sans',sans-serif;
+  letter-spacing:0.08em;
+  color:#8B8A98;
+  background:none;
+  border:none;
+  padding:0;
+  cursor:pointer;
+  position:relative;
+}
+/* 44px hit area without visible padding */
+.gc-message--assistant .copy::before{
+  content:'';position:absolute;left:50%;top:50%;
+  transform:translate(-50%,-50%);
+  width:44px;height:44px;
+}
+.gc-message--assistant:hover .copy,
+.gc-message--assistant:focus-within .copy{opacity:1;}
+.gc-message--assistant .copy:hover{color:#F7F5F0;}
+.gc-message--assistant .copy:focus-visible{
+  outline:1.5px solid #C8861E;
+  outline-offset:3px;
+  opacity:1;
+}
+
+/* Thinking bubble keeps the old compact treatment (no copy button on it). */
+.gc-message--thinking{
+  padding:13px 17px;
+  font:400 14.5px/1.62 'DM Sans',sans-serif;
+  color:rgba(247,245,240,0.5);
+  font-style:italic;
+}
 #gc-goal-bar-wrap{padding:10px 20px 0;display:none;}
 #gc-goal-bar-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
 #gc-goal-bar-label{font-size:11px;color:rgba(247,245,240,0.4);font-family:'DM Sans',sans-serif;letter-spacing:.03em;text-transform:uppercase;}
