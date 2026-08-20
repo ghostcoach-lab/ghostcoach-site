@@ -280,7 +280,7 @@ section{width:100%;}
   max-height:0;overflow:hidden;
   transition:max-height .35s ease,padding .25s;
 }
-.faq-a.open{max-height:400px;padding-bottom:20px;}
+.faq-a.open{padding-bottom:20px;}
 
 /* ─── SIGNUP ──────────────────────────── */
 .signup-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
@@ -1277,10 +1277,14 @@ function toggleFaq(el){
   const answer=el.nextElementSibling;
   const icon=el.querySelector('.faq-icon');
   const isOpen=answer.classList.contains('open');
-  document.querySelectorAll('.faq-a').forEach(a=>a.classList.remove('open'));
+  // Close all: clear inline max-height so the collapse animates from 0.
+  document.querySelectorAll('.faq-a').forEach(a=>{a.classList.remove('open');a.style.maxHeight=null;});
   document.querySelectorAll('.faq-icon').forEach(i=>{i.textContent='+';i.style.transform='rotate(0deg)';});
   if(!isOpen){
     answer.classList.add('open');
+    // Set max-height to the answer's real content height so it never clips,
+    // regardless of answer length or screen width (fixes mobile cut-off).
+    answer.style.maxHeight=answer.scrollHeight+'px';
     icon.textContent='×';
     icon.style.transform='rotate(0deg)';
   }
