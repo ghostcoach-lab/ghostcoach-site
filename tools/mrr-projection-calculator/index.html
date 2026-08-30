@@ -1,12 +1,12 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>SaaS Benchmark Tools for Solo Founders | GhostCoach</title><meta name="description" content="Free SaaS benchmark tools for solo founders — trial-to-paid conversion, churn, and the numbers that matter at your stage. No signup required.">
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>MRR Projection Calculator — 12 Month Model | GhostCoach</title><meta name="description" content="A free MRR projection calculator that accounts for churn, plus the growth ceiling most founders never calculate. Runs in your browser.">
 <meta property="og:type" content="article">
-<meta property="og:url" content="https://getghostcoach.com/tools/">
-<meta property="og:title" content="SaaS Benchmark Tools for Solo Founders">
-<meta property="og:description" content="Free SaaS benchmark tools for solo founders — trial-to-paid conversion, churn, and the numbers that matter at your stage. No signup required.">
+<meta property="og:url" content="https://getghostcoach.com/tools/mrr-projection-calculator/">
+<meta property="og:title" content="MRR Projection Calculator — 12 Month Model">
+<meta property="og:description" content="A free MRR projection calculator that accounts for churn, plus the growth ceiling most founders never calculate. Runs in your browser.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SaaS Benchmark Tools for Solo Founders">
-<meta name="twitter:description" content="Trial conversion, churn, and the benchmark data that actually applies to a one-person SaaS.">
-<link rel="canonical" href="https://getghostcoach.com/tools/"><link rel="stylesheet" href="/fonts/fonts.css"><style>
+<meta name="twitter:title" content="MRR Projection Calculator — 12 Month Model">
+<meta name="twitter:description" content="Most projections add customers without subtracting churn. This one shows your ceiling.">
+<link rel="canonical" href="https://getghostcoach.com/tools/mrr-projection-calculator/"><link rel="stylesheet" href="/fonts/fonts.css"><style>
 *{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
 body{font-family:'DM Sans',sans-serif;background:#F7F5F0;color:#0F1117;line-height:1.7;}
 a{color:#C8861E;text-decoration:none;}a:hover{text-decoration:underline;}
@@ -102,8 +102,8 @@ footer{background:#0F1117;padding:32px 0;}
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "SaaS Benchmark Tools for Solo Founders",
-  "description": "Free SaaS benchmark tools for solo founders — trial-to-paid conversion, churn, and the numbers that matter at your stage. No signup required.",
+  "headline": "MRR Projection Calculator \u2014 12 Month Model",
+  "description": "A free MRR projection calculator that accounts for churn, plus the growth ceiling most founders never calculate. Runs in your browser.",
   "author": {
     "@type": "Organization",
     "name": "GhostCoach"
@@ -112,10 +112,10 @@ footer{background:#0F1117;padding:32px 0;}
     "@type": "Organization",
     "name": "GhostCoach"
   },
-  "datePublished": "2026-08-23",
-  "dateModified": "2026-08-23",
+  "datePublished": "2026-08-25",
+  "dateModified": "2026-08-25",
   "inLanguage": "en",
-  "mainEntityOfPage": "https://getghostcoach.com/tools/"
+  "mainEntityOfPage": "https://getghostcoach.com/tools/mrr-projection-calculator/"
 }
 </script>
 <script type="application/ld+json">
@@ -134,6 +134,12 @@ footer{background:#0F1117;padding:32px 0;}
       "position": 2,
       "name": "Tools",
       "item": "https://getghostcoach.com/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "MRR projection calculator",
+      "item": "https://getghostcoach.com/tools/mrr-projection-calculator/"
     }
   ]
 }
@@ -145,34 +151,42 @@ footer{background:#0F1117;padding:32px 0;}
   "mainEntity": [
     {
       "@type": "Question",
-      "name": "Are these SaaS benchmark tools free?",
+      "name": "How do you project MRR?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. All six tools are free to use, with no signup required. They exist so you can check your own numbers against real 2026 data before deciding whether something needs fixing."
+        "text": "Start from your current customer count, then each month subtract churn and add new customers, multiplying the result by ARPU. The common error is adding new customers without subtracting churn, which makes a flat business look like it is growing."
       }
     },
     {
       "@type": "Question",
-      "name": "Do the calculators send my numbers anywhere?",
+      "name": "What is an MRR ceiling?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "No. The calculators run entirely in your browser. Nothing you type is transmitted, stored, or logged anywhere — close the tab and it's gone."
+        "text": "At a fixed acquisition and churn rate, MRR converges on a maximum rather than growing forever. The customer count where additions and losses cancel is new customers per month divided by monthly churn rate \u2014 eight new at 8% churn converges at a hundred customers."
       }
     },
     {
       "@type": "Question",
-      "name": "Which benchmark should I check first?",
+      "name": "Is it better to reduce churn or increase acquisition?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "If you have a free trial, start with trial-to-paid conversion — it is usually the faster, cheaper problem to fix. If you already have paying customers, check the broader solo SaaS benchmarks page for churn and retention bands."
+        "text": "They move the ceiling identically \u2014 halving churn and doubling acquisition both double it. They cost very differently: retention fixes are mostly one-time work that keeps paying, while acquisition must be sustained every month."
       }
     },
     {
       "@type": "Question",
-      "name": "Do these benchmarks apply to any SaaS, or just solo founders?",
+      "name": "How accurate are MRR projections?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "They are built specifically for solo and small-team SaaS. Benchmark data pulled from venture-backed companies with sales teams and marketing budgets does not transfer cleanly to a one-person product, so these numbers are filtered for that context."
+        "text": "Useful for comparing scenarios, unreliable for predicting a specific figure. The model assumes constant churn, constant acquisition and constant ARPU, and none of those holds exactly for a solo product where acquisition is lumpy."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is my MRR flat despite steady signups?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Almost always because churn is consuming your additions. That is arithmetic rather than a marketing problem, and the fix is diagnosing which of the five churn types you have before changing anything about acquisition."
       }
     }
   ]
@@ -184,73 +198,168 @@ footer{background:#0F1117;padding:32px 0;}
     <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo SaaS founders</span>
   </a>
   <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
-</nav><section class="hero"><div class="hg"></div><div class="container" style="position:relative;z-index:1;"><div class="eyebrow">Tools · Revenue Protection</div><h1>SaaS benchmark <em>tools</em> for solo founders</h1><p class="hero-sub">Free calculators and reference data, built for a one-person SaaS rather than a venture-backed company with a sales team. Check your numbers, see what is actually normal, and find out fast whether something needs fixing.</p></div></section><section class="article"><div class="container">
+</nav><section class="hero"><div class="hg"></div><div class="container" style="position:relative;z-index:1;"><div class="eyebrow">Tools · Revenue Protection</div><h1><em>MRR projection calculator</em>: twelve months</h1><p class="hero-sub">A projection is only useful if it subtracts. Add eight customers a month to a base losing seven and the line looks like growth until you plot it.</p></div></section><section class="article"><div class="container"><div class="toc"><div class="toc-title">In this guide</div><a href="#ceiling">The ceiling nobody calculates</a><a href="#honest">Where projections mislead</a><a href="#use">Two comparisons worth running</a><a href="#next">If the projection is flat</a><a href="#faq">MRR projection FAQ</a></div>
 
-<p>Most SaaS benchmark data online comes from companies with a marketing budget, a sales team, and a customer success function. None of that applies to a solo founder, and using those numbers as your bar leads to two mistakes: panicking over a metric that is actually fine, or missing a real problem because the benchmark hid it in an average.</p>
+<style>
+.calc{background:#FFFFFF;border:1px solid #E3DFD6;border-left:3px solid #C8861E;border-radius:4px;padding:24px 26px;margin:0 0 34px;}
+.calc h3{margin:0 0 4px;font-size:17px;font-weight:700;color:#0F1117;}
+.calc .calc-sub{font-size:14px;color:#8B8A98;margin:0 0 18px;}
+.calc-row{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:14px;}
+.calc-field{flex:1 1 190px;}
+.calc-field label{display:block;font-size:13px;font-weight:600;color:#23262F;margin-bottom:5px;}
+.calc-field input,.calc-field select{width:100%;padding:9px 11px;border:1px solid #E3DFD6;border-radius:4px;
+  font-size:15px;font-family:inherit;color:#0F1117;background:#fff;box-sizing:border-box;}
+.calc-field input:focus,.calc-field select:focus{outline:2px solid #C8861E;outline-offset:1px;border-color:#C8861E;}
+.calc-out{background:#0F1117;border-radius:4px;padding:18px 20px;margin-top:18px;}
+.calc-out .co-row{display:flex;justify-content:space-between;gap:14px;padding:6px 0;
+  font-size:14.5px;color:#C9C7D2;border-bottom:1px solid #2C2F3A;}
+.calc-out .co-row:last-child{border-bottom:0;}
+.calc-out .co-row strong{color:#F7F5F0;font-weight:700;}
+.calc-out .co-head{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
+  color:#E8A832;margin-bottom:10px;}
+.calc-verdict{margin-top:14px;padding:12px 14px;border-radius:4px;font-size:14.5px;line-height:1.5;}
+.cv-good{background:#E7F1ED;color:#0B5946;border:1px solid #B9D9CE;}
+.cv-ok{background:#FBF3E2;color:#7A5410;border:1px solid #EBD9AE;}
+.cv-bad{background:#FBEAEC;color:#8A1621;border:1px solid #EFC7CC;}
+.calc-note{font-size:13px;color:#8B8A98;margin:12px 0 0;}
+</style>
+<div class="calc">
+  <h3>MRR projection calculator</h3>
+  <p class="calc-sub">Twelve months, accounting for churn. Most projections fail because they add new customers without subtracting the ones leaving.</p>
+  <div class="calc-row">
+    <div class="calc-field"><label for="p0">Current MRR ($)</label><input id="p0" type="number" min="0" value="6800"></div>
+    <div class="calc-field"><label for="pa">ARPU ($/customer/mo)</label><input id="pa" type="number" min="1" value="72"></div>
+  </div>
+  <div class="calc-row">
+    <div class="calc-field"><label for="pn">New customers per month</label><input id="pn" type="number" min="0" value="8"></div>
+    <div class="calc-field"><label for="pc">Monthly churn (%)</label><input id="pc" type="number" min="0" step="0.1" value="8"></div>
+  </div>
+  <div class="calc-out">
+    <div class="co-head">Projection</div>
+    <div class="co-row"><span>MRR in 6 months</span><strong id="p6">—</strong></div>
+    <div class="co-row"><span>MRR in 12 months</span><strong id="p12">—</strong></div>
+    <div class="co-row"><span>Net customer change per month</span><strong id="pnet">—</strong></div>
+    <div class="co-row"><span>Ceiling at this churn rate</span><strong id="pcap">—</strong></div>
+  </div>
+  <div id="pv" class="calc-verdict cv-ok">Enter your numbers above.</div>
+  <p class="calc-note">Runs in your browser. Nothing is stored or sent.</p>
+</div>
 
-<p>These tools filter for that. Each one is free, takes a minute, and tells you where your number sits against solo-SaaS reality — not against a Series A benchmark deck.</p>
+<div class="answer-box">
+  <div class="answer-label">The short answer</div>
+  <ul>
+    <li><strong>Your MRR ceiling</strong> = new customers per month ÷ monthly churn rate</li>
+    <li><strong>Eight new customers at 8% churn</strong> converges at a hundred customers — that is the maximum</li>
+    <li><strong>Halving churn and doubling acquisition</strong> move the ceiling identically, but cost very differently</li>
+    <li><strong>Use it to compare scenarios</strong>, not to predict a figure</li>
+  </ul>
+</div>
 
-<h2 id="tools">The tools</h2>
+<p>An MRR projection is only useful if it subtracts. Add eight customers a month to a base that loses seven and the line looks like growth until you plot it — which is the single most common reason a plan and reality diverge.</p>
 
-<h3>Churn tools</h3>
-<table>
-  <tr><th>Tool</th><th>What it tells you</th><th></th></tr>
-  <tr><td><strong>Churn rate calculator</strong></td><td>Turns your raw customer and revenue counts into customer churn, revenue churn, annualized churn, and average customer lifetime</td><td><a href="/tools/churn-rate-calculator/">Calculate yours →</a></td></tr>
-  <tr><td><strong>Is my churn rate too high?</strong></td><td>Takes a rate you already have and checks it against bands by price point — a 6% churn rate means different things at $20/mo and $500/mo</td><td><a href="/tools/churn-benchmark-check/">Check yours →</a></td></tr>
-  <tr><td><strong>SaaS benchmarks for solo founders</strong></td><td>Churn, retention and involuntary churn bands filtered for one-person SaaS, with the numbers that don't apply to you called out explicitly</td><td><a href="/tools/solo-saas-benchmarks/">Check yours →</a></td></tr>
-</table>
+<h2 id="ceiling">The ceiling nobody calculates</h2>
 
-<h3>Revenue tools</h3>
-<table>
-  <tr><th>Tool</th><th>What it tells you</th><th></th></tr>
-  <tr><td><strong>MRR projection calculator</strong></td><td>Projects your MRR 6 and 12 months out from your current growth and churn rate, and shows the ceiling those two numbers imply</td><td><a href="/tools/mrr-projection-calculator/">Project yours →</a></td></tr>
-</table>
+<p>At a fixed acquisition rate and a fixed churn rate, your MRR does not grow forever. It converges on a ceiling, and the arithmetic is simple: <strong>new customers per month ÷ monthly churn rate</strong> gives you the customer count where additions and losses cancel out.</p>
 
-<h3>Pricing &amp; conversion tools</h3>
-<table>
-  <tr><th>Tool</th><th>What it tells you</th><th></th></tr>
-  <tr><td><strong>SaaS pricing calculator</strong></td><td>Converts the value you create into a defensible price range, starting from hours saved rather than a competitor's number</td><td><a href="/tools/saas-pricing-calculator/">Calculate yours →</a></td></tr>
-  <tr><td><strong>Trial-to-paid conversion benchmarks</strong></td><td>Where your conversion rate sits by trial model — card-free, card-required, freemium — and what to fix first if it's low</td><td><a href="/tools/trial-conversion-benchmark/">Check yours →</a></td></tr>
-</table>
+<p>Eight new customers a month at 8% monthly churn converges at a hundred customers. Not eventually — that is the maximum, regardless of how long you run. Doubling acquisition to sixteen a month moves the ceiling to two hundred. Halving churn to 4% also moves it to two hundred, and is usually the cheaper of the two.</p>
+
+<p>The calculator shows this figure directly. Founders who have never computed it are often surprised to find they are already close to it, which explains a plateau better than any marketing diagnosis.</p>
 
 <div class="marcus-says">
   <div class="ml">Marcus</div>
-  <div class="mq">"I recommend checking a benchmark before you decide something is broken. Founders fix pricing, onboarding, or the trial length based on a feeling, when the actual number was inside a normal range the whole time. Measure first, then act."</div>
+  <div class="mq">"I recommend calculating your ceiling before you plan any growth work. If you are within twenty percent of it, more acquisition will not move your MRR — the churn rate is the only variable that can."</div>
 </div>
 
-<h2 id="use">How to use a benchmark without misusing it</h2>
+<h2 id="honest">Where projections mislead</h2>
 
-<p>A benchmark tells you where you sit relative to comparable companies. It does not tell you what to do about it — that depends on your stage, your price point, and what you're already trying to fix.</p>
+<p>Three assumptions this model makes that will not hold exactly.</p>
 
-<p>Treat a benchmark as a triage step, not a verdict. If your number is inside the normal range, the constraint is probably somewhere else — usually distribution rather than the metric you were worried about. If it's meaningfully outside the range, that's where to spend the next two weeks.</p>
+<p><strong>Churn is constant.</strong> It usually is not — early cohorts churn faster than mature ones, so a blended rate overstates losses among long-standing customers and understates them among new ones.</p>
 
-<div class="cta-inline">
-  <p>Not sure what your number means for your specific situation? Marcus reads your numbers against your stage and tells you what to do next.</p>
-  <a href="https://getghostcoach.com/#pricing">Start free →</a>
+<p><strong>Acquisition is constant.</strong> Solo acquisition is lumpy. A launch, a mention, or a quiet fortnight all move the monthly figure more than a model can capture.</p>
+
+<p><strong>ARPU is constant.</strong> With no expansion revenue this holds, which is itself the problem — <a href="/frameworks/value-metric-saas/">the value metric framework</a> covers building a structure where revenue can grow without customer count growing.</p>
+
+<p>Use the projection to compare scenarios rather than to predict a number. The difference between a 4% and an 8% churn scenario is real information; the exact MRR figure in month nine is not.</p>
+
+<h2 id="use">Two comparisons worth running</h2>
+
+<table>
+  <tr><th>Change</th><th>Effect on the ceiling</th><th>Usually costs</th></tr>
+  <tr><td class="win">Halve churn</td><td class="win">Doubles it</td><td>One-time fixes, mostly onboarding</td></tr>
+  <tr><td>Double acquisition</td><td class="win">Doubles it</td><td>Ongoing effort every month</td></tr>
+  <tr><td>Raise price 25%</td><td>No change to ceiling, +25% MRR</td><td>One notification cycle, some churn</td></tr>
+</table>
+
+<p>The first two produce the same ceiling and cost very differently. Retention fixes tend to be one-time work that keeps paying; acquisition has to be sustained every month, which is the harder ask for a solo founder — <a href="/guides/retention-vs-acquisition-saas/">retention versus acquisition</a> covers the trade-off in more detail.</p>
+
+<p>The third row is the one founders under-use. A price increase moves revenue without touching either input, and <a href="/playbooks/raise-saas-prices/">the price increase playbook</a> covers doing it without losing your base.</p>
+
+<div class="callout">
+  <p>Run the model with your actual churn rather than the rate you hope to reach. A projection built on an aspirational number is a plan, not a forecast, and the gap between them is where founders lose two quarters.</p>
 </div>
 
-<h2 id="faq">Tools FAQ</h2>
+<h2 id="next">If the projection is flat</h2>
+
+<p>Flat output at a healthy acquisition rate means churn is consuming your additions, and that is arithmetic rather than a marketing problem. Diagnose the type before acting — <a href="/frameworks/churn-reduction-framework/">the churn reduction framework</a> sorts cancellations into five types using two data points you already have.</p>
+
+<p>If your rate itself looks high, <a href="/tools/churn-benchmark-check/">the churn benchmark check</a> interprets it against bands for your price point. And for the wider diagnosis when growth has stopped entirely, <a href="/guides/mrr-plateau-how-to-grow-saas/">breaking the MRR plateau</a> covers the causes in order.</p>
+
+<script>
+(function(){
+  var ids=['p0','pa','pn','pc'], el={};
+  ids.forEach(function(i){el[i]=document.getElementById(i);});
+  function money(n){return '$'+Math.round(n).toLocaleString();}
+  function calc(){
+    var m0=parseFloat(el.p0.value)||0, a=parseFloat(el.pa.value)||0;
+    var n=parseFloat(el.pn.value)||0, c=(parseFloat(el.pc.value)||0)/100;
+    var cust=a>0?m0/a:0, cur=cust, m6=0, m12=0;
+    for(var i=1;i<=12;i++){ cur=cur-(cur*c)+n; if(i===6)m6=cur*a; if(i===12)m12=cur*a; }
+    var cap=c>0?(n/c):0, net=n-(cust*c);
+    document.getElementById('p6').textContent=a>0?money(m6):'—';
+    document.getElementById('p12').textContent=a>0?money(m12):'—';
+    document.getElementById('pnet').textContent=a>0?((net>=0?'+':'')+Math.round(net*10)/10+' customers'):'—';
+    document.getElementById('pcap').textContent=c>0&&a>0?(money(cap*a)+' ('+Math.round(cap)+' customers)'):'no ceiling at 0% churn';
+    var v=document.getElementById('pv'), t='', k='cv-ok';
+    if(a<=0||m0<=0){t='Enter your MRR and ARPU above.';}
+    else if(c<=0){t='At 0% churn there is no ceiling — but no product has 0% churn. Enter your real rate.';k='cv-ok';}
+    else if(cust>=cap*0.9){t='You are within 10% of your ceiling of '+money(cap*a)+'. More acquisition will not move MRR much — churn is the only variable that can from here.';k='cv-bad';}
+    else if(cust>=cap*0.7){t='You are approaching your ceiling of '+money(cap*a)+'. Growth will slow noticeably over the next few months unless churn falls.';k='cv-ok';}
+    else {t='Headroom to your ceiling of '+money(cap*a)+'. Acquisition is still the effective lever at this point.';k='cv-good';}
+    v.className='calc-verdict '+k; v.textContent=t;
+  }
+  ids.forEach(function(i){el[i].addEventListener('input',calc);});
+  calc();
+})();
+</script>
+
+
+<h2 id="faq">MRR projection calculator FAQ</h2>
 
 <div class="faq-item">
-  <h3>Are these SaaS benchmark tools free?</h3>
-  <p>Yes. All six tools are free to use, with no signup required. They exist so you can check your own numbers against real 2026 data before deciding whether something needs fixing.</p>
+  <h3>How do you project MRR?</h3>
+  <p>Start from your current customer count, then each month subtract churn and add new customers, multiplying the result by ARPU. The common error is adding new customers without subtracting churn, which makes a flat business look like it is growing.</p>
 </div>
 <div class="faq-item">
-  <h3>Do the calculators send my numbers anywhere?</h3>
-  <p>No. The calculators run entirely in your browser. Nothing you type is transmitted, stored, or logged anywhere — close the tab and it's gone.</p>
+  <h3>What is an MRR ceiling?</h3>
+  <p>At a fixed acquisition and churn rate, MRR converges on a maximum rather than growing forever. The customer count where additions and losses cancel is new customers per month divided by monthly churn rate — eight new at 8% churn converges at a hundred customers.</p>
 </div>
 <div class="faq-item">
-  <h3>Which benchmark should I check first?</h3>
-  <p>If you have a free trial, start with trial-to-paid conversion — it is usually the faster, cheaper problem to fix. If you already have paying customers, check the broader solo SaaS benchmarks page for churn and retention bands.</p>
+  <h3>Is it better to reduce churn or increase acquisition?</h3>
+  <p>They move the ceiling identically — halving churn and doubling acquisition both double it. They cost very differently: retention fixes are mostly one-time work that keeps paying, while acquisition must be sustained every month.</p>
 </div>
 <div class="faq-item">
-  <h3>Do these benchmarks apply to any SaaS, or just solo founders?</h3>
-  <p>They are built specifically for solo and small-team SaaS. Benchmark data pulled from venture-backed companies with sales teams and marketing budgets does not transfer cleanly to a one-person product, so these numbers are filtered for that context.</p>
+  <h3>How accurate are MRR projections?</h3>
+  <p>Useful for comparing scenarios, unreliable for predicting a specific figure. The model assumes constant churn, constant acquisition and constant ARPU, and none of those holds exactly for a solo product where acquisition is lumpy.</p>
+</div>
+<div class="faq-item">
+  <h3>Why is my MRR flat despite steady signups?</h3>
+  <p>Almost always because churn is consuming your additions. That is arithmetic rather than a marketing problem, and the fix is diagnosing which of the five churn types you have before changing anything about acquisition.</p>
 </div>
 
-<div class="cta-box"><h3>Get the number that actually matters this month</h3><p>Tell Marcus your stage and your numbers. You get one diagnosis and one action, not a dashboard.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Talk to Marcus free →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · cancel anytime · 30-day money-back on Lifetime</p></div>
+<div class="cta-box"><h3>Find out which lever actually moves your number</h3><p>Bring your MRR, churn and acquisition rate. Marcus names whether retention or acquisition is your binding constraint.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Talk to Marcus free →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · cancel anytime · 30-day money-back on Lifetime</p></div>
 
-<div class="related-box"><div class="related-label">Related guides</div><div class="related-links"><a href="/guides/how-to-reduce-saas-churn/">How to reduce SaaS churn →</a><a href="/guides/saas-trial-to-paid-conversion/">Why your trial-to-paid conversion is low →</a><a href="/guides/saas-revenue-metrics-beginners/">SaaS revenue metrics for beginners →</a><a href="/guides/retention-vs-acquisition-saas/">Retention vs acquisition for SaaS →</a><a href="/playbooks/free-trial-length/">How long should your free trial be →</a></div></div></div></section>
+<div class="related-box"><div class="related-label">Related guides</div><div class="related-links"><a href="/tools/solo-saas-benchmarks/">Solo SaaS benchmarks →</a><a href="/tools/churn-rate-calculator/">Churn rate calculator →</a><a href="/playbooks/1k-to-10k-mrr/">$1k to $10k MRR playbook →</a><a href="/frameworks/saas-metrics-solopreneur/">The four metrics that matter →</a><a href="/frameworks/ltv-cac-solo-saas/">LTV:CAC for solo SaaS →</a><a href="/frameworks/">All SaaS frameworks →</a><a href="/tools/">All tools →</a></div></div></div></section>
 <footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
   <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
     <div>
