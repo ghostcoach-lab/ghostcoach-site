@@ -778,6 +778,14 @@ footer{
         "@type": "Answer",
         "text": "Marcus will tell you when it does not know something rather than guess. For any advice touching financial, legal, or tax decisions, Marcus gives you the strategic framing and flags that you need a qualified professional for the specifics. GhostCoach is a business strategy tool — it is not a substitute for an accountant, a lawyer, or a financial advisor."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I get value from GhostCoach without paying?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The guides library covers pricing, churn, acquisition and retention in detail, free. What it cannot do is apply any of it to your specific numbers — that is what a session is for."
+      }
     }
   ]
 }
@@ -855,19 +863,19 @@ footer{
     <div class="problem-grid">
       <div class="problem-card">
         <div class="problem-title">You launched and got signups. Nobody paid.</div>
-        <div class="problem-desc">800 upvotes. 2 paying customers. You feel like you failed. You didn't — but Product Hunt is not an acquisition system. You just don't have one yet.</div>
+        <div class="problem-desc">800 upvotes. 2 paying customers. You feel like you failed. You didn't — but Product Hunt is not an acquisition system. You just don't have one yet. <a href="/playbooks/signups-not-converting/" style="color:var(--amber-dk);">Start here.</a></div>
       </div>
       <div class="problem-card">
         <div class="problem-title">Your MRR is flat and you don't know why.</div>
-        <div class="problem-desc">Growth happened fast for two months. Then it stopped. You're spending more time refreshing Stripe than fixing the actual problem — which is almost always acquisition or churn.</div>
+        <div class="problem-desc">Growth happened fast for two months. Then it stopped. You're spending more time refreshing Stripe than fixing the actual problem — which is almost always acquisition or churn. <a href="/guides/mrr-plateau-how-to-grow-saas/" style="color:var(--amber-dk);">Here's how to break the plateau.</a></div>
       </div>
       <div class="problem-card">
         <div class="problem-title">You're charging too little and you know it.</div>
-        <div class="problem-desc">$9/mo. $12/mo. Maybe $19. You're scared to raise prices because you think you'll lose everyone. That fear is costing you more than a price increase ever would.</div>
+        <div class="problem-desc">$9/mo. $12/mo. Maybe $19. You're scared to raise prices because you think you'll lose everyone. That fear is costing you more than a price increase ever would. <a href="/playbooks/raise-saas-prices/" style="color:var(--amber-dk);">Here's how to do it without losing everyone.</a></div>
       </div>
       <div class="problem-card">
         <div class="problem-title">Your churn is killing growth faster than you can fill the bucket.</div>
-        <div class="problem-desc">New signups. Same MRR. The math doesn't add up until you realise you're losing two thirds of your customers every quarter. Fixing a leaky bucket by filling it faster is not a strategy.</div>
+        <div class="problem-desc">New signups. Same MRR. The math doesn't add up until you realise you're losing two thirds of your customers every quarter. Fixing a leaky bucket by filling it faster is not a strategy. <a href="/frameworks/churn-reduction-framework/" style="color:var(--amber-dk);">Here's the framework for fixing the bucket instead.</a></div>
       </div>
     </div>
   </div>
@@ -1348,6 +1356,14 @@ footer{
         <div class="faq-a">Marcus will tell you when it does not know something rather than guess. For any advice touching financial, legal, or tax decisions, Marcus gives you the strategic framing and flags that you need a qualified professional for the specifics. GhostCoach is a business strategy tool — it is not a substitute for an accountant, a lawyer, or a financial advisor.</div>
       </div>
 
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">
+          <span>Can I get value from GhostCoach without paying?</span>
+          <em class="faq-icon">+</em>
+        </div>
+        <div class="faq-a">Yes. The guides library covers pricing, churn, acquisition and retention in detail, free. What it cannot do is apply any of it to your specific numbers — that is what a session is for.</div>
+      </div>
+
     </div>
   </div>
 </section>
@@ -1363,7 +1379,10 @@ footer{
         Weekly insights for solo<br>product builders — <em>free</em>.
       </h2>
       <p style="font-size:15px;color:var(--muted);line-height:1.65;margin-bottom:28px;">
-        Every week: one pricing insight, one acquisition pattern, one mistake to avoid. Written by Marcus, based on real sessions. No fluff, no sponsorships.
+        Every week: one pricing insight, one acquisition pattern, one mistake to avoid.
+        Written by Marcus, based on real sessions. No fluff, no sponsorships.
+        Or start now with the <a href="https://getghostcoach.com/guides/"
+        style="color:var(--amber-dk);">guides for solo SaaS founders</a>.
       </p>
       <form onsubmit="handleNewsletterSubmit(event,'footer-nl')" style="display:flex;gap:8px;max-width:420px;margin:0 auto;">
         <input
