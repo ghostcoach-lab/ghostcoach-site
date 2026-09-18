@@ -264,7 +264,11 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
   flex:1;background:#1C2030;
   border:0.5px solid rgba(247,245,240,0.1);
   border-radius:12px;padding:11px 14px;
-  font-family:'DM Sans',sans-serif;font-size:14px;color:#F7F5F0;
+  font-family:'DM Sans',sans-serif;font-size:16px;color:#F7F5F0;
+  /* 16px, not 14px: iOS Safari/Chrome auto-zoom the whole page on focus
+     for any input under 16px, so you can read what you're typing. That
+     zoom is what made the layout look "narrow" — it wasn't the CSS width,
+     it was the browser zooming the viewport around the input. */
   resize:none;outline:none;
   min-height:46px;max-height:120px;
   line-height:1.5;transition:border-color .2s;overflow-y:auto;
