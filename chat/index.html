@@ -2,7 +2,27 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
+<script>
+  // Mobile viewport-height fix: 100vh on phones includes the browser chrome
+  // (address bar / nav bar), which pushes the input off-screen. This sets a
+  // real pixel value from the *visible* viewport instead, and re-measures on
+  // resize, orientation change, and keyboard open/close (visualViewport).
+  // Runs before CSS is applied so there's no flash of the broken layout.
+  (function () {
+    function setVH() {
+      var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+    }
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', setVH);
+      window.visualViewport.addEventListener('scroll', setVH);
+    }
+  })();
+</script>
 <title>Your session with Marcus | GhostCoach</title>
 <meta name="description" content="Your 1:1 coaching session with Marcus.">
 <meta property="og:type" content="website">
@@ -18,7 +38,7 @@
 
 /* ── RESET & VARIABLES ─────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;overflow:hidden;}
+html,body{height:100%;height:calc(var(--vh,1vh) * 100);overflow:hidden;}
 body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 
 :root{
@@ -60,6 +80,7 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 /* ── CHAT PAGE LAYOUT ─────────────────── */
 .chat-page{
   height:100vh;
+  height:calc(var(--vh,1vh) * 100);
   background:var(--ink);
   display:flex;flex-direction:column;
   overflow:hidden;position:relative;
@@ -208,7 +229,7 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 /* ── INPUT ────────────────────────────── */
 .chat-input-wrap{
   flex-shrink:0;
-  padding:10px 20px 14px;
+  padding:10px 20px calc(14px + env(safe-area-inset-bottom, 0px));
   background:rgba(15,17,23,0.98);
   border-top:0.5px solid rgba(247,245,240,0.06);
   z-index:10;
@@ -246,7 +267,7 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 @media(max-width:768px){
   .cn{padding:0 16px;}
   .msgs-inner{padding:0 14px;}
-  .chat-input-wrap{padding:8px 14px 12px;}
+  .chat-input-wrap{padding:8px 14px calc(12px + env(safe-area-inset-bottom, 0px));}
   .msg-bubble{font-size:13px;max-width:94%;}
   .cw-chips{gap:6px;}
   .cw-chip{font-size:12px;padding:6px 12px;}

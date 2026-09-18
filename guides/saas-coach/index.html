@@ -3,12 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>SaaS Coach for Subscription Software Founders</title>
-<meta name="description" content="A SaaS coach helps solopreneur subscription software founders fix pricing, conversion, and churn. Here is what specific SaaS coaching looks like.">
-<meta property="og:type" content="website">
+<title>SaaS Coach — Growth Coaching for Solo SaaS Founders | GhostCoach</title>
+<meta name="description" content="A SaaS coach fixes pricing, churn and conversion — the problems generic coaches miss.">
+<meta property="og:type" content="article">
 <meta property="og:url" content="https://getghostcoach.com/guides/saas-coach/">
-<meta property="og:title" content="SaaS Coach — Coaching for Subscription Software Founders | GhostCoach">
-<meta property="og:description" content="A SaaS coach helps solopreneur subscription software founders fix pricing, conversion, and churn. Here is what specific SaaS coaching looks like.">
+<meta property="og:title" content="SaaS Coach — Growth Coaching for Solo SaaS Founders | GhostCoach">
+<meta property="og:description" content="A SaaS coach fixes pricing, churn and conversion — the problems generic coaches miss.">
+<meta property="og:site_name" content="GhostCoach">
+<meta property="og:image" content="https://getghostcoach.com/og-default.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SaaS Coach — Growth Coaching for Solo SaaS Founders | GhostCoach">
+<meta name="twitter:description" content="A SaaS coach fixes pricing, churn and conversion — the problems generic coaches miss.">
+<meta name="twitter:image" content="https://getghostcoach.com/og-default.png">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
 <link rel="canonical" href="https://getghostcoach.com/guides/saas-coach/">
 <link rel="stylesheet" href="/fonts/fonts.css">
@@ -115,6 +123,16 @@ nav {
 .toc li { margin-bottom: 8px; }
 .toc a { color: var(--ink); text-decoration: none; font-size: 16px; }
 .toc a:hover { color: var(--amber); }
+.answer-box {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 32px;
+  margin: 32px 0 40px;
+}
+.answer-box p { margin-bottom: 12px; font-size: 15px; }
+.answer-box p:last-child { margin-bottom: 0; }
+.answer-box strong { color: var(--ink); }
 .marcus-says {
   background: var(--ink);
   color: var(--cream);
@@ -201,6 +219,12 @@ nav {
 }
 .cta-btn:hover { background: var(--amber-lt); }
 .cta-foot { font-size: 13px; color: var(--muted); margin-top: 14px; }
+.faq-section { margin: 56px 0 0; }
+.faq-item { border-bottom: 1px solid var(--border); padding: 22px 0; }
+.faq-item:first-of-type { border-top: 1px solid var(--border); }
+.faq-q { font-weight: 600; font-size: 17px; margin-bottom: 10px; }
+.faq-a { color: var(--ink); }
+.faq-a p { margin-bottom: 0; }
 .related-box { margin-top: 48px; padding-top: 36px; border-top: 1px solid var(--border); }
 .related-title {
   font-size: 13px;
@@ -241,6 +265,8 @@ footer a:hover { color: var(--amber); }
   .marcus-says .mq { font-size: 20px; }
   .compare-table { font-size: 14px; }
   .compare-table th, .compare-table td { padding: 10px 12px; }
+  .answer-box { padding: 22px 20px; }
+  .faq-q { font-size: 16px; }
 }
 </style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -257,27 +283,97 @@ footer a:hover { color: var(--amber); }
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "SaaS Coach for Subscription Software Founders",
+  "headline": "SaaS Coach — Growth Coaching for Solo SaaS Founders",
+  "description": "A SaaS coach fixes pricing, churn and conversion — the problems generic coaches miss.",
+  "inLanguage": "en",
   "author": { "@type": "Organization", "name": "GhostCoach" },
   "publisher": { "@type": "Organization", "name": "GhostCoach" },
   "mainEntityOfPage": "https://getghostcoach.com/guides/saas-coach/"
 }
 </script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://getghostcoach.com/" },
+    { "@type": "ListItem", "position": 2, "name": "Guides", "item": "https://getghostcoach.com/guides/" },
+    { "@type": "ListItem", "position": 3, "name": "SaaS coach", "item": "https://getghostcoach.com/guides/saas-coach/" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Is a SaaS coach different from a SaaS mentor?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Mostly in structure. A SaaS mentor is typically informal — an experienced founder who gives advice for free or for equity, without a set cadence or a defined scope. A SaaS coach runs a paid, structured process: regular sessions, a framework applied consistently, and accountability for whether you actually did what you said you would. A good SaaS mentor and a good SaaS coach ask the same diagnostic questions. What differs is whether you can count on getting the time."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How much does a SaaS coach cost?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Human SaaS coaches typically run $500–$2,000 a month, depending on experience and how much access you get. AI SaaS coaches run $20–$150 a month. GhostCoach is $79/month on the Builder plan, with a 14-day free trial."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I need a SaaS coach if I'm pre-launch?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — arguably more than at any other stage. Pricing and positioning decisions made before launch are the hardest to unwind later, because your first customers anchor to whatever you charge first. A SaaS coach at the pre-launch stage is mostly doing offer architecture: value metric, packaging, and willingness-to-pay, before any of it is live."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can an AI SaaS coach replace a human one?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Not entirely, and not for everyone. AI wins on cost, availability, and applying a framework the same way every session. Human coaches win on relationship, network introductions, and accountability that comes from a person who knows your specific story. Most solo founders below $30k MRR get more value from AI SaaS coaching on cost alone; the calculation changes once revenue and complexity grow."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the difference between a SaaS coach and a business coach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "A general business coach reasons from frameworks built for agencies, consultancies, or service businesses — models where growth comes from adding clients, not retaining them. A SaaS coach reasons from subscription mechanics specifically: trial conversion, churn cohorts, CAC payback, and expansion revenue. The frameworks look similar on the surface. The diagnosis is different because the underlying business is different."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I know if a SaaS coach is any good?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Four checks: they have operated a subscription business, not just advised one. They diagnose before they prescribe — the first session is questions, not answers. They commit to one recommendation at a time instead of handing you a menu. And they are honest about what they have not done, rather than coaching every area equally confidently."
+      }
+    }
+  ]
+}
+</script>
 </head>
+<style>@media(max-width:768px){.nav-tagline{display:none}}</style>
 <body>
 
 <nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
   <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
-    <span style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo SaaS founders</span>
+    <span class="nav-tagline" style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo SaaS founders</span>
   </a>
   <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
 </nav>
 
 <section class="hero"><div class="hg"></div><div class="container" style="position:relative;z-index:1;">
   <div class="eyebrow">Guides · Coaching</div>
-  <h1>A SaaS coach helps you fix the things <em>generic business coaches miss</em></h1>
-  <p class="hero-sub">Pricing wrong by 40 percent. A 2 percent trial-to-paid rate. Churn that erases every new signup. Subscription software has specific problems, and a SaaS coach is built to solve them.</p>
+  <h1>A SaaS coach <em>for solo founders</em></h1>
+  <p class="hero-sub">Pricing wrong by 40 percent. A 2 percent trial-to-paid rate. Churn that erases every new signup. A SaaS coach helps you fix the things generic business coaches miss — the specific problems subscription software creates.</p>
 </div></section>
 
 <section class="article"><div class="container">
@@ -285,28 +381,36 @@ footer a:hover { color: var(--amber); }
   <div class="toc">
     <div class="toc-title">In this guide</div>
     <ul>
-      <li><a href="#what">What a SaaS coach actually does</a></li>
+      <li><a href="#what">What SaaS coaching actually involves</a></li>
       <li><a href="#why-generic-fails">Why generic business coaches do not work for SaaS</a></li>
       <li><a href="#five-problems">The five problems a SaaS coach is built to fix</a></li>
       <li><a href="#human-vs-ai">Human SaaS coach vs AI SaaS coach</a></li>
-      <li><a href="#what-to-look-for">What to look for in a SaaS coach</a></li>
+      <li><a href="#what-to-look-for">What to look for in a SaaS founder coach or mentor</a></li>
       <li><a href="#ghostcoach">Where GhostCoach fits</a></li>
+      <li><a href="#faq">Frequently asked questions</a></li>
     </ul>
   </div>
 
-  <h2 id="what">What a SaaS coach actually does</h2>
+  <div class="answer-box">
+    <p><strong>What a SaaS coach does:</strong> diagnoses one bottleneck at a time — pricing, conversion, churn, or acquisition — and gives a solo founder a single recommendation instead of a menu of options.</p>
+    <p><strong>How it differs from general coaching:</strong> a SaaS coach has operated a subscription business and reasons from SaaS-specific mechanics (trial conversion, churn cohorts, CAC payback), not generic business frameworks.</p>
+    <p><strong>What each costs:</strong> a human SaaS coach runs $500–$2,000 a month depending on experience and access; an AI SaaS coach runs $20–$150 a month.</p>
+    <p><strong>Where GhostCoach fits:</strong> $79/month with a 14-day free trial, built specifically for solo SaaS founders from pre-launch through six-figure MRR.</p>
+  </div>
 
-  <p>A SaaS coach is someone who helps subscription software founders make better business decisions on the things that decide whether the business survives: pricing, packaging, trial-to-paid conversion, churn, and the one acquisition channel that compounds.</p>
+  <h2 id="what">What SaaS coaching actually involves</h2>
 
-  <p>This is a narrow definition on purpose. A SaaS coach is not a life coach who happens to know software. They are not a generalist business coach who took on a SaaS client. They have spent years inside the specific mechanics of subscription revenue, and they diagnose problems using that knowledge.</p>
+  <p>A SaaS coach is someone who helps subscription software founders make better business decisions on the things that decide whether the business survives: pricing, packaging, trial-to-paid conversion, churn, and the one acquisition channel that compounds. That is what SaaS coaching means in practice — not motivation, diagnosis.</p>
+
+  <p>This is a narrow definition on purpose. A SaaS coach is not a life coach who happens to know software. They are not a generalist business coach who took on a SaaS client. They have spent years inside the specific mechanics of subscription revenue, and they diagnose problems using that knowledge. SaaS coaching, done properly, is closer to an operating audit than a pep talk.</p>
 
   <p>If you are a solo founder with two paying customers and a 2.1 percent trial conversion rate, a SaaS coach does not ask you about your morning routine. They ask why your trial is fourteen days, which features customers hit before they convert, and what your activation event looks like. They start with the diagnosis.</p>
 
-  <p>The best SaaS coaches share two traits: they have operated a subscription business themselves, and they think in systems rather than tactics. They will tell you that fixing your pricing without fixing your positioning is a temporary win. They will tell you that an acquisition system you cannot repeat next month is not a system, it is a fluke.</p>
+  <p>The best SaaS coaches share two traits: they have operated a subscription business themselves, and they think in systems rather than tactics. They will tell you that fixing your pricing without fixing your positioning is a temporary win. They will tell you that an acquisition system you cannot repeat next month is not a system, it is a fluke. Good SaaS coaching always sequences the work instead of listing it.</p>
 
   <h2 id="why-generic-fails">Why generic business coaches do not work for SaaS</h2>
 
-  <p>Most business coaches are trained on agency, consulting, or coaching-business models. The frameworks are sound for those businesses. They break for subscription software in four specific ways.</p>
+  <p>Most business coaches are trained on agency, consulting, or coaching-business models — not SaaS coaching specifically. The frameworks are sound for those businesses. They break for subscription software in four specific ways.</p>
 
   <p><strong>The pricing math is different.</strong> An agency charging $5,000 per project has a fundamentally different pricing problem than a SaaS charging $29 per month. The agency is solving a value perception problem. The SaaS is solving a value metric, expansion path, and willingness-to-pay distribution problem. A coach who has only priced agency services will give you agency advice. You will price wrong.</p>
 
@@ -314,13 +418,13 @@ footer a:hover { color: var(--amber); }
 
   <p><strong>The unit economics are different.</strong> SaaS has CAC payback periods, LTV to CAC ratios, and gross margin profiles that look nothing like a service business. A coach who tells you to "just charge more" without understanding your payback window is giving you advice that could kill the business by burning cash you do not have.</p>
 
-  <p><strong>The places where small changes have outsized impact are different.</strong> In service businesses, the wins come from delivery quality. In SaaS, the wins come from product-led mechanics: onboarding flow, trial design, expansion triggers, churn signals. A coach who has not built these will coach you on the wrong things.</p>
+  <p><strong>The places where small changes have outsized impact are different.</strong> In service businesses, the wins come from delivery quality. In SaaS, the wins come from product-led mechanics: onboarding flow, trial design, expansion triggers, churn signals. A coach who has not built these will coach you on the wrong things. This is also where a generalist <strong>saas marketing coach</strong> tends to default to paid channels and content calendars — advice built for businesses with a marketing budget, not <strong>coaching saas</strong> the way a solo founder actually has to grow: one owned channel, no budget, no team.</p>
 
   <p>None of this means generic coaches are bad. It means they are wrong for this job. If you would not hire a tax accountant to do your dental work, do not hire a generic business coach to coach a SaaS.</p>
 
   <h2 id="five-problems">The five problems a SaaS coach is built to fix</h2>
 
-  <p>There are roughly five compounding problems in a subscription software business. A good SaaS coach diagnoses which one is your current bottleneck and helps you fix it before moving on. They do not try to fix all five at once. That is how founders end up busy and stuck.</p>
+  <p>There are roughly five compounding problems in a subscription software business. A good SaaS coach diagnoses which one is your current bottleneck and helps you fix it before moving on. They do not try to fix all five at once. That is how founders end up busy and stuck — and it is the single most common failure mode SaaS coaching exists to prevent.</p>
 
   <h3>1. Offer architecture</h3>
 
@@ -361,7 +465,7 @@ footer a:hover { color: var(--amber); }
     <tbody>
       <tr>
         <td>Cost per month</td>
-        <td>$1,000 – $5,000</td>
+        <td>$500 – $2,000</td>
         <td>$79 – $99</td>
       </tr>
       <tr>
@@ -403,12 +507,12 @@ footer a:hover { color: var(--amber); }
 
   <div class="marcus-says">
     <div class="ml">Marcus · GhostCoach's AI coach</div>
-    <div class="mq">"I recommend hiring a human SaaS coach when you have $30k MRR and a specific problem only experience can solve. Before that, the math does not work. You are paying $3k a month for advice you cannot afford to ignore and cannot afford to follow."</div>
+    <div class="mq">"I recommend hiring a human SaaS coach when you have $30k MRR and a specific problem only experience can solve. Before that, the math does not work. You are paying up to $2k a month for advice you cannot afford to ignore and cannot afford to follow."</div>
   </div>
 
-  <h2 id="what-to-look-for">What to look for in a SaaS coach</h2>
+  <h2 id="what-to-look-for">What to look for in a SaaS founder coach or mentor</h2>
 
-  <p>Whether you go human or AI, the same four filters apply. A SaaS coach is worth what they cost only if they meet all four.</p>
+  <p>Whether you go human or AI, the same four filters apply. A SaaS founder coach — or a SaaS mentor working informally, without a paid program around it — is worth what they cost only if they meet all four.</p>
 
   <p><strong>1. They have operated a subscription business.</strong> Not consulted for one. Not advised one. Operated. The texture of what it actually feels like to run a SaaS with churn and trial conversion and a competitor undercutting you only comes from doing the job. If the coach has only ever coached, walk away.</p>
 
@@ -420,11 +524,47 @@ footer a:hover { color: var(--amber); }
 
   <h2 id="ghostcoach">Where GhostCoach fits</h2>
 
-  <p>GhostCoach is an AI SaaS coach built specifically for solopreneurs building subscription software, from pre-launch through solo operation. The AI coaching intelligence is called Marcus, and it operates on the Ghost OS framework: the same five problems above, applied to every session.</p>
+  <p>GhostCoach is an AI SaaS coach built specifically for solopreneurs building subscription software, from pre-launch through solo operation. The AI coaching intelligence is called Marcus, and it operates on the Ghost OS framework: the same five problems above, applied to every session. It is SaaS coaching structured as software rather than as a service you have to schedule.</p>
 
   <p>What makes Marcus different from talking to ChatGPT or Claude is structured memory. Your product, your stage, your bottleneck, your 90-day goal are injected into every session. Marcus does not start from zero each time. He opens every recommendation with "I recommend" because vague advice is the failure mode of generic AI tools, and a SaaS coach who hedges is not coaching.</p>
 
-  <p>For founders at $0 to $30k MRR, GhostCoach is built to be the SaaS coach you would hire if a $3k per month human coach were not financially impossible. See <a href="/ai-business-coach/for-solopreneurs/">how it works for solopreneurs</a> for the specifics, or read about the <a href="/guides/mrr-plateau-how-to-grow-saas/">MRR plateau diagnostic</a> that most stuck founders need first.</p>
+  <p>For founders at $0 to $30k MRR, GhostCoach is built to be the SaaS coach you would hire if a $2k-a-month human coach were not financially impossible. See <a href="/ai-business-coach/for-solopreneurs/">how it works for solopreneurs</a> for the specifics, or read about the <a href="/guides/mrr-plateau-how-to-grow-saas/">MRR plateau diagnostic</a> that most stuck founders need first.</p>
+
+  <h2 id="faq">Frequently asked questions</h2>
+
+  <div class="faq-section">
+
+    <div class="faq-item">
+      <div class="faq-q">Is a SaaS coach different from a SaaS mentor?</div>
+      <div class="faq-a"><p>Mostly in structure. A SaaS mentor is typically informal — an experienced founder who gives advice for free or for equity, without a set cadence or a defined scope. A SaaS coach runs a paid, structured process: regular sessions, a framework applied consistently, and accountability for whether you actually did what you said you would. A good SaaS mentor and a good SaaS coach ask the same diagnostic questions. What differs is whether you can count on getting the time.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How much does a SaaS coach cost?</div>
+      <div class="faq-a"><p>Human SaaS coaches typically run $500–$2,000 a month, depending on experience and how much access you get. AI SaaS coaches run $20–$150 a month. GhostCoach is $79/month on the Builder plan, with a 14-day free trial.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Do I need a SaaS coach if I'm pre-launch?</div>
+      <div class="faq-a"><p>Yes — arguably more than at any other stage. Pricing and positioning decisions made before launch are the hardest to unwind later, because your first customers anchor to whatever you charge first. A SaaS coach at the pre-launch stage is mostly doing offer architecture: value metric, packaging, and willingness-to-pay, before any of it is live.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can an AI SaaS coach replace a human one?</div>
+      <div class="faq-a"><p>Not entirely, and not for everyone. AI wins on cost, availability, and applying a framework the same way every session. Human coaches win on relationship, network introductions, and accountability that comes from a person who knows your specific story. Most solo founders below $30k MRR get more value from AI SaaS coaching on cost alone; the calculation changes once revenue and complexity grow.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What is the difference between a SaaS coach and a business coach?</div>
+      <div class="faq-a"><p>A general business coach reasons from frameworks built for agencies, consultancies, or service businesses — models where growth comes from adding clients, not retaining them. A SaaS coach reasons from subscription mechanics specifically: trial conversion, churn cohorts, CAC payback, and expansion revenue. The frameworks look similar on the surface. The diagnosis is different because the underlying business is different.</p></div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How do I know if a SaaS coach is any good?</div>
+      <div class="faq-a"><p>Four checks: they have operated a subscription business, not just advised one. They diagnose before they prescribe — the first session is questions, not answers. They commit to one recommendation at a time instead of handing you a menu. And they are honest about what they have not done, rather than coaching every area equally confidently.</p></div>
+    </div>
+
+  </div>
 
   <div class="cta-box">
     <h3>Get a SaaS-specific diagnosis</h3>
