@@ -9,10 +9,22 @@
   // real pixel value from the *visible* viewport instead, and re-measures on
   // resize, orientation change, and keyboard open/close (visualViewport).
   // Runs before CSS is applied so there's no flash of the broken layout.
+  //
+  // It also cancels out visual-viewport "panning": when the keyboard opens,
+  // iOS/Android shift which part of the page is visible without actually
+  // scrolling the document. Our layout is pinned to the document (via
+  // position:fixed, see CSS), so left alone it drifts out of view above the
+  // visible area — this is the "scrolls into blank space, have to scroll
+  // back up to find the input" bug. Translating by the pan offset keeps it
+  // aligned with what's actually on screen.
   (function () {
     function setVH() {
-      var h = (window.visualViewport ? window.visualViewport.height : window.innerHeight);
+      var vv = window.visualViewport;
+      var h = vv ? vv.height : window.innerHeight;
       document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+      if (vv) {
+        document.documentElement.style.transform = 'translateY(' + vv.offsetTop + 'px)';
+      }
     }
     setVH();
     window.addEventListener('resize', setVH);
@@ -38,7 +50,17 @@
 
 /* ── RESET & VARIABLES ─────────────────── */
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;height:calc(var(--vh,1vh) * 100);overflow:hidden;}
+html,body{
+  height:100%;height:calc(var(--vh,1vh) * 100);
+  overflow:hidden;
+  position:fixed;inset:0;
+  /* position:fixed stops iOS/Android from scrolling the *document* when the
+     on-screen keyboard opens. Without this, the browser's built-in
+     "scroll focused input into view" behaviour scrolls the whole page —
+     but our layout is height-locked, not actually taller, so that scroll
+     reveals blank space below the app and the input looks lost until you
+     scroll back up. */
+}
 body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 
 :root{
