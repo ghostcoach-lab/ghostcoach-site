@@ -33,6 +33,22 @@
       window.visualViewport.addEventListener('resize', setVH);
       window.visualViewport.addEventListener('scroll', setVH);
     }
+
+    // Collapse the header while the chat input is focused (see .kb-focused
+    // in the CSS) — delegated on document since #gc-chat-input doesn't
+    // exist yet when this script runs.
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.id === 'gc-chat-input') {
+        var page = document.querySelector('.chat-page');
+        if (page) page.classList.add('kb-focused');
+      }
+    });
+    document.addEventListener('focusout', function (e) {
+      if (e.target && e.target.id === 'gc-chat-input') {
+        var page = document.querySelector('.chat-page');
+        if (page) page.classList.remove('kb-focused');
+      }
+    });
   })();
 </script>
 <title>Your session with Marcus | GhostCoach</title>
@@ -74,21 +90,10 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
   --teal-lt:#0DD4A8;
 }
 
-/* ── MINI NAV ──────────────────────────── */
-.chat-nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
-  background:rgba(15,17,23,0.96);
-  backdrop-filter:blur(12px);
-  border-bottom:0.5px solid rgba(247,245,240,0.06);
-  height:52px;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 24px;
-}
-.chat-nav-logo{display:flex;flex-direction:column;gap:1px;}
-.ng{font-family:'Playfair Display',serif;font-size:16px;color:#F7F5F0;line-height:1;}
-.nc{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#E8A832;line-height:1;}
-.chat-nav-back{font-size:12px;color:var(--muted);text-decoration:none;transition:color .2s;}
-.chat-nav-back:hover{color:#F7F5F0;}
+/* Dead CSS removed here: an unused .chat-nav (position:fixed header) that
+   the live markup never references — the actual header is .cn below, an
+   in-flow flex item. This unused block is what the stray padding-top:52px
+   removed above was compensating for. */
 
 /* ── MODAL OVERLAY ─────────────────────── */
 
@@ -291,7 +296,15 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
 
 /* ── MOBILE ───────────────────────────── */
 @media(max-width:768px){
-  .cn{padding:0 16px;}
+  .cn{padding:0 16px;overflow:hidden;transition:height .2s ease, padding .2s ease, opacity .15s ease, border-color .2s ease;}
+  /* Collapses while the input is focused (JS toggles .kb-focused on blur/focus).
+     "Back" and the online status aren't needed mid-keystroke, and on a phone
+     with the keyboard open every px matters. Desktop-only via this media
+     query — no virtual keyboard there, so nothing to reclaim space from. */
+  .chat-page.kb-focused .cn{
+    height:0;padding-top:0;padding-bottom:0;
+    opacity:0;border-bottom-color:transparent;
+  }
   .msgs-inner{padding:0 14px;}
   .chat-input-wrap{padding:8px 14px calc(12px + env(safe-area-inset-bottom, 0px));}
   .msg-bubble{font-size:13px;max-width:94%;}
@@ -310,8 +323,12 @@ body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
   .gc-message--assistant .copy{opacity:1;}
 }
 
-/* Adjust chat-page top padding for fixed nav */
-.chat-page{padding-top:52px !important;}
+/* Note: the old fixed .chat-nav component (used a position:fixed header,
+   which needed the page pushed down 52px to clear it) was replaced by the
+   in-flow .cn header — .cn already reserves its own 52px as a normal flex
+   item. The old "push the page down 52px" padding below was never removed
+   when that happened, so every visit was silently losing 52px of vertical
+   space to nothing. Removed. */
 
 /* v30 — gc-message bubbles (rendered by chat.js) */
 .gc-message{max-width:80%;border-radius:14px;margin-bottom:14px;word-wrap:break-word;}
