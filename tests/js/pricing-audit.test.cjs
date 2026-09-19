@@ -98,3 +98,58 @@ test('not-entitled response keeps pricing audit controls hidden', async () => {
   assert.equal(elements.cta.style.display, 'none');
   assert.equal(elements.gated.style.display, 'none');
 });
+
+test('the audit section stays hidden while eligibility is loading', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+  const elements = auditElements();
+  elements.section.style.display = 'block';
+  elements.cta.style.display = '';
+  let resolveInvoke;
+  const invoked = new Promise(resolve => { resolveInvoke = resolve; });
+  const supabase = { functions: { invoke: () => invoked } };
+
+  const rendering = loadAndRender({ supabase, elements, formatDate: String });
+
+  assert.equal(elements.section.style.display, 'none');
+  assert.equal(elements.cta.style.display, 'none');
+  resolveInvoke({
+    data: {
+      state: 'not_entitled',
+      is_welcome_audit: false,
+      next_eligible_date: null,
+      last_completed_at: null
+    },
+    error: null
+  });
+  await rendering;
+});
+
+test('an invocation error keeps the section hidden without rejecting', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+  const elements = auditElements();
+  const supabase = supabaseResponse({ data: null, error: new Error('offline') });
+
+  await loadAndRender({ supabase, elements, formatDate: String });
+
+  assert.equal(elements.section.style.display, 'none');
+  assert.equal(elements.cta.style.display, 'none');
+});
+
+test('a malformed eligibility response keeps the section hidden', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+  const elements = auditElements();
+  const supabase = supabaseResponse({
+    data: {
+      state: 'gated',
+      is_welcome_audit: false,
+      next_eligible_date: null,
+      last_completed_at: null
+    },
+    error: null
+  });
+
+  await loadAndRender({ supabase, elements, formatDate: String });
+
+  assert.equal(elements.section.style.display, 'none');
+  assert.equal(elements.gated.style.display, 'none');
+});
