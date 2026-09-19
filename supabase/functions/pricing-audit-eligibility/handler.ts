@@ -2,9 +2,18 @@ export interface AuthenticatedUser {
   userId: string;
 }
 
+export type Plan = "builder" | "operator" | "lifetime";
+export type UserStatus =
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled"
+  | "pending"
+  | "deleted";
+
 export interface EligibilityRecord {
-  plan: string;
-  status: string;
+  plan: Plan;
+  status: UserStatus;
   trial_end: string | null;
   welcome_audit_used: boolean;
   last_audit_completed_at: string | null;
@@ -51,8 +60,9 @@ export function createPricingAuditEligibilityHandler(
         record.status === "trialing" &&
         record.trial_end !== null &&
         new Date(record.trial_end) > dependencies.now();
+      const isEntitled = hasActivePlan || hasActiveOperatorTrial;
 
-      if ((hasActivePlan || hasActiveOperatorTrial) && !record.welcome_audit_used) {
+      if (isEntitled && !record.welcome_audit_used) {
         return json({
           state: "eligible",
           is_welcome_audit: true,
@@ -61,7 +71,7 @@ export function createPricingAuditEligibilityHandler(
         }, 200);
       }
 
-      if (!hasActivePlan && !hasActiveOperatorTrial) {
+      if (!isEntitled) {
         return json({
           state: "not_entitled",
           is_welcome_audit: false,
@@ -71,7 +81,7 @@ export function createPricingAuditEligibilityHandler(
       }
 
       if (
-        (hasActivePlan || hasActiveOperatorTrial) &&
+        isEntitled &&
         record.welcome_audit_used &&
         !record.last_audit_completed_at
       ) {
@@ -79,7 +89,7 @@ export function createPricingAuditEligibilityHandler(
       }
 
       if (
-        (hasActivePlan || hasActiveOperatorTrial) &&
+        isEntitled &&
         record.welcome_audit_used &&
         record.last_audit_completed_at
       ) {
