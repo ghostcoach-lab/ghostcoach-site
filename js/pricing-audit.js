@@ -13,17 +13,39 @@
     elements.next.textContent = '—';
   }
 
-  function isOptionalString(value) {
-    return value === null || typeof value === 'string';
+  function localDateFromDateOnly(value) {
+    if (typeof value !== 'string') return null;
+    const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+    if (!match) return null;
+
+    const year = Number(match[1]);
+    const month = Number(match[2]);
+    const day = Number(match[3]);
+    const date = new Date(year, month - 1, day);
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) return null;
+    return date;
+  }
+
+  function isOptionalTimestamp(value) {
+    return value === null || (
+      typeof value === 'string' &&
+      value.length > 0 &&
+      !Number.isNaN(Date.parse(value))
+    );
   }
 
   function isEligibility(value) {
     if (!value || typeof value !== 'object') return false;
     if (!['eligible', 'gated', 'not_entitled'].includes(value.state)) return false;
     if (typeof value.is_welcome_audit !== 'boolean') return false;
-    if (!isOptionalString(value.next_eligible_date)) return false;
-    if (!isOptionalString(value.last_completed_at)) return false;
-    if (value.state === 'gated' && !value.next_eligible_date) return false;
+    if (!isOptionalTimestamp(value.last_completed_at)) return false;
+    if (value.state === 'gated') {
+      if (!localDateFromDateOnly(value.next_eligible_date)) return false;
+    } else if (value.next_eligible_date !== null) return false;
     return true;
   }
 
@@ -38,26 +60,30 @@
       if (error || !isEligibility(data)) return;
 
       if (data.state === 'eligible') {
-        elements.section.style.display = 'block';
-        elements.cta.style.display = '';
-        elements.last.textContent = data.last_completed_at
+        const lastCompleted = data.last_completed_at
           ? formatDate(data.last_completed_at)
           : '—';
+        elements.section.style.display = 'block';
+        elements.cta.style.display = '';
+        elements.last.textContent = lastCompleted;
         elements.next.textContent = 'Available now';
         return;
       }
 
       if (data.state === 'gated') {
-        elements.section.style.display = 'block';
-        elements.gated.style.display = 'block';
-        elements.last.textContent = data.last_completed_at
+        const nextEligible = formatDate(localDateFromDateOnly(data.next_eligible_date));
+        const lastCompleted = data.last_completed_at
           ? formatDate(data.last_completed_at)
           : '—';
-        elements.next.textContent = formatDate(data.next_eligible_date);
+        elements.section.style.display = 'block';
+        elements.gated.style.display = 'block';
+        elements.last.textContent = lastCompleted;
+        elements.next.textContent = nextEligible;
         elements.gated.textContent = 'Your next pricing audit will be available on '
-          + formatDate(data.next_eligible_date) + '.';
+          + nextEligible + '.';
       }
     } catch (error) {
+      reset(elements);
       console.warn('Pricing audit eligibility unavailable:', error?.message || error);
     }
   }

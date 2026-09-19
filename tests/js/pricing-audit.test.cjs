@@ -15,6 +15,16 @@ function auditElements() {
   };
 }
 
+function formatDate(value) {
+  if (value instanceof Date) {
+    const year = value.getFullYear();
+    const month = String(value.getMonth() + 1).padStart(2, '0');
+    const day = String(value.getDate()).padStart(2, '0');
+    return `date:${year}-${month}-${day}`;
+  }
+  return `date:${value}`;
+}
+
 function supabaseResponse(result, calls = []) {
   return {
     functions: {
@@ -40,7 +50,7 @@ test('eligible response reveals the audit CTA after an authenticated function in
     error: null
   }, calls);
 
-  await loadAndRender({ supabase, elements, formatDate: value => `date:${value}` });
+  await loadAndRender({ supabase, elements, formatDate });
 
   assert.deepEqual(calls, [{
     name: 'pricing-audit-eligibility',
@@ -66,7 +76,7 @@ test('gated response reveals eligibility dates without the audit CTA', async () 
     error: null
   });
 
-  await loadAndRender({ supabase, elements, formatDate: value => `date:${value}` });
+  await loadAndRender({ supabase, elements, formatDate });
 
   assert.equal(elements.section.style.display, 'block');
   assert.equal(elements.cta.style.display, 'none');
@@ -92,7 +102,7 @@ test('not-entitled response keeps pricing audit controls hidden', async () => {
     error: null
   });
 
-  await loadAndRender({ supabase, elements, formatDate: value => `date:${value}` });
+  await loadAndRender({ supabase, elements, formatDate });
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.cta.style.display, 'none');
@@ -152,4 +162,78 @@ test('a malformed eligibility response keeps the section hidden', async () => {
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.gated.style.display, 'none');
+});
+
+test('a server date-only value is formatted as the same local calendar date', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+  const elements = auditElements();
+  let formattedNext;
+  const supabase = supabaseResponse({
+    data: {
+      state: 'gated',
+      is_welcome_audit: false,
+      next_eligible_date: '2026-10-10',
+      last_completed_at: null
+    },
+    error: null
+  });
+
+  await loadAndRender({
+    supabase,
+    elements,
+    formatDate(value) {
+      if (value instanceof Date) formattedNext = value;
+      return formatDate(value);
+    }
+  });
+
+  assert.ok(formattedNext instanceof Date);
+  assert.equal(formattedNext.getFullYear(), 2026);
+  assert.equal(formattedNext.getMonth(), 9);
+  assert.equal(formattedNext.getDate(), 10);
+  assert.equal(elements.next.textContent, 'date:2026-10-10');
+});
+
+test('an invalid completion timestamp keeps eligible controls hidden', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+  const elements = auditElements();
+  const supabase = supabaseResponse({
+    data: {
+      state: 'eligible',
+      is_welcome_audit: false,
+      next_eligible_date: null,
+      last_completed_at: 'not-a-date'
+    },
+    error: null
+  });
+
+  await loadAndRender({ supabase, elements, formatDate });
+
+  assert.equal(elements.section.style.display, 'none');
+  assert.equal(elements.cta.style.display, 'none');
+});
+
+test('a formatting failure resets controls to the hidden state', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+  const elements = auditElements();
+  const supabase = supabaseResponse({
+    data: {
+      state: 'eligible',
+      is_welcome_audit: false,
+      next_eligible_date: null,
+      last_completed_at: '2026-07-12T09:00:00.000Z'
+    },
+    error: null
+  });
+
+  await loadAndRender({
+    supabase,
+    elements,
+    formatDate() { throw new Error('formatter failed'); }
+  });
+
+  assert.equal(elements.section.style.display, 'none');
+  assert.equal(elements.cta.style.display, 'none');
+  assert.equal(elements.last.textContent, '—');
+  assert.equal(elements.next.textContent, '—');
 });
