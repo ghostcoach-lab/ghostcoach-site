@@ -29,6 +29,18 @@
         ? formatDate(data.last_completed_at)
         : '—';
       elements.next.textContent = 'Available now';
+      return;
+    }
+
+    if (data.state === 'gated') {
+      elements.section.style.display = 'block';
+      elements.gated.style.display = 'block';
+      elements.last.textContent = data.last_completed_at
+        ? formatDate(data.last_completed_at)
+        : '—';
+      elements.next.textContent = formatDate(data.next_eligible_date);
+      elements.gated.textContent = 'Your next pricing audit will be available on '
+        + formatDate(data.next_eligible_date) + '.';
     }
   }
 
