@@ -19,9 +19,8 @@ try {
   $ready = $false
   for ($attempt = 0; $attempt -lt 30; $attempt++) {
     docker exec `
-      --env PGPASSWORD=postgres `
       $containerName `
-      psql --username postgres --dbname postgres --command 'select 1' `
+      pg_isready --host 127.0.0.1 --username postgres --dbname postgres `
       2>$null | Out-Null
     if ($LASTEXITCODE -eq 0) {
       $ready = $true
