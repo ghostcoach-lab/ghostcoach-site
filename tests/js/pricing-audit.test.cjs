@@ -1,3 +1,5 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
@@ -36,6 +38,58 @@ function supabaseResponse(result, calls = []) {
   };
 }
 
+test('the release flag must be exactly true before eligibility is requested', async () => {
+  const { loadAndRender } = require('../../js/pricing-audit.js');
+
+  for (const enabled of [false, undefined, 'true']) {
+    const calls = [];
+    const elements = auditElements();
+    elements.section.style.display = 'block';
+    elements.cta.style.display = '';
+    elements.gated.style.display = 'block';
+    elements.gated.textContent = 'stale';
+    elements.last.textContent = 'stale';
+    elements.next.textContent = 'stale';
+
+    await loadAndRender({
+      enabled,
+      supabase: supabaseResponse({
+        data: {
+          state: 'eligible',
+          is_welcome_audit: true,
+          next_eligible_date: null,
+          last_completed_at: null
+        },
+        error: null
+      }, calls),
+      elements,
+      formatDate
+    });
+
+    assert.deepEqual(calls, []);
+    assert.equal(elements.section.style.display, 'none');
+    assert.equal(elements.cta.style.display, 'none');
+    assert.equal(elements.gated.style.display, 'none');
+    assert.equal(elements.gated.textContent, '');
+    assert.equal(elements.last.textContent, '—');
+    assert.equal(elements.next.textContent, '—');
+  }
+});
+
+test('the account page wires a production-default-off pricing audit flag', () => {
+  const configSource = fs.readFileSync(
+    path.join(__dirname, '../../js/config.js'),
+    'utf8'
+  );
+  const accountSource = fs.readFileSync(
+    path.join(__dirname, '../../js/pages/account.js'),
+    'utf8'
+  );
+
+  assert.match(configSource, /PRICING_AUDIT_ENABLED:\s*false/);
+  assert.match(accountSource, /enabled:\s*GC\.PRICING_AUDIT_ENABLED/);
+});
+
 test('eligible response reveals the audit CTA after an authenticated function invocation', async () => {
   const { loadAndRender } = require('../../js/pricing-audit.js');
   const calls = [];
@@ -50,7 +104,7 @@ test('eligible response reveals the audit CTA after an authenticated function in
     error: null
   }, calls);
 
-  await loadAndRender({ supabase, elements, formatDate });
+  await loadAndRender({ enabled: true, supabase, elements, formatDate });
 
   assert.deepEqual(calls, [{
     name: 'pricing-audit-eligibility',
@@ -76,7 +130,7 @@ test('gated response reveals eligibility dates without the audit CTA', async () 
     error: null
   });
 
-  await loadAndRender({ supabase, elements, formatDate });
+  await loadAndRender({ enabled: true, supabase, elements, formatDate });
 
   assert.equal(elements.section.style.display, 'block');
   assert.equal(elements.cta.style.display, 'none');
@@ -102,7 +156,7 @@ test('not-entitled response keeps pricing audit controls hidden', async () => {
     error: null
   });
 
-  await loadAndRender({ supabase, elements, formatDate });
+  await loadAndRender({ enabled: true, supabase, elements, formatDate });
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.cta.style.display, 'none');
@@ -118,7 +172,7 @@ test('the audit section stays hidden while eligibility is loading', async () => 
   const invoked = new Promise(resolve => { resolveInvoke = resolve; });
   const supabase = { functions: { invoke: () => invoked } };
 
-  const rendering = loadAndRender({ supabase, elements, formatDate: String });
+  const rendering = loadAndRender({ enabled: true, supabase, elements, formatDate: String });
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.cta.style.display, 'none');
@@ -139,7 +193,7 @@ test('an invocation error keeps the section hidden without rejecting', async () 
   const elements = auditElements();
   const supabase = supabaseResponse({ data: null, error: new Error('offline') });
 
-  await loadAndRender({ supabase, elements, formatDate: String });
+  await loadAndRender({ enabled: true, supabase, elements, formatDate: String });
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.cta.style.display, 'none');
@@ -158,7 +212,7 @@ test('a malformed eligibility response keeps the section hidden', async () => {
     error: null
   });
 
-  await loadAndRender({ supabase, elements, formatDate: String });
+  await loadAndRender({ enabled: true, supabase, elements, formatDate: String });
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.gated.style.display, 'none');
@@ -179,6 +233,7 @@ test('a server date-only value is formatted as the same local calendar date', as
   });
 
   await loadAndRender({
+    enabled: true,
     supabase,
     elements,
     formatDate(value) {
@@ -207,7 +262,7 @@ test('an invalid completion timestamp keeps eligible controls hidden', async () 
     error: null
   });
 
-  await loadAndRender({ supabase, elements, formatDate });
+  await loadAndRender({ enabled: true, supabase, elements, formatDate });
 
   assert.equal(elements.section.style.display, 'none');
   assert.equal(elements.cta.style.display, 'none');
@@ -227,6 +282,7 @@ test('a formatting failure resets controls to the hidden state', async () => {
   });
 
   await loadAndRender({
+    enabled: true,
     supabase,
     elements,
     formatDate() { throw new Error('formatter failed'); }

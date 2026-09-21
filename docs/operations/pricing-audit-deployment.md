@@ -1,12 +1,17 @@
 # Pricing audit deployment and rollback
 
-The account-page adapter is already live through Netlify but fails closed, so the pricing-audit section remains hidden until the authenticated Edge Function is available. Do not activate the CTA until `/account/audit/` and its verdict/session contract have an owner.
+The account-page adapter is live through Netlify and is protected by
+`GC.PRICING_AUDIT_ENABLED`, which defaults to `false`. While disabled, the entire pricing-audit
+section remains hidden and the browser does not invoke the eligibility Edge Function. Do not
+enable the flag until `/account/audit/` and its final verdict/session contract pass integration
+testing and receive frontend release approval.
 
 ## Required approvals
 
 - Obtain explicit approval before applying the production migration.
 - Obtain explicit approval before deploying the Edge Function.
-- Confirm the `/account/audit/` activation plan separately; backend deployment does not resolve that route.
+- Keep `GC.PRICING_AUDIT_ENABLED = false` during backend deployment. Enabling it is a separate
+  reviewed frontend release after `/account/audit/` and the final payload contract are verified.
 - Do not modify n8n workflows as part of this deployment.
 
 ## Preflight
@@ -35,9 +40,11 @@ Use Supabase CLI `2.117.0` or re-verify the commands against the installed versi
 3. Apply the migration with `supabase db push`.
 4. Run Supabase security and performance advisors; resolve new findings before proceeding.
 5. Deploy only `pricing-audit-eligibility`. Keep `verify_jwt = true` from `supabase/config.toml`.
-6. Verify an unauthenticated request returns `401`, then verify eligible, gated, and not-entitled responses using normal user sessions.
-7. Verify one user cannot read another user's `pricing_audits` rows through the Data API.
-8. Recheck the recorded row counts and a normal coaching-session flow.
+6. Confirm production still has `GC.PRICING_AUDIT_ENABLED = false` and the account page does not
+   display the pricing-audit section.
+7. Verify an unauthenticated request returns `401`, then verify eligible, gated, and not-entitled responses using normal user sessions.
+8. Verify one user cannot read another user's `pricing_audits` rows through the Data API.
+9. Recheck the recorded row counts and a normal coaching-session flow.
 
 ## Rollback
 
