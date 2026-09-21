@@ -49,8 +49,9 @@
     return true;
   }
 
-  async function loadAndRender({ supabase, elements, formatDate }) {
+  async function loadAndRender({ enabled, supabase, elements, formatDate }) {
     reset(elements);
+    if (enabled !== true) return;
 
     try {
       const { data, error } = await supabase.functions.invoke(
