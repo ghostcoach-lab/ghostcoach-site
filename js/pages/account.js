@@ -479,6 +479,7 @@
     if (!section) return;
 
     await GCPricingAudit.loadAndRender({
+      enabled: GC.PRICING_AUDIT_ENABLED,
       supabase: gcSupabase,
       formatDate: fmtDate,
       elements: {

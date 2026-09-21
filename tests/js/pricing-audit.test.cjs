@@ -1,3 +1,5 @@
+const fs = require('node:fs');
+const path = require('node:path');
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
@@ -72,6 +74,20 @@ test('the release flag must be exactly true before eligibility is requested', as
     assert.equal(elements.last.textContent, '—');
     assert.equal(elements.next.textContent, '—');
   }
+});
+
+test('the account page wires a production-default-off pricing audit flag', () => {
+  const configSource = fs.readFileSync(
+    path.join(__dirname, '../../js/config.js'),
+    'utf8'
+  );
+  const accountSource = fs.readFileSync(
+    path.join(__dirname, '../../js/pages/account.js'),
+    'utf8'
+  );
+
+  assert.match(configSource, /PRICING_AUDIT_ENABLED:\s*false/);
+  assert.match(accountSource, /enabled:\s*GC\.PRICING_AUDIT_ENABLED/);
 });
 
 test('eligible response reveals the audit CTA after an authenticated function invocation', async () => {
