@@ -1,6 +1,6 @@
 # S3 Session-ID Repair Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** Prepare, validate, publish, and regression-test an S3 workflow repair that completes the frontend's existing session row and prevents duplicate processing and recap sends.
 
@@ -10,13 +10,37 @@
 
 ---
 
+## Execution record — 2026-09-23
+
+Tasks 1–3 and the preparation portions of task 4 are complete. Tasks 5–6 await the
+explicit publication approval boundary retained in task 4. The concrete review is
+[here](../../operations/s3-repair-review-2026-09-23.md).
+
+Execution corrections supersede the illustrative snippets below:
+
+- Fixture: `tests/n8n/fixtures/s3-published.json`. Tests execute real Code-node bodies
+  and expressions; there is no invented `jsonBodyFixture` field.
+- Row validators inspect `$input.all()` and reject split multiple items as well as arrays.
+  Both PATCH nodes force empty responses through validation and stop on errors.
+- Completion removes the audit-type field from its write body and checks pending status.
+- The preparation CLI uses `--report` or privately captured `--emit-private-json`;
+  apply_patch saves the candidate outside Git. No arbitrary output-path writer was added.
+- Candidate and source backup filenames use 20260923. Preparation selects the full
+  snapshot's `activeVersion`, with matching activeVersionId required.
+- Added real PostgreSQL/PostgREST integration tests in `s3-session-end.runtime.mjs`.
+  All 38 targeted and existing tests passed, including eight concurrent claims.
+- Deno ran through `npx --yes deno`. Existing Supabase function code is unchanged.
+- QA evidence/checklist files live in the parent workspace, outside this Git repository;
+  do not use the task-6 illustrative git-add command for those external files.
+
+
 ### Task 1: Add structural regression tests
 
 **Files:**
 - Create: `tests/n8n/s3-session-end-repair.test.mjs`
 - Create: `tests/n8n/fixtures/s3-published-minimal.json`
 
-- [ ] **Step 1: Create a sanitized minimal fixture**
+- [x] **Step 1: Create a sanitized minimal fixture**
 
 Include the published node IDs, names, connections, and the relevant parameters for:
 `Parse Session Payload`, `INSERT session (transcript first)`, `Extract Session ID`,
@@ -25,7 +49,7 @@ and `Send Recap via Resend`. Replace credential IDs, JWTs, API keys, URLs contai
 secrets, and email HTML with inert fixture values. Include an unrelated `Build Recap Email`
 node so preservation can be asserted.
 
-- [ ] **Step 2: Write failing tests for the repair contract**
+- [x] **Step 2: Write failing tests for the repair contract**
 
 ```js
 import test from 'node:test';
@@ -87,13 +111,13 @@ test('candidate validator rejects INSERT and missing ownership guards', async ()
 });
 ```
 
-- [ ] **Step 3: Run the test and verify the red state**
+- [x] **Step 3: Run the test and verify the red state**
 
 Run: `node --test tests/n8n/s3-session-end-repair.test.mjs`
 
 Expected: FAIL with `ERR_MODULE_NOT_FOUND` for `scripts/n8n/s3-session-end-repair.mjs`.
 
-- [ ] **Step 4: Commit the test fixture and red tests**
+- [x] **Step 4: Commit the test fixture and red tests**
 
 ```powershell
 git add tests/n8n/s3-session-end-repair.test.mjs tests/n8n/fixtures/s3-published-minimal.json
@@ -106,7 +130,7 @@ git commit -m "test: specify S3 session ID repair"
 - Create: `scripts/n8n/s3-session-end-repair.mjs`
 - Test: `tests/n8n/s3-session-end-repair.test.mjs`
 
-- [ ] **Step 1: Implement strict node lookup and defensive cloning**
+- [x] **Step 1: Implement strict node lookup and defensive cloning**
 
 ```js
 const REQUIRED = [
@@ -127,7 +151,7 @@ function onlyNode(workflow, name) {
 }
 ```
 
-- [ ] **Step 2: Implement payload validation and the atomic claim**
+- [x] **Step 2: Implement payload validation and the atomic claim**
 
 Set `Parse Session Payload.parameters.jsCode` to return `session_id`, `user_id`,
 `transcript`, and `is_pricing_audit` only after matching both IDs against a UUID regex,
@@ -150,7 +174,7 @@ The sanitized fixture additionally carries `jsonBodyFixture: '{"transcript":"fix
 for secret-free structural assertions; remove that fixture-only property when transforming
 a real workflow.
 
-- [ ] **Step 3: Validate exactly one claimed row**
+- [x] **Step 3: Validate exactly one claimed row**
 
 Rename `Extract Session ID` to `Validate Claimed Session` and set its Code node to:
 
@@ -171,7 +195,7 @@ Update every node expression and connection that references `Extract Session ID`
 `Validate Claimed Session`. The transformer must count replacements and throw unless the
 expected references are found.
 
-- [ ] **Step 4: Guard the final persistence boundary**
+- [x] **Step 4: Guard the final persistence boundary**
 
 Add `Prefer: return=representation` to `UPDATE session (summary + score)` and add the
 owner filter using the original parsed owner. Preserve its body fields. Insert a Code node
@@ -194,7 +218,7 @@ Rewire only this edge:
 UPDATE session (summary + score) -> Validate Completed Session -> UPDATE profiles.goal_progress
 ```
 
-- [ ] **Step 5: Add Resend idempotency and candidate validation**
+- [x] **Step 5: Add Resend idempotency and candidate validation**
 
 Append this header to `Send Recap via Resend` unless it already exists:
 
@@ -208,13 +232,13 @@ wrong completion edge, missing completion ownership guard, missing idempotency k
 residual `Extract Session ID` connection/reference. `repairS3Workflow` must call it and
 throw if any problem remains.
 
-- [ ] **Step 6: Run the focused tests**
+- [x] **Step 6: Run the focused tests**
 
 Run: `node --test tests/n8n/s3-session-end-repair.test.mjs`
 
 Expected: 5 tests pass, 0 fail.
 
-- [ ] **Step 7: Commit the transformer**
+- [x] **Step 7: Commit the transformer**
 
 ```powershell
 git add scripts/n8n/s3-session-end-repair.mjs tests/n8n/s3-session-end-repair.test.mjs
@@ -227,7 +251,7 @@ git commit -m "fix: prepare owner-scoped S3 session repair"
 - Modify: `scripts/n8n/s3-session-end-repair.mjs`
 - Create outside repository: `C:/Users/user/AppData/Local/GhostCoach/private-backups/s3-repair-candidate-20260922.json`
 
-- [ ] **Step 1: Add a prepare-only CLI**
+- [x] **Step 1: Add a prepare-only CLI**
 
 When invoked with `--prepare <input> <output>`, read the private backup, select
 `workflow.activeVersion` (or the root object when already a version), call
@@ -235,19 +259,19 @@ When invoked with `--prepare <input> <output>`, read the private backup, select
 Refuse an output path inside the Git repository. Print only version IDs, node names changed,
 and validation counts; never print node parameters, credentials, URLs, or payloads.
 
-- [ ] **Step 2: Add a fixture test for prepare-only behavior**
+- [x] **Step 2: Add a fixture test for prepare-only behavior**
 
 Use a temporary directory under `node:os.tmpdir()` and assert the command writes a valid
 candidate while stdout contains no strings matching JWT (`eyJ...`) or Resend-key (`re_...`)
 patterns.
 
-- [ ] **Step 3: Run the full local n8n test folder**
+- [x] **Step 3: Run the full local n8n test folder**
 
 Run: `node --test tests/n8n/*.test.mjs`
 
 Expected: all tests pass, 0 fail.
 
-- [ ] **Step 4: Generate the private candidate**
+- [x] **Step 4: Generate the private candidate**
 
 ```powershell
 node scripts/n8n/s3-session-end-repair.mjs --prepare `
@@ -259,7 +283,7 @@ Expected: validation count 0; changed-node allowlist contains only payload parsi
 claim validation, completion update/validation, references to the renamed validation node,
 and Resend headers. `Build Recap Email` must be byte-for-byte equal to the published version.
 
-- [ ] **Step 5: Run repository regression tests**
+- [x] **Step 5: Run repository regression tests**
 
 ```powershell
 node --test tests/js/pricing-audit.test.cjs tests/n8n/*.test.mjs
@@ -269,7 +293,7 @@ deno test --allow-env supabase/functions/pricing-audit-eligibility/handler.ts te
 Expected: all tests pass. If Deno is unavailable, record that exact limitation and run the
 existing project's documented function-test command instead; do not report an unrun suite.
 
-- [ ] **Step 6: Commit the prepare-only CLI and tests**
+- [x] **Step 6: Commit the prepare-only CLI and tests**
 
 ```powershell
 git add scripts/n8n/s3-session-end-repair.mjs tests/n8n/s3-session-end-repair.test.mjs
@@ -282,21 +306,21 @@ git commit -m "test: validate private S3 repair candidate"
 - Modify: `docs/operations/pricing-audit-deployment.md`
 - Read only: the private source backup and private candidate
 
-- [ ] **Step 1: Re-fetch S3 and perform a stale-version check**
+- [x] **Step 1: Re-fetch S3 and perform a stale-version check**
 
 Using `N8N_API_KEY` only as an environment variable, GET workflow
 `2YRHQrgmf93sWSdt`. Stop if activeVersionId differs from
 `7add89c0-5ae8-4d68-b669-ba3ad8a25338` or saved version differs from the reviewed draft
 unless the newer versions are fetched, backed up, diffed, and the plan updated.
 
-- [ ] **Step 2: Review a redacted structural diff**
+- [x] **Step 2: Review a redacted structural diff**
 
 Compare node IDs/names/types, connections, settings, and parameter hashes. Permit only the
 allowlisted repair changes. Verify credentials, workflow settings, webhook path, AI prompts,
 recap body, sender, recipient mapping, profile update, and all pricing-audit fields are
 unchanged. Do not print secret-bearing values.
 
-- [ ] **Step 3: Document rollback and recovery commands**
+- [x] **Step 3: Document rollback and recovery commands**
 
 Add an S3 section to the operations runbook recording: version IDs, private backup path,
 candidate path, publish verification, rollback to the prior published version through n8n

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import { repairS3Workflow, validateS3Repair } from '../../scripts/n8n/s3-session-end-repair.mjs';
+import { repairS3Workflow, validateS3Repair, prepareCandidate } from '../../scripts/n8n/s3-session-end-repair.mjs';
 
 const source = JSON.parse(readFileSync(new URL('./fixtures/s3-published.json', import.meta.url)));
 const sessionId = '7835879c-65c0-4420-bae9-8a9faaa90cfa';
@@ -92,4 +92,33 @@ test('unexpected source and candidate drift are rejected', () => {
   const wf=repairS3Workflow(source);
   node(wf,'CLAIM existing session transcript').parameters.url='https://fixture.example/rest/v1/sessions';
   assert.ok(validateS3Repair(wf).length);
+});
+
+test('candidate is based on the published version, never the unrelated draft', () => {
+  const published = structuredClone(source);
+  const draft = structuredClone(source);
+  node(draft,'Build Recap Email').parameters.jsCode = 'UNPUBLISHED DRAFT';
+  const snapshot = {...draft,versionId:'draft-version',activeVersionId:'published-version',
+    activeVersion:{...published,versionId:'published-version'}};
+  const {candidate,report} = prepareCandidate(snapshot);
+  assert.deepEqual(node(candidate,'Build Recap Email'),node(published,'Build Recap Email'));
+  assert.equal(report.sourceDraftVersionId,'draft-version');
+  assert.equal(report.sourceActiveVersionId,'published-version');
+  assert.deepEqual(report.validationProblems,[]);
+  assert.throws(()=>prepareCandidate({...snapshot,activeVersionId:'changed'}),/matching published/);
+});
+
+test('all nonrepair node fields stay unchanged except renamed node references', () => {
+  const wf=repairS3Workflow(source);
+  const changed=new Set(['Parse Session Payload','INSERT session (transcript first)','Extract Session ID',
+    'UPDATE session (summary + score)','Send Recap via Resend']);
+  for(const before of source.nodes) {
+    if(changed.has(before.name)) continue;
+    const expected=JSON.parse(JSON.stringify(before).replaceAll('Extract Session ID','Validate Claimed Session'));
+    assert.deepEqual(wf.nodes.find(n=>n.id===before.id),expected);
+  }
+  assert.deepEqual(wf.settings,source.settings);
+  const broken=structuredClone(wf);
+  node(broken,'Validate Claimed Session').onError='continueRegularOutput';
+  assert.ok(validateS3Repair(broken).some(message=>message.includes('stop on error')));
 });
