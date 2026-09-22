@@ -1,0 +1,622 @@
+{
+  "name": "S3 sanitized fixture",
+  "nodes": [
+    {
+      "id": "5c7b9b93-c32c-4710-807e-7659c42fca84",
+      "name": "Webhook — Session End",
+      "webhookId": "a1b2c3d4-s003-0001-0001-000000000001",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2512,
+        656
+      ],
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gc-s3-session-end",
+        "responseMode": "responseNode",
+        "options": {}
+      }
+    },
+    {
+      "id": "a715c4df-1899-42c3-9ed1-f19d5a1b78aa",
+      "name": "Validate x-gc-secret",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2304,
+        656
+      ],
+      "parameters": {
+        "jsCode": "return $input.all();"
+      }
+    },
+    {
+      "id": "ea19aea9-41f1-4ad6-b48f-30ce4b54a0d6",
+      "name": "Parse Session Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2080,
+        656
+      ],
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? $input.first().json;\nconst userId         = body.user_id;\nconst transcript     = body.transcript;\nconst isPricingAudit = body.is_pricing_audit === true;\nif (!userId)     throw new Error('S3: missing user_id');\nif (!transcript) throw new Error('S3: missing transcript');\nreturn [{ json: {\n  user_id:          userId,\n  transcript,\n  is_pricing_audit: isPricingAudit,\n  session_id:       body.session_id ?? null,\n  created_at:       new Date().toISOString()\n} }];"
+      }
+    },
+    {
+      "id": "1fc43b94-4c02-4665-af57-340554481cae",
+      "name": "INSERT session (transcript first)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1856,
+        656
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/sessions?apikey=fixture-api-key",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ user_id: $json.user_id, transcript: $json.transcript, summary: null, goal_progress_score: 0, is_pricing_audit: $json.is_pricing_audit, processing_status: 'pending', retry_count: 0, created_at: $json.created_at }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "9567649b-0bef-4488-9247-d8108454535d",
+      "name": "Extract Session ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1632,
+        656
+      ],
+      "parameters": {
+        "jsCode": "const insertedRows = $input.first().json;\nconst session = Array.isArray(insertedRows) ? insertedRows[0] : insertedRows;\nif (!session?.id) {\n  throw new Error('S3: session INSERT did not return an id — cannot proceed');\n}\nreturn [{ json: {\n  session_id:       session.id,\n  user_id:          $('Parse Session Payload').first().json.user_id,\n  transcript:       $('Parse Session Payload').first().json.transcript,\n  is_pricing_audit: $('Parse Session Payload').first().json.is_pricing_audit\n} }];"
+      }
+    },
+    {
+      "id": "671c2765-b283-4fa1-882f-c43e02ae6dc7",
+      "name": "Fetch Profile (goal context)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1424,
+        656
+      ],
+      "parameters": {
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${$('Extract Session ID').first().json.user_id}&select=goal_90_day,goal_progress,goal_start_date&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "d6873b9e-4b03-4636-a7a8-7aee1e4db708",
+      "name": "Build Anthropic Requests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1200,
+        656
+      ],
+      "parameters": {
+        "jsCode": "const profileRows = $('Fetch Profile (goal context)').first().json;\nconst profile     = Array.isArray(profileRows) ? profileRows[0] : profileRows;\nconst sessionData    = $('Extract Session ID').first().json;\nconst emailRows     = $('Fetch User Email').first().json;\nconst userEmail     = (Array.isArray(emailRows) ? emailRows[0] : emailRows)?.email ?? null;\nconst transcript     = $('Parse Session Payload').first().json.transcript;\nconst goal90Day      = profile?.goal_90_day  ?? 'Not specified';\nconst prevScore      = profile?.goal_progress ?? 0;\nconst goalStartDate  = profile?.goal_start_date ?? new Date().toISOString();\nconst daysElapsed    = Math.floor((Date.now() - new Date(goalStartDate).getTime()) / (1000 * 60 * 60 * 24));\n\nconst prevSessionWrapped = $('Fetch Previous Session').first().json;\nconst prevSessionBody    = prevSessionWrapped?.body;\nconst prevSessionRow     = Array.isArray(prevSessionBody) && prevSessionBody.length > 0 ? prevSessionBody[0] : null;\nconst prevActionCommitted = prevSessionRow?.action_committed ?? null;\n\nconst scoringSystemPrompt = `You evaluate a founder's coaching session transcript against a fixed checklist.\\nReturn ONLY valid JSON. No preamble, no explanation, no markdown.\\nIf you cannot evaluate, return: {\"confirmed_completion\": false, \"new_commitment\": false, \"blocker_found\": false, \"deliverable_produced\": false, \"reason\": \"insufficient data\"}`;\nconst scoringUserPrompt = `GOAL: ${goal90Day}\\nDAYS ELAPSED: ${daysElapsed} of 90\\nPREVIOUS SESSION'S COMMITTED ACTION: ${prevActionCommitted ?? 'None — this is the first session for this founder, there is no prior commitment to confirm.'}\\nSESSION TRANSCRIPT:\\n${transcript}\\n\\n---\\n\\nEvaluate this session against ONLY the following checklist. For each item, decide true or false strictly from the transcript — do not infer generously, and do not compute any points or totals yourself.\\n\\nCHECKLIST:\\n- confirmed_completion: true ONLY if the founder explicitly confirms they completed the exact action described in PREVIOUS SESSION'S COMMITTED ACTION above (or a clear equivalent). If PREVIOUS SESSION'S COMMITTED ACTION is \"None\", this MUST always be false, with no exceptions.\\n- new_commitment: true if the founder makes a new, specific, measurable commitment to a future action related to the goal (whether self-driven or following a recommendation Marcus gave in this session).\\n- blocker_found: true if the session uncovers a previously unknown blocker that, once resolved, advances the goal.\\n- deliverable_produced: true if the session produces a concrete deliverable (copy, template, pricing decision, etc.).\\n- off_topic: true if the session was exploratory or off-topic relative to the 90-day goal (in which case all the above should be false).\\n\\nDo not compute scores, deltas, or totals — only judge each checklist item as true or false. Scoring math is handled separately, outside this response.\\n\\nReturn ONLY this JSON object and absolutely nothing else — no text before it, no text after it:\\n{\"confirmed_completion\": <bool>, \"new_commitment\": <bool>, \"blocker_found\": <bool>, \"deliverable_produced\": <bool>, \"reason\": \"<one sentence, max 20 words>\"}`;\n\nconst summarySystemPrompt = `You are Marcus, a direct AI business coach. Summarise this coaching session in exactly 3 bullet points. Then identify the single most important action the founder committed to. Return ONLY valid JSON: {\"summary\": [\"bullet1\", \"bullet2\", \"bullet3\"], \"action_committed\": \"string\"}`;\nconst summaryUserPrompt = `SESSION TRANSCRIPT:\\n${transcript}`;\n\nreturn [{ json: {\n  session_id:       sessionData.session_id,\n  user_id:          sessionData.user_id,\n  email:            userEmail,\n  prev_score:       prevScore,\n  goal_90_day:      goal90Day,\n  is_pricing_audit: sessionData.is_pricing_audit,\n  scoring_payload: {\n    model: 'claude-sonnet-4-6',\n    max_tokens: 256,\n    system: scoringSystemPrompt,\n    messages: [{ role: 'user', content: scoringUserPrompt }]\n  },\n  summary_payload: {\n    model: 'claude-sonnet-4-6',\n    max_tokens: 512,\n    system: summarySystemPrompt,\n    messages: [{ role: 'user', content: summaryUserPrompt }]\n  }\n} }];"
+      }
+    },
+    {
+      "id": "f56a28d7-6d22-4b29-a107-75a74662559a",
+      "name": "Anthropic — Score Session",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "position": [
+        -976,
+        528
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.scoring_payload) }}",
+        "options": {}
+      },
+      "credentials": {
+        "anthropicApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "d799d702-b954-407a-a5d4-7af7129e928a",
+      "name": "Anthropic — Summarise Session",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "position": [
+        -976,
+        768
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Build Anthropic Requests').first().json.summary_payload) }}",
+        "options": {}
+      },
+      "credentials": {
+        "anthropicApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "f3741d61-07af-40b3-94d6-c0ba96f83359",
+      "name": "Parse Scoring Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        528
+      ],
+      "parameters": {
+        "jsCode": "const rawText = $input.first().json?.content?.[0]?.text?.trim() ?? '';\nconst cleaned = rawText.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/i, '').trim();\nconst jsonMatches = cleaned.match(/\\{[^{}]*\\}/g);\nconst raw = jsonMatches && jsonMatches.length > 0 ? jsonMatches[jsonMatches.length - 1] : cleaned;\nconst prevScore = $('Build Anthropic Requests').first().json.prev_score;\n\nlet flags;\ntry {\n  flags = JSON.parse(raw);\n} catch (e) {\n  flags = { confirmed_completion: false, new_commitment: false, blocker_found: false, deliverable_produced: false, reason: 'Scoring parse error — score unchanged' };\n}\n\nlet delta = 0;\nif (flags.confirmed_completion === true) delta += 20;\nif (flags.new_commitment === true)       delta += 5;\nif (flags.blocker_found === true)        delta += 5;\nif (flags.deliverable_produced === true) delta += 5;\ndelta = Math.min(25, delta);\n\nconst score = Math.min(100, prevScore + delta);\nreturn [{ json: { score, delta, reason: flags.reason ?? '' } }];"
+      }
+    },
+    {
+      "id": "318bf0b5-1723-4374-9d14-0f697609f355",
+      "name": "Parse Summary Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        768
+      ],
+      "parameters": {
+        "jsCode": "const rawText = $input.first().json?.content?.[0]?.text?.trim() ?? '';\nconst cleaned = rawText.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/i, '').trim();\nconst jsonMatches = cleaned.match(/\\{[^{}]*\\}/g);\nconst raw = jsonMatches && jsonMatches.length > 0 ? jsonMatches[jsonMatches.length - 1] : cleaned;\nlet result;\ntry {\n  result = JSON.parse(raw);\n} catch (e) {\n  result = { summary: ['Session complete.', 'Summary unavailable — will retry.', ''], action_committed: '' };\n}\nconst summary = Array.isArray(result.summary)\n  ? result.summary.filter(Boolean).join(' | ')\n  : (result.summary ?? 'Summary unavailable');\nreturn [{ json: { summary, action_committed: result.action_committed ?? '' } }];"
+      }
+    },
+    {
+      "id": "fdf9b1c9-c726-4e58-bdce-423df7497bb4",
+      "name": "Merge Score + Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        656
+      ],
+      "parameters": {
+        "jsCode": "const score   = $('Parse Scoring Response').first().json;\nconst summary = $('Parse Summary Response').first().json;\nconst req     = $('Build Anthropic Requests').first().json;\nreturn [{ json: {\n  session_id:       req.session_id,\n  user_id:          req.user_id,\n  email:            req.email,\n  is_pricing_audit: req.is_pricing_audit,\n  goal_90_day:      req.goal_90_day,\n  new_score:        score.score,\n  score_delta:      score.delta,\n  score_reason:     score.reason,\n  summary:          summary.summary,\n  action_committed: summary.action_committed\n} }];"
+      }
+    },
+    {
+      "id": "0026d21c-500d-4e7a-abd5-fab05983c5e7",
+      "name": "UPDATE session (summary + score)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -320,
+        656
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?id=eq.${$json.session_id}&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ summary: $json.summary, goal_progress_score: $json.new_score, action_committed: $json.action_committed, is_pricing_audit: $json.is_pricing_audit, processing_status: 'complete' }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "15ab5b59-0fb0-4af0-9c45-1f13e587c379",
+      "name": "UPDATE profiles.goal_progress",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        656
+      ],
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${$('Merge Score + Summary').first().json.user_id}&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ goal_progress: $('Merge Score + Summary').first().json.new_score, updated_at: new Date().toISOString() }) }}",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "4d8c571f-afbf-45b1-9488-a6e24d9a2fe1",
+      "name": "Build Recap Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        128,
+        656
+      ],
+      "parameters": {
+        "jsCode": "return [{json:{email_payload:{to:['qa@example.test'],html:'fixture'}}}];"
+      }
+    },
+    {
+      "id": "7a47c0f9-5c01-42fc-806d-a5d31128558b",
+      "name": "Send Recap via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        352,
+        656
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.RESEND_API_KEY }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.email_payload) }}",
+        "options": {}
+      }
+    },
+    {
+      "id": "05924017-e5cf-4f1e-b91d-af4a57cf01b5",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        576,
+        656
+      ],
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"ok\":true}",
+        "options": {
+          "responseCode": 200
+        }
+      }
+    },
+    {
+      "id": "45b4e52f-9829-43a8-a512-a93c2dc10c44",
+      "name": "Fetch User Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1424,
+        832
+      ],
+      "parameters": {
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/users?id=eq.${$json.user_id}&select=email&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "id": "f038a6ee-9a8a-4576-a907-ff35995dcc4e",
+      "name": "Fetch Previous Session",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "alwaysOutputData": true,
+      "position": [
+        -1224,
+        776
+      ],
+      "parameters": {
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$('Extract Session ID').first().json.user_id}&id=neq.${$('Extract Session ID').first().json.session_id}&select=action_committed,session_number&order=created_at.desc&limit=1&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          }
+        }
+      },
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — Session End": {
+      "main": [
+        [
+          {
+            "node": "Validate x-gc-secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate x-gc-secret": {
+      "main": [
+        [
+          {
+            "node": "Parse Session Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Session Payload": {
+      "main": [
+        [
+          {
+            "node": "INSERT session (transcript first)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT session (transcript first)": {
+      "main": [
+        [
+          {
+            "node": "Extract Session ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Session ID": {
+      "main": [
+        [
+          {
+            "node": "Fetch User Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Profile (goal context)": {
+      "main": [
+        [
+          {
+            "node": "Fetch Previous Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Anthropic Requests": {
+      "main": [
+        [
+          {
+            "node": "Anthropic — Score Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic — Score Session": {
+      "main": [
+        [
+          {
+            "node": "Parse Scoring Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic — Summarise Session": {
+      "main": [
+        [
+          {
+            "node": "Parse Summary Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Scoring Response": {
+      "main": [
+        [
+          {
+            "node": "Anthropic — Summarise Session",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Summary Response": {
+      "main": [
+        [
+          {
+            "node": "Merge Score + Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Score + Summary": {
+      "main": [
+        [
+          {
+            "node": "UPDATE session (summary + score)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE session (summary + score)": {
+      "main": [
+        [
+          {
+            "node": "UPDATE profiles.goal_progress",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE profiles.goal_progress": {
+      "main": [
+        [
+          {
+            "node": "Build Recap Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Recap Email": {
+      "main": [
+        [
+          {
+            "node": "Send Recap via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Recap via Resend": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch User Email": {
+      "main": [
+        [
+          {
+            "node": "Fetch Profile (goal context)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Previous Session": {
+      "main": [
+        [
+          {
+            "node": "Build Anthropic Requests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
