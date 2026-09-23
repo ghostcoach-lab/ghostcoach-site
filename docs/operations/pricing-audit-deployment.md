@@ -48,6 +48,14 @@ Use Supabase CLI `2.117.0` or re-verify the commands against the installed versi
 
 ## Rollback
 
+### S3 regression repair
+
+The separately reviewed normal-session repair, candidate/backup paths, tests, and recovery
+procedure are recorded in [S3 repair publication review](s3-repair-review-2026-09-23.md).
+It is prepared locally and awaits publication approval. The pricing-audit release flag
+remains false. A saved n8n draft is not proof of publication: verify the active version
+after publication and again after restoring unrelated unpublished recap changes.
+
 The frontend already fails closed when eligibility is unavailable. If the function misbehaves, remove or roll back only that function first and confirm the account section becomes hidden again.
 
 Do not improvise a destructive schema rollback after audit writes begin. Prefer a reviewed forward fix. Before any audit rows exist, a reversal migration may restore the legacy profile column and functions, then remove the new table and columns; after writes exist, preserve or export the audit history and restore from the verified backup if a full rollback is required.
