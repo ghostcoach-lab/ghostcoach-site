@@ -1,7 +1,21 @@
 # S3 repair publication review — 2026-09-23
 
-Status: implemented and locally verified on branch `fix/s3-session-repair`.
-Production publication and live regression QA are pending. Milestone 1 remains 8/10.
+Status: published to production and verified live on 2026-09-23.
+
+- Saved as a draft with `PUT /workflows/{id}?publishIfActive=false`, then published by exact
+  version with `POST /workflows/{id}/publish`. Live version:
+  `7abf40ca-640f-48fb-a00c-440a1b596af1`; its nodes and connections equal this candidate
+  (key-order-insensitive; n8n reorders JSON keys on save). Rollback: republish
+  `7add89c0-5ae8-4d68-b669-ba3ad8a25338`.
+- The unrelated unpublished edits were re-saved over the repair as draft
+  `e989cfd5-24aa-40b6-8e99-377228369602` (differences from live: `Build Recap Email` parameters,
+  `Fetch Previous Session` position only).
+- Live regression: the original pending session was completed in place, no duplicate row was
+  created, and exactly one recap was delivered (execution 17539). An identical resubmission
+  stopped at `Validate Claimed Session` before any write or email (execution 17540). QA rows
+  were removed and the database reconciled against baseline hashes.
+
+The original pre-publication review follows.
 
 ## Reviewable changes
 
