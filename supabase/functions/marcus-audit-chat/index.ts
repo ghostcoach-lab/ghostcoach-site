@@ -47,7 +47,7 @@ export default {
       createMessage: (params, timeoutMs) => anthropic.messages.create(params, { timeout: timeoutMs }),
       loadConfig: () => readAuditChatConfig((name) => Deno.env.get(name)),
       now: () => new Date(),
-      logError: (context, detail) => console.error(context, detail),
+      logError: (label, detail) => console.error(label, detail),
     });
 
     return handler(request);

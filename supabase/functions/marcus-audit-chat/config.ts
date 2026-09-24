@@ -1,5 +1,7 @@
-export const EFFORTS = ["low", "medium", "high", "xhigh", "max"] as const;
-export type Effort = typeof EFFORTS[number];
+import type Anthropic from "npm:@anthropic-ai/sdk@0.128.0";
+
+export type Effort = NonNullable<NonNullable<Anthropic.MessageCreateParams["output_config"]>["effort"]>;
+export const EFFORTS: readonly Effort[] = ["low", "medium", "high", "xhigh", "max"];
 
 export interface AuditChatConfig {
   prompt: string;

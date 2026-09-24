@@ -15,7 +15,7 @@ separate from the live `marcus-chat` function, which it does not touch. It is JW
   non-negative numbers, plus `current_pricing` and `last_pricing_change`, non-blank text of up to
   2000 characters each.
 - `messages`: the visible turns only. Empty for the opener. Otherwise Marcus's opener first, then
-  alternating turns ending with the founder's. The server puts a fixed opening user turn in front.
+  alternating turns ending with the customer's. The server puts a fixed opening user turn in front.
 
 Success is `200 { "reply": "..." }`. Every failure body is `{ "reason": "<code>" }`, plus
 `next_eligible_date` for `gated`. Details go to the function logs only; the audit prompt is never

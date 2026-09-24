@@ -32,7 +32,7 @@ export interface AuditChatDependencies {
   logError(context: string, detail: unknown): void;
 }
 
-// Stands in for the founder's first turn, since a conversation must start with a user turn.
+// Stands in for the customer's first turn, since a conversation must start with a user turn.
 export const AUDIT_OPENING_TURN =
   "(Pricing audit starting. My audit intake is in the audit data. Open the audit, per your instructions.)";
 const PRIOR_AUDIT_LIMIT = 2;

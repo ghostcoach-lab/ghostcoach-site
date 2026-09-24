@@ -18,8 +18,8 @@ export interface AuditRequest {
 }
 
 export interface AuditRequestCaps {
-  maxMessages?: number;
-  maxMessageChars?: number;
+  maxMessages: number;
+  maxMessageChars: number;
   maxTranscriptChars: number;
 }
 
@@ -57,7 +57,7 @@ function intakeProblem(intake: unknown): string | null {
 }
 
 // The browser holds the visible turns only: Marcus's opener first, then alternating turns
-// ending with the founder. The server adds its own opening user turn in front.
+// ending with the customer. The server adds its own opening user turn in front.
 function messagesProblem(messages: unknown): string | null {
   if (!Array.isArray(messages)) return "messages must be an array";
   for (const [index, message] of messages.entries()) {
@@ -74,7 +74,7 @@ function messagesProblem(messages: unknown): string | null {
   return null;
 }
 
-// Validates an audit chat or completion body. Details are for logs only.
+// Validates an audit chat body. Details are for logs only.
 export function parseAuditRequest(body: unknown, caps: AuditRequestCaps): AuditRequestResult {
   const invalid = (detail: string): AuditRequestResult => ({ ok: false, reason: "invalid_request", detail });
   const tooLong = (detail: string): AuditRequestResult => ({ ok: false, reason: "audit_too_long", detail });
@@ -88,10 +88,10 @@ export function parseAuditRequest(body: unknown, caps: AuditRequestCaps): AuditR
   if (sequence) return invalid(sequence);
 
   const messages = (body.messages as AuditMessage[]).map(({ role, content }) => ({ role, content }));
-  if (caps.maxMessages !== undefined && messages.length > caps.maxMessages) {
+  if (messages.length > caps.maxMessages) {
     return tooLong("message count cap exceeded");
   }
-  if (caps.maxMessageChars !== undefined && messages.some((m) => m.content.length > caps.maxMessageChars!)) {
+  if (messages.some((m) => m.content.length > caps.maxMessageChars)) {
     return tooLong("per-message length cap exceeded");
   }
   if (messages.reduce((total, m) => total + m.content.length, 0) > caps.maxTranscriptChars) {
