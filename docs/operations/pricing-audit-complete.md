@@ -95,15 +95,18 @@ transaction:
    "Welcome audit not yet used".
 7. It sets `last_audit_completed_at` and `welcome_audit_used = true`, and returns `completed`.
 
-Steps 2 and 3 return before anything is written.
+Steps 2 and 3 return before anything is written. If another customer's Completion or a coaching
+session takes the same ID between step 2 and step 5, the insert's unique violation also returns
+`session_conflict`.
 
 `pricing_audit_decide_eligibility` is the SQL copy of the shared TypeScript eligibility decision.
 Both are tested against one table of cases, `tests/fixtures/pricing-audit-eligibility-cases.json`.
 
 It never touches goal progress. The next eligible date comes from
 `pricing_audit_next_eligible_date(timestamptz)`, the UTC calendar date 90 days later. That matches
-the shared TypeScript eligibility rule. Only `service_role` can execute `complete_pricing_audit`
-and `pricing_audit_session_state`; `anon`, `authenticated` and `PUBLIC` cannot. The migration also adds the nullable
+the shared TypeScript eligibility rule. Only `service_role` can execute `complete_pricing_audit`,
+`pricing_audit_session_state` and `pricing_audit_decide_eligibility`; `anon`, `authenticated` and
+`PUBLIC` cannot. The migration also adds the nullable
 `pricing_audits.recap_sent_at` column. The Milestone 1 compatibility functions are unchanged.
 
 The transcript is stored in the existing `sessions.transcript` format, which labels the

@@ -366,14 +366,14 @@ test("the session lookup uses the caller's ID and the normalized session ID", as
   assert.deepEqual(calls.lookups, [["user-1", sessionId]]);
 });
 
-for (const label of ["another customer's session", "a coaching session"]) {
-  test(`session_conflict: ${label}, before any extraction`, async () => {
-    const { handler, calls } = setup({ lookupSession: async () => status("session_conflict") });
-    await expectReason(await handler(post(valid())), 409, "session_conflict");
-    assert.equal(calls.params.length, 0);
-    assert.equal(calls.rpc.length, 0);
-  });
-}
+// The session-state RPC tells another customer's session and a coaching session apart from a
+// new ID (see the contract tests); the handler refuses both before any extraction.
+test("session_conflict: the session lookup finds the ID taken, before any extraction", async () => {
+  const { handler, calls } = setup({ lookupSession: async () => status("session_conflict") });
+  await expectReason(await handler(post(valid())), 409, "session_conflict");
+  assert.equal(calls.params.length, 0);
+  assert.equal(calls.rpc.length, 0);
+});
 
 test("plan_lapsed: the pre-check refuses a customer who isn't Entitled, with no extraction", async () => {
   const { handler, calls } = setup({
@@ -490,6 +490,7 @@ const unexpected: Record<string, Record<string, unknown>> = {
     readEligibilityRecord: async () => ({ ...welcomeRecord, welcome_audit_used: true }),
   },
   "an unknown RPC status": { completeAudit: async () => status("mystery") },
+  "the RPC answering new": { completeAudit: async () => newSession },
   "an RPC gated status without a date": { completeAudit: async () => status("gated") },
   "an unknown session lookup status": { lookupSession: async () => status("mystery") },
 };

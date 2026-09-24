@@ -187,6 +187,9 @@ $$;
 create temp table eligibility_cases as
 select value as eligibility_case from jsonb_array_elements(:'eligibility_cases'::jsonb);
 
+-- The rule must not depend on the session time zone (the fixture includes a DST change).
+set timezone = 'America/New_York';
+
 do $$
 declare
   test_case jsonb;
@@ -224,6 +227,7 @@ begin
   end if;
 end;
 $$;
+reset timezone;
 
 -- Only the service role may execute the Completion RPCs.
 do $$
@@ -232,7 +236,8 @@ declare
 begin
   foreach rpc in array array[
     'public.complete_pricing_audit(uuid, uuid, text, jsonb, text, text, date, text, jsonb)'::regprocedure,
-    'public.pricing_audit_session_state(uuid, uuid)'::regprocedure
+    'public.pricing_audit_session_state(uuid, uuid)'::regprocedure,
+    'public.pricing_audit_decide_eligibility(public.plan_type, public.user_status, timestamptz, boolean, timestamptz, timestamptz)'::regprocedure
   ] loop
     if has_function_privilege('anon', rpc, 'EXECUTE') then
       raise exception 'anon must not execute %', rpc;

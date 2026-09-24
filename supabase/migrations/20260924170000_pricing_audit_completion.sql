@@ -130,7 +130,8 @@ as $$
 declare
   v_completed_at timestamptz := now();
   v_customer public.users%rowtype;
-  v_decision record;
+  v_session_state record;
+  v_eligibility record;
   v_audit_id uuid;
 begin
   -- The row lock serialises Completions for one customer, so a concurrent duplicate waits here
@@ -141,24 +142,25 @@ begin
   end if;
 
   -- A replay, another customer's session or a coaching session: nothing is written.
-  select * into v_decision from public.pricing_audit_session_state(p_user_id, p_session_id);
-  if v_decision.status <> 'new' then
-    return query select v_decision.audit_id, v_decision.status, v_decision.is_welcome_audit,
-                        v_decision.verdict_action, v_decision.verdict_number, v_decision.verdict_deadline,
-                        v_decision.verdict_reasoning, v_decision.next_eligible_date;
+  select * into v_session_state from public.pricing_audit_session_state(p_user_id, p_session_id);
+  if v_session_state.status <> 'new' then
+    return query select v_session_state.audit_id, v_session_state.status, v_session_state.is_welcome_audit,
+                        v_session_state.verdict_action, v_session_state.verdict_number,
+                        v_session_state.verdict_deadline, v_session_state.verdict_reasoning,
+                        v_session_state.next_eligible_date;
     return;
   end if;
 
   -- The authoritative Entitlement and Cooldown check.
-  select * into v_decision from public.pricing_audit_decide_eligibility(
+  select * into v_eligibility from public.pricing_audit_decide_eligibility(
     v_customer.plan, v_customer.status, v_customer.trial_end,
     v_customer.welcome_audit_used, v_customer.last_audit_completed_at, v_completed_at
   );
-  if v_decision.state <> 'eligible' then
+  if v_eligibility.state <> 'eligible' then
     return query select null::uuid,
-                        case v_decision.state when 'gated' then 'gated' else 'plan_lapsed' end,
+                        case v_eligibility.state when 'gated' then 'gated' else 'plan_lapsed' end,
                         null::boolean, null::text, null::text, null::date, null::text,
-                        v_decision.next_eligible_date;
+                        v_eligibility.next_eligible_date;
     return;
   end if;
 
@@ -174,17 +176,26 @@ begin
 
   -- session_number comes from the existing numbering trigger. Summary stays null and goal
   -- progress is never touched, so the audit stays out of normal coaching context.
-  insert into public.sessions (id, user_id, is_pricing_audit, processing_status, transcript, audit_intake, summary)
-  values (p_session_id, p_user_id, true, 'complete', p_transcript, p_audit_intake, null);
+  -- Another customer's Completion or a coaching session can take the same ID between the
+  -- session-state check and this insert, since it holds a different row lock.
+  begin
+    insert into public.sessions (id, user_id, is_pricing_audit, processing_status, transcript, audit_intake, summary)
+    values (p_session_id, p_user_id, true, 'complete', p_transcript, p_audit_intake, null);
 
-  insert into public.pricing_audits (
-    user_id, session_id, completed_at, is_welcome_audit,
-    verdict_action, verdict_number, verdict_deadline, verdict_reasoning, baseline
-  ) values (
-    p_user_id, p_session_id, v_completed_at, v_decision.is_welcome_audit,
-    p_verdict_action, p_verdict_number, p_verdict_deadline, p_verdict_reasoning, p_baseline
-  )
-  returning id into v_audit_id;
+    insert into public.pricing_audits (
+      user_id, session_id, completed_at, is_welcome_audit,
+      verdict_action, verdict_number, verdict_deadline, verdict_reasoning, baseline
+    ) values (
+      p_user_id, p_session_id, v_completed_at, v_eligibility.is_welcome_audit,
+      p_verdict_action, p_verdict_number, p_verdict_deadline, p_verdict_reasoning, p_baseline
+    )
+    returning id into v_audit_id;
+  exception
+    when unique_violation then
+      return query select null::uuid, 'session_conflict'::text, null::boolean, null::text, null::text,
+                          null::date, null::text, null::date;
+      return;
+  end;
 
   update public.users as u
      set last_audit_completed_at = v_completed_at,
@@ -194,7 +205,7 @@ begin
   return query select
     v_audit_id,
     'completed'::text,
-    v_decision.is_welcome_audit,
+    v_eligibility.is_welcome_audit,
     p_verdict_action,
     p_verdict_number,
     p_verdict_deadline,
@@ -206,6 +217,11 @@ $$;
 comment on function public.complete_pricing_audit(uuid, uuid, text, jsonb, text, text, date, text, jsonb) is
   'Records a Completion in one transaction: the audit session, the pricing_audits row and the moved Cooldown. '
   'Returns completed, already_completed, session_conflict, plan_lapsed or gated; only completed writes. Service role only.';
+
+revoke all on function public.pricing_audit_decide_eligibility(public.plan_type, public.user_status, timestamptz, boolean, timestamptz, timestamptz)
+  from public, anon, authenticated;
+grant execute on function public.pricing_audit_decide_eligibility(public.plan_type, public.user_status, timestamptz, boolean, timestamptz, timestamptz)
+  to service_role;
 
 revoke all on function public.pricing_audit_session_state(uuid, uuid)
   from public, anon, authenticated;
