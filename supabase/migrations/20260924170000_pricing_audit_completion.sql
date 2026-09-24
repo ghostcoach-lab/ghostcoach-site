@@ -60,6 +60,16 @@ begin
     raise exception using errcode = 'no_data_found', message = 'pricing audit customer not found';
   end if;
 
+  -- The caller checked the deadline against its own clock; re-check it against this
+  -- Completion's UTC date, which can differ around midnight.
+  if p_verdict_deadline is null
+     or p_verdict_deadline <= (v_completed_at at time zone 'UTC')::date
+     or p_verdict_deadline > ((v_completed_at at time zone 'UTC')::date + interval '1 year')::date then
+    raise exception using
+      errcode = 'invalid_parameter_value',
+      message = 'verdict deadline must be after the completion date and at most one year later';
+  end if;
+
   -- session_number comes from the existing numbering trigger. Summary stays null and goal
   -- progress is never touched, so the audit stays out of normal coaching context.
   insert into public.sessions (id, user_id, is_pricing_audit, processing_status, transcript, audit_intake, summary)

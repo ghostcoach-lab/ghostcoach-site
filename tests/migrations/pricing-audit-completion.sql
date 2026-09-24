@@ -218,9 +218,9 @@ create temp table welcome_result as
 select * from public.complete_pricing_audit(
   '00000000-0000-0000-0000-00000000000a',
   '20000000-0000-0000-0000-0000000000a1',
-  E'Marcus: What do you charge?\n\nFounder: 49 a month.\n\nMarcus: Raise to 59 by 2026-11-01.',
+  E'Marcus: What do you charge?\n\nFounder: 49 a month.\n\nMarcus: Raise to 59 within 38 days.',
   '{"mrr": 4200, "customer_count": 37, "churn_rate": 4.5, "current_pricing": "49", "last_pricing_change": "Never"}'::jsonb,
-  'raise', '59', '2026-11-01', 'Customers anchor on time saved.',
+  'raise', '59', (now() at time zone 'UTC')::date + 38, 'Customers anchor on time saved.',
   '{"value_anchor": "time saved", "friction_read": "low", "mix": "solo", "churn_window": "month 2"}'::jsonb
 );
 reset role;
@@ -241,7 +241,7 @@ begin
     raise exception 'unexpected Welcome audit result: %', row_to_json(result);
   end if;
   if (result.verdict_action, result.verdict_number, result.verdict_deadline, result.verdict_reasoning)
-     is distinct from ('raise', '59', '2026-11-01'::date, 'Customers anchor on time saved.') then
+     is distinct from ('raise', '59', (now() at time zone 'UTC')::date + 38, 'Customers anchor on time saved.') then
     raise exception 'result does not echo the Verdict: %', row_to_json(result);
   end if;
   if result.next_eligible_date <> public.pricing_audit_next_eligible_date(audit.completed_at) then
@@ -288,7 +288,7 @@ create temp table later_result as
 select * from public.complete_pricing_audit(
   '00000000-0000-0000-0000-00000000000a',
   '20000000-0000-0000-0000-0000000000a2',
-  'Marcus: Hold.', '{}'::jsonb, 'hold', null, '2026-12-01', 'Evidence unchanged.',
+  'Marcus: Hold.', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 60, 'Evidence unchanged.',
   '{"value_anchor": "a", "friction_read": "b", "mix": "c", "churn_window": "d"}'::jsonb
 );
 reset role;
@@ -317,10 +317,40 @@ $$;
 -- A failed Completion writes nothing.
 set role service_role;
 do $$
+declare
+  completion_date date := (now() at time zone 'UTC')::date;
+  deadline date;
+begin
+  -- The RPC re-checks the deadline window against its own completion date.
+  foreach deadline in array array[completion_date, (completion_date + interval '1 year')::date + 1] loop
+    begin
+      perform public.complete_pricing_audit(
+        '00000000-0000-0000-0000-00000000000b', '20000000-0000-0000-0000-0000000000b2',
+        'Marcus: x', '{}'::jsonb, 'hold', null, deadline, 'Deadline out of range.', '{}'::jsonb
+      );
+      raise exception 'a deadline of % was accepted', deadline;
+    exception
+      when invalid_parameter_value then null;
+    end;
+  end loop;
+  -- One year out is the last accepted day.
+  begin
+    perform public.complete_pricing_audit(
+      '00000000-0000-0000-0000-00000000000b', '20000000-0000-0000-0000-0000000000b3',
+      'Marcus: x', '{}'::jsonb, 'lower', null, (completion_date + interval '1 year')::date,
+      'Invalid action, valid deadline.', '{}'::jsonb
+    );
+    raise exception 'an invalid Verdict action was accepted';
+  exception
+    when check_violation then null;
+  end;
+end;
+$$;
+do $$
 begin
   perform public.complete_pricing_audit(
     '00000000-0000-0000-0000-00000000000b', '20000000-0000-0000-0000-0000000000b1',
-    'Marcus: x', '{}'::jsonb, 'lower', '10', '2026-12-01', 'Invalid action.', '{}'::jsonb
+    'Marcus: x', '{}'::jsonb, 'lower', '10', (now() at time zone 'UTC')::date + 60, 'Invalid action.', '{}'::jsonb
   );
   raise exception 'an invalid Verdict action was accepted';
 exception
@@ -331,7 +361,7 @@ do $$
 begin
   perform public.complete_pricing_audit(
     '00000000-0000-0000-0000-0000000000ff', '20000000-0000-0000-0000-0000000000f1',
-    'Marcus: x', '{}'::jsonb, 'hold', null, '2026-12-01', 'Unknown customer.', '{}'::jsonb
+    'Marcus: x', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 60, 'Unknown customer.', '{}'::jsonb
   );
   raise exception 'a Completion for an unknown customer was accepted';
 exception

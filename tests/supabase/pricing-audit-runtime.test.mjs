@@ -299,10 +299,15 @@ for (const [label, token] of [["authenticated", ownerToken], ["anon", anonKey]])
     key: anonKey, token, method: "POST", body: JSON.stringify(rpcArgs),
   });
   assert.ok(
-    [401, 403, 404].includes(attempt.response.status),
-    `${label} executed complete_pricing_audit: ${attempt.response.status} ${JSON.stringify(attempt.body)}`,
+    [401, 403].includes(attempt.response.status) && attempt.body?.code === "42501",
+    `${label} was not refused permission: ${attempt.response.status} ${JSON.stringify(attempt.body)}`,
   );
 }
+// Positive control: the service role reaches the RPC, which rejects an invalid Verdict.
+const serviceAttempt = await request("/rest/v1/rpc/complete_pricing_audit", {
+  key: serviceRoleKey, method: "POST", body: JSON.stringify({ ...rpcArgs, p_verdict_action: "lower" }),
+});
+assert.equal(serviceAttempt.body?.code, "23514", JSON.stringify(serviceAttempt.body));
 const ownerAuditsAfterRpc = await visibleAudits(ownerToken);
 assert.equal(ownerAuditsAfterRpc.length, 1, "a refused RPC call wrote an audit");
 

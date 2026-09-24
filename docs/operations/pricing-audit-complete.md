@@ -2,9 +2,9 @@
 
 The Edge Function that records a **Completion** (spec #5, ticket #11, ADR 0002). It is
 JWT-verified (`verify_jwt = true`). It reads Marcus's Verdict and Baseline out of the finished
-conversation and records the audit through the `complete_pricing_audit` RPC. This is the tracer
-bullet. Idempotency, the eligibility refusals, the extraction retry and the recap email come in
-#12 and #13.
+conversation and records the audit through the `complete_pricing_audit` RPC. This page describes
+the Completion path from ticket #11; the rest of the Completion contract in spec #5 is built in
+#12 and #13, before the function is deployed.
 
 ## Request and response
 
@@ -33,7 +33,7 @@ Every failure body is `{ "reason": "<code>" }`; details go to the function logs 
 | `invalid_request` | 400 | Malformed body, bad UUID, bad intake, or a conversation that doesn't end with Marcus (405 for a method other than POST) |
 | `unauthorized` | 401 | No user in the verified JWT. The gateway normally rejects these first. |
 | `audit_too_long` | 413 | The transcript is over the cap |
-| `extraction_incomplete` | 422 | No Verdict, or the Verdict or Baseline fails a rule below. Nothing is written. |
+| `extraction_incomplete` | 422 | No Verdict, or the Verdict or Baseline fails a rule below (including the RPC's own deadline re-check). Nothing is written. |
 | `ai_unavailable` | 503 | The extraction call failed, timed out, was refused or returned no text |
 | `internal_error` | 500 | Invalid configuration, or the RPC failed |
 
@@ -53,7 +53,9 @@ code:
 - the Baseline has exactly `value_anchor`, `friction_read`, `mix` and `churn_window`, each
   non-blank.
 
-Values are trimmed before they are stored.
+Values are trimmed before they are stored. The RPC re-checks the deadline window against its own
+completion date, since the handler's clock and the database's can fall on different days around
+midnight UTC.
 
 ## Recording
 
@@ -74,8 +76,8 @@ the shared TypeScript eligibility rule. Only `service_role` can execute the RPC;
 `authenticated` and `PUBLIC` cannot. The migration also adds the nullable
 `pricing_audits.recap_sent_at` column. The Milestone 1 compatibility functions are unchanged.
 
-The transcript is stored in the existing text format: `Marcus: …` and `Founder: …` turns separated
-by a blank line.
+The transcript is stored in the existing `sessions.transcript` format, which labels the
+customer's turns `Founder`: `Marcus: …` and `Founder: …` turns separated by a blank line.
 
 ## Configuration (Edge Function secrets)
 

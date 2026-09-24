@@ -291,6 +291,15 @@ test("internal_error: the Completion RPC fails", async () => {
   assert.ok(calls.logs.length > 0);
 });
 
+test("extraction_incomplete: the RPC finds the deadline outside its own completion date's window", async () => {
+  const { handler } = setup({
+    completeAudit: async () => {
+      throw Object.assign(new Error("deadline out of range"), { code: "22023" });
+    },
+  });
+  await expectReason(await handler(post(valid())), 422, "extraction_incomplete");
+});
+
 test("internal_error: invalid configuration", async () => {
   const { handler, calls } = setup({
     loadConfig: () => {

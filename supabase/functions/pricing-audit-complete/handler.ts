@@ -12,6 +12,7 @@ import {
   formatTranscript,
   validateExtraction,
   type Verdict,
+  type VerdictAction,
 } from "./extraction.ts";
 
 export interface AuthenticatedUser {
@@ -32,7 +33,7 @@ export interface CompletionRow {
   audit_id: string;
   status: "completed";
   is_welcome_audit: boolean;
-  verdict_action: string;
+  verdict_action: VerdictAction;
   verdict_number: string | null;
   verdict_deadline: string;
   verdict_reasoning: string;
@@ -129,7 +130,9 @@ export function createPricingAuditCompleteHandler(
       });
     } catch (error) {
       dependencies.logError("pricing-audit-complete: completion", error);
-      return refuse("internal_error");
+      // The RPC re-checks the deadline against its own completion date (invalid_parameter_value).
+      const deadlineRejected = (error as { code?: unknown } | null)?.code === "22023";
+      return refuse(deadlineRejected ? "extraction_incomplete" : "internal_error");
     }
 
     return json({

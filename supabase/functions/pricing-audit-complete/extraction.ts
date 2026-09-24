@@ -55,6 +55,8 @@ Report only what Marcus actually said. Never infer, guess or fill a gap. The cus
 
 If Marcus gave no Verdict, gave more than one without settling on one, or left the action, number, deadline, reasoning or any part of the Baseline missing or unclear, set verdict_found to false and every other field to null.`;
 
+// The existing sessions.transcript format, shared with normal coaching sessions, labels the
+// customer's turns "Founder".
 export function formatTranscript(messages: AuditMessage[]): string {
   return messages
     .map(({ role, content }) => `${role === "assistant" ? "Marcus" : "Founder"}: ${content}`)
