@@ -1,22 +1,16 @@
+import {
+  decidePricingAuditEligibility,
+  type EligibilityRecord,
+} from "../_shared/pricing-audit-eligibility.ts";
+
+export type {
+  EligibilityRecord,
+  Plan,
+  UserStatus,
+} from "../_shared/pricing-audit-eligibility.ts";
+
 export interface AuthenticatedUser {
   userId: string;
-}
-
-export type Plan = "builder" | "operator" | "lifetime";
-export type UserStatus =
-  | "trialing"
-  | "active"
-  | "past_due"
-  | "canceled"
-  | "pending"
-  | "deleted";
-
-export interface EligibilityRecord {
-  plan: Plan;
-  status: UserStatus;
-  trial_end: string | null;
-  welcome_audit_used: boolean;
-  last_audit_completed_at: string | null;
 }
 
 export interface HandlerDependencies {
@@ -54,24 +48,9 @@ export function createPricingAuditEligibilityHandler(
       const record = await dependencies.readEligibilityRecord(user.userId);
       if (!record) throw new Error("Application user record is missing");
 
-      const hasActivePlan = record.status === "active" &&
-        (record.plan === "operator" || record.plan === "lifetime");
-      const hasActiveOperatorTrial = record.plan === "operator" &&
-        record.status === "trialing" &&
-        record.trial_end !== null &&
-        new Date(record.trial_end) > dependencies.now();
-      const isEntitled = hasActivePlan || hasActiveOperatorTrial;
+      const decision = decidePricingAuditEligibility(record, dependencies.now());
 
-      if (isEntitled && !record.welcome_audit_used) {
-        return json({
-          state: "eligible",
-          is_welcome_audit: true,
-          next_eligible_date: null,
-          last_completed_at: null,
-        }, 200);
-      }
-
-      if (!isEntitled) {
+      if (decision.state === "not_entitled") {
         return json({
           state: "not_entitled",
           is_welcome_audit: false,
@@ -80,43 +59,26 @@ export function createPricingAuditEligibilityHandler(
         }, 200);
       }
 
-      if (
-        isEntitled &&
-        record.welcome_audit_used &&
-        !record.last_audit_completed_at
-      ) {
-        throw new Error("Completed audit timestamp is missing");
-      }
-
-      if (
-        isEntitled &&
-        record.welcome_audit_used &&
-        record.last_audit_completed_at
-      ) {
-        const nextEligibleAt = new Date(record.last_audit_completed_at);
-        nextEligibleAt.setUTCDate(nextEligibleAt.getUTCDate() + 90);
-
-        if (dependencies.now() < nextEligibleAt) {
-          return json({
-            state: "gated",
-            is_welcome_audit: false,
-            next_eligible_date: nextEligibleAt.toISOString().slice(0, 10),
-            last_completed_at: record.last_audit_completed_at,
-          }, 200);
-        }
-
+      if (decision.state === "gated") {
         return json({
-          state: "eligible",
+          state: "gated",
           is_welcome_audit: false,
-          next_eligible_date: null,
+          next_eligible_date: decision.nextEligibleDate,
           last_completed_at: record.last_audit_completed_at,
         }, 200);
       }
+
+      return json({
+        state: "eligible",
+        is_welcome_audit: decision.isWelcomeAudit,
+        next_eligible_date: null,
+        last_completed_at: decision.isWelcomeAudit
+          ? null
+          : record.last_audit_completed_at,
+      }, 200);
     } catch (error) {
       console.error("pricing-audit-eligibility:", error);
       return json({ error: "Unable to determine pricing audit eligibility" }, 500);
     }
-
-    return json({ error: "Unable to determine pricing audit eligibility" }, 500);
   };
 }
