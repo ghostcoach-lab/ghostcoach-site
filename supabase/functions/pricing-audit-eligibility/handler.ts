@@ -3,12 +3,6 @@ import {
   type EligibilityRecord,
 } from "../_shared/pricing-audit-eligibility.ts";
 
-export type {
-  EligibilityRecord,
-  Plan,
-  UserStatus,
-} from "../_shared/pricing-audit-eligibility.ts";
-
 export interface AuthenticatedUser {
   userId: string;
 }

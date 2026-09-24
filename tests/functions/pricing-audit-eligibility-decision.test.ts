@@ -49,6 +49,17 @@ const cases: Array<{
     expected: { state: "not_entitled" },
   },
   {
+    name: "an Operator whose trial ended last week is not entitled",
+    record: {
+      plan: "operator",
+      status: "trialing",
+      trial_end: "2026-09-12T12:00:00.000Z",
+      welcome_audit_used: false,
+      last_audit_completed_at: null,
+    },
+    expected: { state: "not_entitled" },
+  },
+  {
     name: "an Operator whose trial has no end date is not entitled",
     record: {
       plan: "operator",
