@@ -82,6 +82,25 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw "Legacy-data rollback check failed with exit code $LASTEXITCODE."
   }
+
+  docker exec `
+    --env PGPASSWORD=postgres `
+    $containerName `
+    createdb --username postgres completion_contract
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not create the completion test database (exit code $LASTEXITCODE)."
+  }
+
+  docker exec `
+    --env PGPASSWORD=postgres `
+    $containerName `
+    psql --set ON_ERROR_STOP=1 --username postgres --dbname completion_contract `
+    --file /workspace/tests/migrations/pricing-audit-completion.sql
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Completion migration contract test failed with exit code $LASTEXITCODE."
+  }
 }
 finally {
   if ($containerStarted) {

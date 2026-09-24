@@ -1,6 +1,7 @@
 import type Anthropic from "npm:@anthropic-ai/sdk@0.128.0";
 
 import { readTextReply } from "../_shared/anthropic-response.ts";
+import { json, methodNotAllowed, preflight, refuse } from "../_shared/http.ts";
 import { type AuditIntake, parseAuditRequest } from "../_shared/audit-request.ts";
 import {
   decidePricingAuditEligibility,
@@ -37,33 +38,6 @@ export const AUDIT_OPENING_TURN =
   "(Pricing audit starting. My audit intake is in the audit data. Open the audit, per your instructions.)";
 const PRIOR_AUDIT_LIMIT = 2;
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type, x-retry-count, traceparent, tracestate, baggage",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-};
-
-const STATUS = {
-  invalid_request: 400,
-  unauthorized: 401,
-  plan_lapsed: 403,
-  gated: 403,
-  session_conflict: 409,
-  audit_too_long: 413,
-  ai_unavailable: 503,
-  internal_error: 500,
-} as const;
-type Reason = keyof typeof STATUS;
-
-function json(body: unknown, status: number): Response {
-  return Response.json(body, { status, headers: corsHeaders });
-}
-
-function refuse(reason: Reason, extra: Record<string, string> = {}): Response {
-  return json({ reason, ...extra }, STATUS[reason]);
-}
-
 function auditDataBlock(priorAudits: PriorAuditRow[], intake: AuditIntake, now: Date): string {
   const today = now.toISOString().slice(0, 10);
   const data = {
@@ -90,9 +64,9 @@ export function createMarcusAuditChatHandler(
 ): (request: Request) => Promise<Response> {
   return async (request: Request) => {
     if (request.method === "OPTIONS") {
-      return new Response("ok", { status: 200, headers: corsHeaders });
+      return preflight();
     }
-    if (request.method !== "POST") return json({ reason: "invalid_request" }, 405);
+    if (request.method !== "POST") return methodNotAllowed();
 
     const user = await dependencies.authenticate(request);
     if (!user) return refuse("unauthorized");
@@ -115,7 +89,7 @@ export function createMarcusAuditChatHandler(
     } catch {
       return refuse("invalid_request");
     }
-    const parsed = parseAuditRequest(body, config);
+    const parsed = parseAuditRequest(body, config, "chat");
     if (!parsed.ok) {
       dependencies.logError("marcus-audit-chat: request", parsed.detail);
       return refuse(parsed.reason);

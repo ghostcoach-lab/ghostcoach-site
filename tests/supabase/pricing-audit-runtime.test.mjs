@@ -274,4 +274,36 @@ try {
   fakeAnthropic.close();
 }
 
+// pricing-audit-complete: the gateway enforces the JWT, and only the service role can
+// execute the Completion RPC.
+const completeMissingCredentials = await fetch(`${apiUrl}/functions/v1/pricing-audit-complete`, { method: "POST" });
+assert.equal(completeMissingCredentials.status, 401);
+const completeInvalidJwt = await request("/functions/v1/pricing-audit-complete", {
+  key: anonKey, token: "not-a-valid-jwt", method: "POST",
+});
+assert.equal(completeInvalidJwt.response.status, 401);
+
+const rpcArgs = {
+  p_user_id: ownerId,
+  p_session_id: "30000000-0000-4000-8000-000000000001",
+  p_transcript: "Marcus: Hold.",
+  p_audit_intake: {},
+  p_verdict_action: "hold",
+  p_verdict_number: null,
+  p_verdict_deadline: "2027-01-01",
+  p_verdict_reasoning: "Forged through the REST API.",
+  p_baseline: {},
+};
+for (const [label, token] of [["authenticated", ownerToken], ["anon", anonKey]]) {
+  const attempt = await request("/rest/v1/rpc/complete_pricing_audit", {
+    key: anonKey, token, method: "POST", body: JSON.stringify(rpcArgs),
+  });
+  assert.ok(
+    [401, 403, 404].includes(attempt.response.status),
+    `${label} executed complete_pricing_audit: ${attempt.response.status} ${JSON.stringify(attempt.body)}`,
+  );
+}
+const ownerAuditsAfterRpc = await visibleAudits(ownerToken);
+assert.equal(ownerAuditsAfterRpc.length, 1, "a refused RPC call wrote an audit");
+
 console.log("Pricing-audit gateway and caller-scoped RLS checks passed.");
