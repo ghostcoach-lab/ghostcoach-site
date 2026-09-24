@@ -52,9 +52,11 @@ function validateRows(expectedStatus, isClaim) {
   return [{json:session}];
 }
 
-const parseCode = 'return (' + parsePayload.toString() + ')();';
-const claimCode = 'return (' + validateRows.toString() + ")('pending', true);";
-const completeCode = 'return (' + validateRows.toString() + ")('complete', false);";
+// LF regardless of checkout line endings, so candidates match what n8n stores.
+const lf = fn => fn.toString().replaceAll('\r\n', '\n');
+const parseCode = 'return (' + lf(parsePayload) + ')();';
+const claimCode = 'return (' + lf(validateRows) + ")('pending', true);";
+const completeCode = 'return (' + lf(validateRows) + ")('complete', false);";
 const baseUrl = "$vars.SUPABASE_URL + '/rest/v1/sessions?id=eq.' + encodeURIComponent($('Parse Session Payload').first().json.session_id) + '&user_id=eq.' + encodeURIComponent($('Parse Session Payload').first().json.user_id)";
 const claimUrl = '={{ ' + baseUrl + " + '&is_pricing_audit=is.false&processing_status=eq.pending&or=(transcript.is.null,transcript.eq.)&select=id,user_id,is_pricing_audit,processing_status,transcript' }}";
 const completeUrl = '={{ ' + baseUrl + " + '&is_pricing_audit=is.false&processing_status=eq.pending' }}";

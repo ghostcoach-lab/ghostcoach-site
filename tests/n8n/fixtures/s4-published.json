@@ -1,0 +1,460 @@
+{
+  "name": "GC — S4: Monday Digest → Operator Users",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Cron — Monday 07:00 Amsterdam",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -896,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/users?plan=eq.operator&status=eq.active&select=id,email&apikey=fixture-api-key` }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendHeaders": false
+      },
+      "id": "00000000-0000-4000-8000-000000000002",
+      "name": "Query Operator Users",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -672,
+        -208
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000003",
+      "name": "Prepare User List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000004",
+      "name": "Loop — One User at a Time",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -240,
+        -208
+      ],
+      "notes": "Processes one Operator user per iteration. 30-second delay at end of each loop is the scale safety measure per architecture spec — do not remove."
+    },
+    {
+      "parameters": {
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${$('Loop — One User at a Time').first().json.user_id}&select=goal_90_day,goal_progress&apikey=fixture-api-key` }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendHeaders": false
+      },
+      "id": "00000000-0000-4000-8000-000000000005",
+      "name": "Fetch Profile + Goal",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        -96
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000006",
+      "name": "Build Digest Prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        208,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi"
+      },
+      "id": "00000000-0000-4000-8000-000000000007",
+      "name": "Anthropic — Generate Digest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        416,
+        -208
+      ],
+      "credentials": {
+        "anthropicApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000008",
+      "name": "Parse Digest Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        656,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/digests?apikey=fixture-api-key",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendHeaders": false
+      },
+      "id": "00000000-0000-4000-8000-000000000009",
+      "name": "INSERT digest record",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        864,
+        -208
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000010",
+      "name": "Build Digest Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000011",
+      "name": "Send Digest via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1312,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "amount": 30
+      },
+      "id": "00000000-0000-4000-8000-000000000012",
+      "name": "Wait 30 Seconds",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1536,
+        -208
+      ],
+      "webhookId": "00000000-0000-4000-8000-0000000000ff",
+      "notes": "CRITICAL: 30-second delay between users per architecture spec (rule 10). Scale safety measure — do not remove."
+    },
+    {
+      "parameters": {},
+      "id": "00000000-0000-4000-8000-000000000013",
+      "name": "Continue Loop",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1744,
+        -208
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$json.user_id}&select=summary,action_committed,goal_progress_score,created_at&order=created_at.desc&limit=3&apikey=fixture-api-key` }}",
+        "options": {},
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "headerParameters": {
+          "parameters": []
+        },
+        "sendHeaders": false
+      },
+      "id": "00000000-0000-4000-8000-000000000014",
+      "name": "Fetch 3 Recent Sessions1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        -336
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cron — Monday 07:00 Amsterdam": {
+      "main": [
+        [
+          {
+            "node": "Query Operator Users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Operator Users": {
+      "main": [
+        [
+          {
+            "node": "Prepare User List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare User List": {
+      "main": [
+        [
+          {
+            "node": "Loop — One User at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop — One User at a Time": {
+      "main": [
+        [
+          {
+            "node": "Fetch 3 Recent Sessions1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Profile + Goal",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Profile + Goal": {
+      "main": [
+        [
+          {
+            "node": "Build Digest Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Digest Prompt": {
+      "main": [
+        [
+          {
+            "node": "Anthropic — Generate Digest",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic — Generate Digest": {
+      "main": [
+        [
+          {
+            "node": "Parse Digest Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Digest Response": {
+      "main": [
+        [
+          {
+            "node": "INSERT digest record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT digest record": {
+      "main": [
+        [
+          {
+            "node": "Build Digest Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Digest Email": {
+      "main": [
+        [
+          {
+            "node": "Send Digest via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Digest via Resend": {
+      "main": [
+        [
+          {
+            "node": "Wait 30 Seconds",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 30 Seconds": {
+      "main": [
+        [
+          {
+            "node": "Continue Loop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Continue Loop": {
+      "main": [
+        [
+          {
+            "node": "Loop — One User at a Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch 3 Recent Sessions1": {
+      "main": [
+        [
+          {
+            "node": "Build Digest Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
