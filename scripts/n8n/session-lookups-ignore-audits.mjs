@@ -11,14 +11,16 @@ const API_KEY = /&apikey=[^`&$]+(?=`)/;
 const LOOKUPS = {
   s4: {
     node: 'Fetch 3 Recent Sessions1',
+    transform: excludeAuditsFromS4,
     url: '={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$json.user_id}&select=summary,action_committed,goal_progress_score,created_at&order=created_at.desc&limit=3&apikey=KEY` }}',
   },
   s3: {
     node: 'Fetch Previous Session',
+    transform: excludeAuditsFromS3,
     url: "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$('Validate Claimed Session').first().json.user_id}&id=neq.${$('Validate Claimed Session').first().json.session_id}&select=action_committed,session_number&order=created_at.desc&limit=1&apikey=KEY` }}",
   },
 };
-const filtered = url => url.replace('&select=', AUDIT_FILTER + '&select=');
+const withAuditFilter = url => url.replace('&select=', AUDIT_FILTER + '&select=');
 const withoutKey = url => (url ?? '').replace(API_KEY, '&apikey=KEY');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -46,7 +48,7 @@ function addAuditFilter(source, which) {
   const lookup = onlyNode(workflow, name);
   if (!isSupabaseRead(lookup)) throw new Error('expected ' + name + ' to be a Supabase read');
   if (withoutKey(lookup.parameters.url) !== url) throw new Error('unexpected ' + name + ' query');
-  lookup.parameters.url = filtered(lookup.parameters.url);
+  lookup.parameters.url = withAuditFilter(lookup.parameters.url);
   const problems = validateAuditFilter(workflow, which);
   if (problems.length) throw new Error('candidate validation: ' + problems.join('; '));
   return workflow;
@@ -71,7 +73,7 @@ export function validateAuditFilter(workflow, which) {
   if (matches.length !== 1) return [name + ' must exist exactly once'];
   const [lookup] = matches;
   if (!isSupabaseRead(lookup)) problems.push(name + ' must be a Supabase read');
-  if (withoutKey(lookup.parameters.url) !== filtered(url))
+  if (withoutKey(lookup.parameters.url) !== withAuditFilter(url))
     problems.push(name + ' must exclude audit sessions and otherwise keep its query');
   return problems;
 }
@@ -93,8 +95,7 @@ export function diffWorkflows(base, candidate) {
 }
 
 export function prepareCandidate(snapshot, which) {
-  const transform = { s3: excludeAuditsFromS3, s4: excludeAuditsFromS4 }[which];
-  if (!transform) throw new Error('unknown workflow ' + which);
+  const { transform } = lookupFor(which);
   const wrapper = snapshot.workflow ?? snapshot;
   if (!wrapper.activeVersion?.nodes || wrapper.activeVersion.versionId !== wrapper.activeVersionId)
     throw new Error('expected snapshot with matching published activeVersion');
