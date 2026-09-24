@@ -1,10 +1,24 @@
 # pricing-audit-complete
 
-The Edge Function that records a **Completion** (spec #5, ticket #11, ADR 0002). It is
+The Edge Function that records a **Completion** (spec #5, tickets #11 and #12, ADR 0002). It is
 JWT-verified (`verify_jwt = true`). It reads Marcus's Verdict and Baseline out of the finished
-conversation and records the audit through the `complete_pricing_audit` RPC. This page describes
-the Completion path from ticket #11; the rest of the Completion contract in spec #5 is built in
-#12 and #13, before the function is deployed.
+conversation and records the audit through the `complete_pricing_audit` RPC. The recap email is
+added in #13.
+
+## Order of checks
+
+1. JWT (the gateway, then the handler).
+2. Payload: UUID, intake, a conversation ending with Marcus's Verdict, and the transcript cap.
+3. Idempotency, through `pricing_audit_session_state` with the service role:
+   - the caller already has an audit for this `session_id`: `200` with `status: "already_completed"`
+     and the saved Verdict and next eligible date, with nothing written;
+   - the ID belongs to another customer's session or to a coaching session: `session_conflict`.
+4. Entitlement and Cooldown pre-check, with the shared eligibility decision, so a refused customer
+   costs no AI call.
+5. Extraction, retried once if the result is invalid or has no Verdict.
+6. `complete_pricing_audit`, which repeats steps 3 and 4 under the customer's row lock. Its answer
+   is authoritative: a replay or a concurrent duplicate gets `already_completed`, and a plan that
+   lapsed mid-audit gets `plan_lapsed`. Only `completed` writes anything.
 
 ## Request and response
 
@@ -26,16 +40,22 @@ Success:
 }
 ```
 
-Every failure body is `{ "reason": "<code>" }`; details go to the function logs only.
+A replay returns the same shape with `"status": "already_completed"` and the saved values.
+
+Every failure body is `{ "reason": "<code>" }`, plus `next_eligible_date` for `gated`; details go to
+the function logs only.
 
 | Reason | HTTP | When |
 | --- | --- | --- |
 | `invalid_request` | 400 | Malformed body, bad UUID, bad intake, or a conversation that doesn't end with Marcus (405 for a method other than POST) |
 | `unauthorized` | 401 | No user in the verified JWT. The gateway normally rejects these first. |
+| `plan_lapsed` | 403 | Not Entitled, at the pre-check or at the RPC's re-check |
+| `gated` | 403 | Inside the Cooldown, at the pre-check or at the RPC's re-check; includes `next_eligible_date` |
+| `session_conflict` | 409 | The session ID belongs to another customer's session or to a coaching session |
 | `audit_too_long` | 413 | The transcript is over the cap |
-| `extraction_incomplete` | 422 | No Verdict, or the Verdict or Baseline fails a rule below (including the RPC's own deadline re-check). Nothing is written. |
-| `ai_unavailable` | 503 | The extraction call failed, timed out, was refused or returned no text |
-| `internal_error` | 500 | Invalid configuration, or the RPC failed |
+| `extraction_incomplete` | 422 | After two attempts, no Verdict, or the Verdict or Baseline fails a rule below (including the RPC's own deadline re-check). Nothing is written. |
+| `ai_unavailable` | 503 | An extraction call failed, timed out, was refused or returned no text. Not retried here. |
+| `internal_error` | 500 | Invalid configuration, a failed read, or anything unexpected from the RPCs |
 
 ## Extraction
 
@@ -62,18 +82,28 @@ midnight UTC.
 `complete_pricing_audit` (migration `20260924170000_pricing_audit_completion.sql`) runs in one
 transaction:
 
-1. It locks the customer's `users` row and derives the Welcome audit flag as "Welcome audit not
-   yet used".
-2. It inserts the audit `sessions` row: `is_pricing_audit = true`, `processing_status = complete`,
+1. It locks the customer's `users` row. A concurrent duplicate waits here.
+2. It returns `already_completed` with the saved audit, or `session_conflict`, from
+   `pricing_audit_session_state`.
+3. It re-checks Entitlement and the Cooldown with `pricing_audit_decide_eligibility`, and returns
+   `plan_lapsed` or `gated` (with the next eligible date).
+4. It re-checks the deadline window against its own completion date.
+5. It inserts the audit `sessions` row: `is_pricing_audit = true`, `processing_status = complete`,
    the transcript, the Audit intake and a null summary. The `session_number` comes from the
    existing numbering trigger.
-3. It inserts the `pricing_audits` row with `completed_at = now()`.
-4. It sets `last_audit_completed_at` and `welcome_audit_used = true`.
+6. It inserts the `pricing_audits` row with `completed_at = now()`. The Welcome audit flag is
+   "Welcome audit not yet used".
+7. It sets `last_audit_completed_at` and `welcome_audit_used = true`, and returns `completed`.
+
+Steps 2 and 3 return before anything is written.
+
+`pricing_audit_decide_eligibility` is the SQL copy of the shared TypeScript eligibility decision.
+Both are tested against one table of cases, `tests/fixtures/pricing-audit-eligibility-cases.json`.
 
 It never touches goal progress. The next eligible date comes from
 `pricing_audit_next_eligible_date(timestamptz)`, the UTC calendar date 90 days later. That matches
-the shared TypeScript eligibility rule. Only `service_role` can execute the RPC; `anon`,
-`authenticated` and `PUBLIC` cannot. The migration also adds the nullable
+the shared TypeScript eligibility rule. Only `service_role` can execute `complete_pricing_audit`
+and `pricing_audit_session_state`; `anon`, `authenticated` and `PUBLIC` cannot. The migration also adds the nullable
 `pricing_audits.recap_sent_at` column. The Milestone 1 compatibility functions are unchanged.
 
 The transcript is stored in the existing `sessions.transcript` format, which labels the

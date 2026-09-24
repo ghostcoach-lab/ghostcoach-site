@@ -290,24 +290,32 @@ const rpcArgs = {
   p_audit_intake: {},
   p_verdict_action: "hold",
   p_verdict_number: null,
-  p_verdict_deadline: "2027-01-01",
+  p_verdict_deadline: new Date(Date.now() + 30 * 86_400_000).toISOString().slice(0, 10),
   p_verdict_reasoning: "Forged through the REST API.",
   p_baseline: {},
 };
+const stateArgs = { p_user_id: ownerId, p_session_id: ownerSession };
 for (const [label, token] of [["authenticated", ownerToken], ["anon", anonKey]]) {
-  const attempt = await request("/rest/v1/rpc/complete_pricing_audit", {
-    key: anonKey, token, method: "POST", body: JSON.stringify(rpcArgs),
-  });
-  assert.ok(
-    [401, 403].includes(attempt.response.status) && attempt.body?.code === "42501",
-    `${label} was not refused permission: ${attempt.response.status} ${JSON.stringify(attempt.body)}`,
-  );
+  for (const [rpc, args] of [["complete_pricing_audit", rpcArgs], ["pricing_audit_session_state", stateArgs]]) {
+    const attempt = await request(`/rest/v1/rpc/${rpc}`, {
+      key: anonKey, token, method: "POST", body: JSON.stringify(args),
+    });
+    assert.ok(
+      [401, 403].includes(attempt.response.status) && attempt.body?.code === "42501",
+      `${label} was not refused ${rpc}: ${attempt.response.status} ${JSON.stringify(attempt.body)}`,
+    );
+  }
 }
 // Positive control: the service role reaches the RPC, which rejects an invalid Verdict.
 const serviceAttempt = await request("/rest/v1/rpc/complete_pricing_audit", {
   key: serviceRoleKey, method: "POST", body: JSON.stringify({ ...rpcArgs, p_verdict_action: "lower" }),
 });
 assert.equal(serviceAttempt.body?.code, "23514", JSON.stringify(serviceAttempt.body));
+const serviceState = await request("/rest/v1/rpc/pricing_audit_session_state", {
+  key: serviceRoleKey, method: "POST", body: JSON.stringify(stateArgs),
+});
+assert.equal(serviceState.response.status, 200, JSON.stringify(serviceState.body));
+assert.equal(serviceState.body[0]?.status, "already_completed");
 const ownerAuditsAfterRpc = await visibleAudits(ownerToken);
 assert.equal(ownerAuditsAfterRpc.length, 1, "a refused RPC call wrote an audit");
 

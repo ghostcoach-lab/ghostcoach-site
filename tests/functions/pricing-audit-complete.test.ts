@@ -53,10 +53,25 @@ const completedRow = {
   next_eligible_date: "2026-12-23",
 };
 
+const newSession = {
+  audit_id: null, status: "new", is_welcome_audit: null, verdict_action: null, verdict_number: null,
+  verdict_deadline: null, verdict_reasoning: null, next_eligible_date: null,
+};
+const welcomeRecord = {
+  plan: "operator", status: "active", trial_end: null, welcome_audit_used: false, last_audit_completed_at: null,
+};
+
 function setup(overrides: Record<string, unknown> = {}, reply: unknown = extraction) {
-  const calls: { params: any[]; rpc: any[]; logs: unknown[][] } = { params: [], rpc: [], logs: [] };
+  const calls: { params: any[]; rpc: any[]; logs: unknown[][]; lookups: unknown[][] } = {
+    params: [], rpc: [], logs: [], lookups: [],
+  };
   const handler = createPricingAuditCompleteHandler({
     authenticate: async () => ({ userId: "user-1" }),
+    lookupSession: async (...args: unknown[]) => {
+      calls.lookups.push(args);
+      return newSession;
+    },
+    readEligibilityRecord: async () => welcomeRecord,
     createMessage: async (params: unknown) => {
       calls.params.push(params);
       return jsonReply(reply);
@@ -315,3 +330,174 @@ test("an unauthenticated caller is refused before any work", async () => {
   await expectReason(await handler(post(valid())), 401, "unauthorized");
   assert.equal(calls.params.length, 0);
 });
+
+// Refusals and retries (#12).
+
+const savedRow = {
+  ...completedRow,
+  status: "already_completed",
+  verdict_action: "hold",
+  verdict_number: null,
+  verdict_deadline: "2026-10-15",
+  verdict_reasoning: "The saved Verdict.",
+  next_eligible_date: "2026-12-20",
+};
+const savedBody = {
+  status: "already_completed",
+  audit_id: savedRow.audit_id,
+  is_welcome_audit: true,
+  verdict: { action: "hold", number: null, deadline: "2026-10-15", reasoning: "The saved Verdict." },
+  next_eligible_date: "2026-12-20",
+};
+const status = (value: string, extra: object = {}) => ({ ...newSession, status: value, ...extra });
+
+test("already_completed: a replay returns the saved Verdict without extraction or a second record", async () => {
+  const { handler, calls } = setup({ lookupSession: async () => savedRow });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), savedBody);
+  assert.equal(calls.params.length, 0);
+  assert.equal(calls.rpc.length, 0);
+});
+
+test("the session lookup uses the caller's ID and the normalized session ID", async () => {
+  const { handler, calls } = setup();
+  await handler(post({ ...valid(), session_id: sessionId.toUpperCase() }));
+  assert.deepEqual(calls.lookups, [["user-1", sessionId]]);
+});
+
+for (const label of ["another customer's session", "a coaching session"]) {
+  test(`session_conflict: ${label}, before any extraction`, async () => {
+    const { handler, calls } = setup({ lookupSession: async () => status("session_conflict") });
+    await expectReason(await handler(post(valid())), 409, "session_conflict");
+    assert.equal(calls.params.length, 0);
+    assert.equal(calls.rpc.length, 0);
+  });
+}
+
+test("plan_lapsed: the pre-check refuses a customer who isn't Entitled, with no extraction", async () => {
+  const { handler, calls } = setup({
+    readEligibilityRecord: async () => ({ ...welcomeRecord, plan: "builder" }),
+  });
+  await expectReason(await handler(post(valid())), 403, "plan_lapsed");
+  assert.equal(calls.params.length, 0);
+});
+
+test("gated: the pre-check refuses a customer inside the Cooldown, with the next eligible date", async () => {
+  const { handler, calls } = setup({
+    readEligibilityRecord: async () => ({
+      ...welcomeRecord, welcome_audit_used: true, last_audit_completed_at: "2026-08-01T09:30:00.000Z",
+    }),
+  });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 403);
+  assert.deepEqual(await response.json(), { reason: "gated", next_eligible_date: "2026-10-30" });
+  assert.equal(calls.params.length, 0);
+});
+
+test("plan_lapsed: the RPC re-check refuses after a successful extraction", async () => {
+  const { handler, calls } = setup({
+    completeAudit: async (input: unknown) => {
+      calls.rpc.push(input);
+      return status("plan_lapsed");
+    },
+  });
+  await expectReason(await handler(post(valid())), 403, "plan_lapsed");
+  assert.equal(calls.params.length, 1);
+  assert.equal(calls.rpc.length, 1);
+});
+
+test("gated: the RPC re-check refuses after a successful extraction", async () => {
+  const { handler } = setup({ completeAudit: async () => status("gated", { next_eligible_date: "2026-12-01" }) });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 403);
+  assert.deepEqual(await response.json(), { reason: "gated", next_eligible_date: "2026-12-01" });
+});
+
+test("session_conflict: the RPC finds the session taken after extraction", async () => {
+  const { handler } = setup({ completeAudit: async () => status("session_conflict") });
+  await expectReason(await handler(post(valid())), 409, "session_conflict");
+});
+
+test("already_completed: a concurrent duplicate gets the saved audit from the RPC", async () => {
+  const { handler } = setup({ completeAudit: async () => savedRow });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 200);
+  assert.deepEqual(await response.json(), savedBody);
+});
+
+test("the retry succeeds on the second attempt", async () => {
+  const replies = [{ ...extraction, verdict_found: false }, extraction];
+  const { handler, calls } = setup({
+    createMessage: async (params: unknown) => {
+      calls.params.push(params);
+      return jsonReply(replies[calls.params.length - 1]);
+    },
+  });
+  assert.equal((await handler(post(valid()))).status, 200);
+  assert.equal(calls.params.length, 2);
+  assert.equal(calls.rpc.length, 1);
+});
+
+test("a reply that is not JSON is retried too", async () => {
+  const { handler, calls } = setup({
+    createMessage: async (params: unknown) => {
+      calls.params.push(params);
+      return calls.params.length === 1
+        ? rawMessage([thinking, { type: "text", text: "Raise to 59.", citations: null }])
+        : jsonReply(extraction);
+    },
+  });
+  assert.equal((await handler(post(valid()))).status, 200);
+  assert.equal(calls.params.length, 2);
+});
+
+test("extraction_incomplete: the retry is exhausted after exactly two attempts", async () => {
+  const { handler, calls } = setup({}, { ...extraction, verdict_found: false });
+  await expectReason(await handler(post(valid())), 422, "extraction_incomplete");
+  assert.equal(calls.params.length, 2);
+  assert.equal(calls.rpc.length, 0);
+});
+
+test("ai_unavailable: a timeout, with no retry", async () => {
+  const { handler, calls } = setup({
+    createMessage: async (params: unknown) => {
+      calls.params.push(params);
+      throw Object.assign(new Error("Request timed out."), { name: "APIConnectionTimeoutError" });
+    },
+  });
+  await expectReason(await handler(post(valid())), 503, "ai_unavailable");
+  assert.equal(calls.params.length, 1);
+});
+
+test("ai_unavailable: the second attempt fails after an invalid first result", async () => {
+  const { handler, calls } = setup({
+    createMessage: async (params: unknown) => {
+      calls.params.push(params);
+      if (calls.params.length === 1) return jsonReply({ ...extraction, verdict_found: false });
+      throw Object.assign(new Error("529 overloaded"), { status: 529 });
+    },
+  });
+  await expectReason(await handler(post(valid())), 503, "ai_unavailable");
+  assert.equal(calls.params.length, 2);
+});
+
+const unexpected: Record<string, Record<string, unknown>> = {
+  "a failed session lookup": { lookupSession: async () => { throw new Error("sensitive detail"); } },
+  "a failed eligibility read": { readEligibilityRecord: async () => { throw new Error("sensitive detail"); } },
+  "a missing customer record": { readEligibilityRecord: async () => null },
+  "an inconsistent audit state": {
+    readEligibilityRecord: async () => ({ ...welcomeRecord, welcome_audit_used: true }),
+  },
+  "an unknown RPC status": { completeAudit: async () => status("mystery") },
+  "an RPC gated status without a date": { completeAudit: async () => status("gated") },
+  "an unknown session lookup status": { lookupSession: async () => status("mystery") },
+};
+
+for (const [label, overrides] of Object.entries(unexpected)) {
+  test(`internal_error: ${label}`, async () => {
+    const { handler, calls } = setup(overrides);
+    await expectReason(await handler(post(valid())), 500, "internal_error");
+    assert.ok(calls.logs.length > 0, "the cause is logged");
+  });
+}
