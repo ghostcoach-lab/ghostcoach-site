@@ -18,7 +18,7 @@ export interface Baseline {
 
 export type ExtractionResult =
   | { ok: true; verdict: Verdict; baseline: Baseline }
-  | { ok: false; detail: string };
+  | { ok: false; detail: string; retry: boolean };
 
 const ACTIONS: readonly VerdictAction[] = ["raise", "hold", "restructure"];
 const BASELINE_KEYS = ["value_anchor", "friction_read", "mix", "churn_window"] as const;
@@ -88,9 +88,10 @@ function oneYearAfter(date: string): string {
 
 // Checks the extraction against the field rules in spec #5. Details are for logs only.
 export function validateExtraction(raw: unknown, completionDate: string): ExtractionResult {
-  const fail = (detail: string): ExtractionResult => ({ ok: false, detail });
+  const fail = (detail: string): ExtractionResult => ({ ok: false, detail, retry: true });
   if (!isObject(raw)) return fail("extraction is not an object");
-  if (raw.verdict_found !== true) return fail("no verdict");
+  // "No verdict" is not retried: the page offers completion before the Verdict (spec #5).
+  if (raw.verdict_found !== true) return { ok: false, detail: "no verdict", retry: false };
 
   const action = raw.action as VerdictAction;
   if (!ACTIONS.includes(action)) return fail("action is not raise, hold or restructure");

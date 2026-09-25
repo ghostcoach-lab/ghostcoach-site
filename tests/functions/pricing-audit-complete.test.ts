@@ -426,8 +426,11 @@ test("already_completed: a concurrent duplicate gets the saved audit from the RP
   assert.deepEqual(await response.json(), savedBody);
 });
 
-test("the retry succeeds on the second attempt", async () => {
-  const replies = [{ ...extraction, verdict_found: false }, extraction];
+// A Verdict was found but fails validation (blank reasoning), so it is retried once.
+const invalidExtraction = { ...extraction, reasoning: "  " };
+
+test("the retry succeeds on the second attempt after an invalid result", async () => {
+  const replies = [invalidExtraction, extraction];
   const { handler, calls } = setup({
     createMessage: async (params: unknown) => {
       calls.params.push(params);
@@ -453,9 +456,16 @@ test("a reply that is not JSON is retried too", async () => {
 });
 
 test("extraction_incomplete: the retry is exhausted after exactly two attempts", async () => {
-  const { handler, calls } = setup({}, { ...extraction, verdict_found: false });
+  const { handler, calls } = setup({}, invalidExtraction);
   await expectReason(await handler(post(valid())), 422, "extraction_incomplete");
   assert.equal(calls.params.length, 2);
+  assert.equal(calls.rpc.length, 0);
+});
+
+test("extraction_incomplete: \"no verdict\" is not retried, so an early attempt costs one call", async () => {
+  const { handler, calls } = setup({}, { ...extraction, verdict_found: false });
+  await expectReason(await handler(post(valid())), 422, "extraction_incomplete");
+  assert.equal(calls.params.length, 1);
   assert.equal(calls.rpc.length, 0);
 });
 
@@ -474,7 +484,7 @@ test("ai_unavailable: the second attempt fails after an invalid first result", a
   const { handler, calls } = setup({
     createMessage: async (params: unknown) => {
       calls.params.push(params);
-      if (calls.params.length === 1) return jsonReply({ ...extraction, verdict_found: false });
+      if (calls.params.length === 1) return jsonReply(invalidExtraction);
       throw Object.assign(new Error("529 overloaded"), { status: 529 });
     },
   });

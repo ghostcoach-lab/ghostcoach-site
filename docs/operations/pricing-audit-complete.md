@@ -15,7 +15,8 @@ added in #13.
    - the ID belongs to another customer's session or to a coaching session: `session_conflict`.
 4. Entitlement and Cooldown pre-check, with the shared eligibility decision, so a refused customer
    costs no AI call.
-5. Extraction, retried once if the result is invalid or has no Verdict.
+5. Extraction, retried once if the result is invalid. "No Verdict" is not retried, because the
+   page offers completion before Marcus gives his Verdict, so an early attempt costs one call.
 6. `complete_pricing_audit`, which repeats steps 3 and 4 under the customer's row lock. Its answer
    is authoritative: a replay or a concurrent duplicate gets `already_completed`, and a plan that
    lapsed mid-audit gets `plan_lapsed`. Only `completed` writes anything.
@@ -53,7 +54,7 @@ the function logs only.
 | `gated` | 403 | Inside the Cooldown, at the pre-check or at the RPC's re-check; includes `next_eligible_date` |
 | `session_conflict` | 409 | The session ID belongs to another customer's session or to a coaching session |
 | `audit_too_long` | 413 | The transcript is over the cap |
-| `extraction_incomplete` | 422 | After two attempts, no Verdict, or the Verdict or Baseline fails a rule below (including the RPC's own deadline re-check). Nothing is written. |
+| `extraction_incomplete` | 422 | No Verdict (after one attempt), or the Verdict or Baseline still fails a rule below after two attempts (including the RPC's own deadline re-check). Nothing is written. |
 | `ai_unavailable` | 503 | An extraction call failed, timed out, was refused or returned no text. Not retried here. |
 | `internal_error` | 500 | Invalid configuration, a failed read, or anything unexpected from the RPCs |
 

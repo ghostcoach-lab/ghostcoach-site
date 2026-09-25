@@ -109,7 +109,7 @@ export function createPricingAuditCompleteHandler(
   const { logError } = dependencies;
 
   async function extract(transcript: string, completionDate: string, config: AuditCompleteConfig): Promise<Extracted> {
-    // An invalid result or "no verdict" is retried once; an AI failure is not.
+    // An invalid result is retried once; "no verdict" and an AI failure are not.
     for (let attempt = 1; attempt <= EXTRACTION_ATTEMPTS; attempt++) {
       let message: Anthropic.Message;
       try {
@@ -136,10 +136,11 @@ export function createPricingAuditCompleteHandler(
       try {
         result = validateExtraction(JSON.parse(reply.text), completionDate);
       } catch {
-        result = { ok: false as const, detail: "reply is not JSON" };
+        result = { ok: false as const, detail: "reply is not JSON", retry: true };
       }
       if (result.ok) return result;
       logError("pricing-audit-complete: extraction", `attempt ${attempt}: ${result.detail}`);
+      if (!result.retry) break;
     }
     return { ok: false, response: refuse("extraction_incomplete") };
   }
