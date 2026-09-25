@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { createServer } from "node:http";
 
 const apiUrl = requiredEnv("GC_RUNTIME_API_URL");
 const anonKey = requiredEnv("GC_RUNTIME_ANON_KEY");
@@ -167,5 +168,110 @@ assert.equal(ownerAudits[0].user_id, ownerId);
 const otherAudits = await visibleAudits(otherToken);
 assert.equal(otherAudits.length, 1);
 assert.equal(otherAudits[0].user_id, otherId);
+
+// marcus-audit-chat: the gateway enforces the JWT, and the function reads only the
+// caller's own Prior audits. The Messages API is a local fake (see config.toml).
+const fakeAnthropicRequests = [];
+const fakeAnthropic = createServer(async (req, res) => {
+  let raw = "";
+  for await (const chunk of req) raw += chunk;
+  fakeAnthropicRequests.push({ path: req.url, apiKey: req.headers["x-api-key"], body: JSON.parse(raw) });
+  res.writeHead(200, { "Content-Type": "application/json" });
+  res.end(JSON.stringify({
+    id: "msg_runtime",
+    type: "message",
+    role: "assistant",
+    model: "claude-opus-5-5",
+    content: [
+      { type: "thinking", thinking: "", signature: "runtime-signature" },
+      { type: "text", text: "Fake Marcus reply.", citations: null },
+    ],
+    stop_reason: "end_turn",
+    stop_sequence: null,
+    stop_details: null,
+    usage: { input_tokens: 1, output_tokens: 1 },
+  }));
+});
+await new Promise((resolve) => fakeAnthropic.listen(55390, "0.0.0.0", resolve));
+
+try {
+  const chatMissingCredentials = await fetch(`${apiUrl}/functions/v1/marcus-audit-chat`, { method: "POST" });
+  assert.equal(chatMissingCredentials.status, 401);
+  const chatInvalidJwt = await request("/functions/v1/marcus-audit-chat", {
+    key: anonKey, token: "not-a-valid-jwt", method: "POST",
+  });
+  assert.equal(chatInvalidJwt.response.status, 401);
+  assert.equal(fakeAnthropicRequests.length, 0);
+
+  const returningEmail = "audit-returning@example.test";
+  const returningId = await createUser(returningEmail);
+  await serviceInsert("users", [{
+    id: returningId,
+    plan: "lifetime",
+    status: "active",
+    welcome_audit_used: true,
+    last_audit_completed_at: "2026-05-01T09:00:00.000Z",
+  }]);
+  const returningSessions = [
+    ["10000000-0000-0000-0000-000000000003", "2026-01-10T09:00:00.000Z", "returning-oldest"],
+    ["10000000-0000-0000-0000-000000000004", "2026-03-01T09:00:00.000Z", "returning-middle"],
+    ["10000000-0000-0000-0000-000000000005", "2026-05-01T09:00:00.000Z", "returning-newest"],
+  ];
+  await serviceInsert("sessions", returningSessions.map(([id]) => ({
+    id, user_id: returningId, is_pricing_audit: true, processing_status: "complete", audit_intake: {},
+  })));
+  await serviceInsert("pricing_audits", returningSessions.map(([sessionId, completedAt, reasoning]) => ({
+    user_id: returningId,
+    session_id: sessionId,
+    completed_at: completedAt,
+    is_welcome_audit: reasoning === "returning-oldest",
+    verdict_action: "hold",
+    verdict_reasoning: reasoning,
+    baseline: {},
+  })));
+  const returningToken = await signIn(returningEmail);
+
+  const chatBody = (sessionId) => JSON.stringify({
+    session_id: sessionId,
+    audit_intake: {
+      mrr: 1000, customer_count: 10, churn_rate: 2,
+      current_pricing: "One tier.", last_pricing_change: "Never.",
+    },
+    messages: [],
+  });
+  const chat = await request("/functions/v1/marcus-audit-chat", {
+    key: anonKey,
+    token: returningToken,
+    method: "POST",
+    body: chatBody("20000000-0000-4000-8000-000000000001"),
+  });
+  assert.equal(chat.response.status, 200, JSON.stringify(chat.body));
+  assert.deepEqual(chat.body, { reply: "Fake Marcus reply." });
+
+  assert.equal(fakeAnthropicRequests.length, 1);
+  const [sent] = fakeAnthropicRequests;
+  assert.equal(sent.path, "/v1/messages");
+  assert.equal(sent.apiKey, "runtime-test-fake-key");
+  assert.equal(sent.body.model, "claude-opus-5-5");
+  assert.equal(sent.body.system[0].text, "Runtime-test placeholder audit prompt.");
+  const data = JSON.parse(sent.body.system[1].text.replace(/^<audit_data>\n|\n<\/audit_data>$/g, ""));
+  assert.equal(data.welcome_audit, false);
+  assert.deepEqual(
+    data.prior_audits.map((audit) => audit.verdict.reasoning),
+    ["returning-newest", "returning-middle"],
+  );
+  for (const foreign of ["Owner-only audit history.", "Other user's audit history."]) {
+    assert.equal(JSON.stringify(sent.body).includes(foreign), false);
+  }
+
+  const conflict = await request("/functions/v1/marcus-audit-chat", {
+    key: anonKey, token: ownerToken, method: "POST", body: chatBody(ownerSession),
+  });
+  assert.equal(conflict.response.status, 409, JSON.stringify(conflict.body));
+  assert.deepEqual(conflict.body, { reason: "session_conflict" });
+  assert.equal(fakeAnthropicRequests.length, 1);
+} finally {
+  fakeAnthropic.close();
+}
 
 console.log("Pricing-audit gateway and caller-scoped RLS checks passed.");

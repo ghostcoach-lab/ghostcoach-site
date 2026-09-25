@@ -16,14 +16,11 @@ function Invoke-Checked([scriptblock] $Command, [string] $FailureMessage) {
 }
 
 try {
-  New-Item -ItemType Directory -Path (Join-Path $tempRoot 'supabase/functions') -Force | Out-Null
+  New-Item -ItemType Directory -Path (Join-Path $tempRoot 'supabase') -Force | Out-Null
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'config.toml') `
     -Destination (Join-Path $tempRoot 'supabase/config.toml')
-  Copy-Item -LiteralPath (Join-Path $repoRoot 'supabase/functions/pricing-audit-eligibility') `
-    -Destination (Join-Path $tempRoot 'supabase/functions/pricing-audit-eligibility') `
-    -Recurse
-  Copy-Item -LiteralPath (Join-Path $repoRoot 'supabase/functions/_shared') `
-    -Destination (Join-Path $tempRoot 'supabase/functions/_shared') `
+  Copy-Item -LiteralPath (Join-Path $repoRoot 'supabase/functions') `
+    -Destination (Join-Path $tempRoot 'supabase/functions') `
     -Recurse
 
   Invoke-Checked {
