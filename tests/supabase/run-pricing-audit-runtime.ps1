@@ -39,12 +39,16 @@ try {
     throw "Could not install the runtime baseline (exit code $LASTEXITCODE)."
   }
 
-  Get-Content -Raw -LiteralPath `
-    (Join-Path $repoRoot 'supabase/migrations/20260919105053_quarterly_pricing_audit_foundation.sql') |
-    docker exec --interactive $dbContainer `
-      psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres
-  if ($LASTEXITCODE -ne 0) {
-    throw "Could not apply the pricing-audit migration (exit code $LASTEXITCODE)."
+  foreach ($migration in @(
+    '20260919105053_quarterly_pricing_audit_foundation.sql',
+    '20260924170000_pricing_audit_completion.sql'
+  )) {
+    Get-Content -Raw -LiteralPath (Join-Path $repoRoot "supabase/migrations/$migration") |
+      docker exec --interactive $dbContainer `
+        psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres
+    if ($LASTEXITCODE -ne 0) {
+      throw "Could not apply migration $migration (exit code $LASTEXITCODE)."
+    }
   }
 
   docker exec $dbContainer psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres `

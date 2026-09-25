@@ -51,6 +51,9 @@ verify_jwt = true
 [functions.marcus-audit-chat]
 verify_jwt = true
 
+[functions.pricing-audit-complete]
+verify_jwt = true
+
 # Runtime-test placeholders only. The Messages API is a local fake served by the test.
 [edge_runtime.secrets]
 AUDIT_MARCUS_PROMPT = "Runtime-test placeholder audit prompt."

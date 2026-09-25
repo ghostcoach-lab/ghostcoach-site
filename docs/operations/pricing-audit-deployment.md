@@ -24,10 +24,11 @@ testing and receive frontend release approval.
 
 ```powershell
 node --test tests/js/pricing-audit.test.cjs
-node --experimental-strip-types --test tests/functions/pricing-audit-eligibility.test.ts tests/functions/pricing-audit-eligibility-decision.test.ts tests/functions/marcus-audit-chat.test.ts tests/functions/marcus-audit-chat-config.test.ts
+node --experimental-strip-types --test tests/functions/pricing-audit-eligibility.test.ts tests/functions/pricing-audit-eligibility-decision.test.ts tests/functions/marcus-audit-chat.test.ts tests/functions/marcus-audit-chat-config.test.ts tests/functions/pricing-audit-complete.test.ts tests/functions/pricing-audit-complete-config.test.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/handler.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/index.ts
 npx -y deno check supabase/functions/marcus-audit-chat/index.ts
+npx -y deno check supabase/functions/pricing-audit-complete/index.ts
 & ./tests/migrations/run-quarterly-pricing-audit-foundation.ps1
 & ./tests/supabase/run-pricing-audit-runtime.ps1
 ```

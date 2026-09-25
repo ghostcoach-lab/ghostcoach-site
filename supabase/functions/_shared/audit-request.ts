@@ -17,11 +17,16 @@ export interface AuditRequest {
   messages: AuditMessage[];
 }
 
+// The chat caps every dimension; the completion caps the transcript only.
 export interface AuditRequestCaps {
-  maxMessages: number;
-  maxMessageChars: number;
+  maxMessages?: number;
+  maxMessageChars?: number;
   maxTranscriptChars: number;
 }
+
+// A chat request ends with the customer's turn (or is empty, for the opener). A completion
+// request is the whole conversation, ending with Marcus's Verdict.
+export type AuditConversation = "chat" | "completion";
 
 export type AuditRequestResult =
   | { ok: true; value: AuditRequest }
@@ -56,9 +61,9 @@ function intakeProblem(intake: unknown): string | null {
   return null;
 }
 
-// The browser holds the visible turns only: Marcus's opener first, then alternating turns
-// ending with the customer. The server adds its own opening user turn in front.
-function messagesProblem(messages: unknown): string | null {
+// The browser holds the visible turns only: Marcus's opener first, then alternating turns.
+// The audit chat adds its own opening user turn in front.
+function messagesProblem(messages: unknown, conversation: AuditConversation): string | null {
   if (!Array.isArray(messages)) return "messages must be an array";
   for (const [index, message] of messages.entries()) {
     if (!isObject(message) || (message.role !== "user" && message.role !== "assistant")) {
@@ -70,12 +75,19 @@ function messagesProblem(messages: unknown): string | null {
     const expectedRole = index % 2 === 0 ? "assistant" : "user";
     if (message.role !== expectedRole) return `messages[${index}] must be from the ${expectedRole}`;
   }
-  if (messages.length > 0 && messages.length % 2 !== 0) return "the last message must be from the user";
+  if (conversation === "chat" && messages.length % 2 !== 0) return "the last message must be from the user";
+  if (conversation === "completion" && messages.length % 2 !== 1) {
+    return "a completed audit must end with Marcus's Verdict";
+  }
   return null;
 }
 
-// Validates an audit chat body. Details are for logs only.
-export function parseAuditRequest(body: unknown, caps: AuditRequestCaps): AuditRequestResult {
+// Validates an audit chat or completion body. Details are for logs only.
+export function parseAuditRequest(
+  body: unknown,
+  caps: AuditRequestCaps,
+  conversation: AuditConversation,
+): AuditRequestResult {
   const invalid = (detail: string): AuditRequestResult => ({ ok: false, reason: "invalid_request", detail });
   const tooLong = (detail: string): AuditRequestResult => ({ ok: false, reason: "audit_too_long", detail });
   if (!isObject(body)) return invalid("body must be a JSON object");
@@ -84,14 +96,14 @@ export function parseAuditRequest(body: unknown, caps: AuditRequestCaps): AuditR
   }
   const intake = intakeProblem(body.audit_intake);
   if (intake) return invalid(intake);
-  const sequence = messagesProblem(body.messages);
+  const sequence = messagesProblem(body.messages, conversation);
   if (sequence) return invalid(sequence);
 
   const messages = (body.messages as AuditMessage[]).map(({ role, content }) => ({ role, content }));
-  if (messages.length > caps.maxMessages) {
+  if (caps.maxMessages !== undefined && messages.length > caps.maxMessages) {
     return tooLong("message count cap exceeded");
   }
-  if (messages.some((m) => m.content.length > caps.maxMessageChars)) {
+  if (caps.maxMessageChars !== undefined && messages.some((m) => m.content.length > caps.maxMessageChars!)) {
     return tooLong("per-message length cap exceeded");
   }
   if (messages.reduce((total, m) => total + m.content.length, 0) > caps.maxTranscriptChars) {

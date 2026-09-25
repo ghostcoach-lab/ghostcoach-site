@@ -16,12 +16,40 @@ create table public.profiles (
   pricing_audit_last_date timestamptz
 );
 
+-- Mirrors the live sessions columns and numbering trigger.
 create table public.sessions (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null references public.users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  session_number integer not null,
+  transcript text default '',
+  summary text,
+  goal_progress_score integer check (goal_progress_score >= 0 and goal_progress_score <= 100),
+  action_committed text,
   is_pricing_audit boolean not null default false,
-  processing_status public.session_processing_status not null default 'pending'
+  processing_status public.session_processing_status not null default 'pending',
+  retry_count integer not null default 0,
+  last_error text
 );
+
+create function public.assign_session_number()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.session_number is null or new.session_number = 0 then
+    select coalesce(max(session_number), 0) + 1
+      into new.session_number
+      from public.sessions
+     where user_id = new.user_id;
+  end if;
+  return new;
+end;
+$$;
+
+create trigger trg_sessions_assign_number
+before insert on public.sessions
+for each row execute function public.assign_session_number();
 
 alter table public.users enable row level security;
 alter table public.profiles enable row level security;
