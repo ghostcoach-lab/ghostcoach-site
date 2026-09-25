@@ -71,6 +71,9 @@ The sender must be on the domain that S3 sends from, which Resend has already ve
 
 ## Going live (ticket #16, one approval per step)
 
+These steps are part of the full rollout order in
+[pricing-audit-m2-rollout.md](pricing-audit-m2-rollout.md) (steps 5 to 7).
+
 1. Generate a new random secret. Create an n8n **Header Auth** credential with the name
    `Authorization` and the value `Bearer <secret>`. Put its ID and name in the private options file.
 2. Build the candidate, then create the workflow through the n8n API (inactive). Check it in the
