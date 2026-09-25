@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $containerName = "ghostcoach-audit-migration-$PID"
 $containerStarted = $false
+$cleanupFailed = $false
 
 try {
   docker run --rm --detach `
@@ -89,9 +90,17 @@ try {
   }
 }
 finally {
-  # Cleanup is best effort: stderr from it must not fail a run whose checks passed.
+  # Cleanup judges the exit code: stderr alone must not fail a run whose checks passed.
   $ErrorActionPreference = 'Continue'
   if ($containerStarted) {
     docker stop $containerName 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      $cleanupFailed = $true
+      Write-Warning "Could not stop the Postgres test container (exit code $LASTEXITCODE). Remove it with: docker rm --force $containerName"
+    }
   }
+}
+
+if ($cleanupFailed) {
+  exit 1
 }
