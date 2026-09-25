@@ -6,6 +6,7 @@ $tempRoot = Join-Path $tempBase "ghostcoach-pricing-audit-runtime-$PID"
 $projectId = 'ghostcoach-pricing-audit-runtime-test'
 $cliVersion = '2.117.0'
 $stackStarted = $false
+$cleanupFailed = $false
 
 function Invoke-Checked([scriptblock] $Command, [string] $FailureMessage) {
   & $Command
@@ -67,8 +68,16 @@ try {
   } 'Pricing-audit runtime assertions failed'
 }
 finally {
+  # Windows PowerShell 5.1 turns redirected native stderr, such as the CLI's update notice, into
+  # a terminating error under 'Stop', which would fail a passing run and skip the temp folder
+  # removal below. So cleanup judges the exit code instead.
+  $ErrorActionPreference = 'Continue'
   if ($stackStarted) {
     npx -y "supabase@$cliVersion" stop --workdir $tempRoot --no-backup 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      $cleanupFailed = $true
+      Write-Warning "Could not stop the isolated Supabase stack (exit code $LASTEXITCODE). Stop it with: npx supabase@$cliVersion stop --project-id $projectId --no-backup"
+    }
   }
 
   $resolvedTempRoot = [IO.Path]::GetFullPath($tempRoot)
@@ -81,4 +90,8 @@ finally {
   ) {
     Remove-Item -LiteralPath $resolvedTempRoot -Recurse -Force -ErrorAction SilentlyContinue
   }
+}
+
+if ($cleanupFailed) {
+  exit 1
 }

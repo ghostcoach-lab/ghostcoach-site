@@ -3,6 +3,7 @@ $ErrorActionPreference = 'Stop'
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $containerName = "ghostcoach-audit-migration-$PID"
 $containerStarted = $false
+$cleanupFailed = $false
 
 try {
   docker run --rm --detach `
@@ -62,14 +63,19 @@ try {
     throw "Could not prepare the legacy-drift test database (exit code $LASTEXITCODE)."
   }
 
+  # This migration is meant to fail. Windows PowerShell 5.1 turns redirected native stderr into
+  # a terminating error under 'Stop', so relax it for this one call and judge the exit code.
+  $ErrorActionPreference = 'Continue'
   docker exec `
     --env PGPASSWORD=postgres `
     $containerName `
     psql --set ON_ERROR_STOP=1 --username postgres --dbname legacy_drift `
     --file /workspace/supabase/migrations/20260919105053_quarterly_pricing_audit_foundation.sql `
     2>$null
+  $legacyMigrationExitCode = $LASTEXITCODE
+  $ErrorActionPreference = 'Stop'
 
-  if ($LASTEXITCODE -eq 0) {
+  if ($legacyMigrationExitCode -eq 0) {
     throw 'Migration accepted populated legacy audit data instead of aborting.'
   }
 
@@ -84,7 +90,17 @@ try {
   }
 }
 finally {
+  # Cleanup judges the exit code: stderr alone must not fail a run whose checks passed.
+  $ErrorActionPreference = 'Continue'
   if ($containerStarted) {
     docker stop $containerName 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      $cleanupFailed = $true
+      Write-Warning "Could not stop the Postgres test container (exit code $LASTEXITCODE). Remove it with: docker rm --force $containerName"
+    }
   }
+}
+
+if ($cleanupFailed) {
+  exit 1
 }
