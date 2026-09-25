@@ -44,7 +44,7 @@ export const PLAN = [
   'sign in: a magic-link session for the QA account (this updates auth.users, so S1 fires as in Milestone 1 QA)',
   'entitlement: temporary database-only operator/active, guarded by the values saved in the preflight',
   'opener: marcus-audit-chat with no messages, then one short exchange asking for the Verdict',
-  'complete: pricing-audit-complete; check the audit session, the pricing_audits row, the moved clock, recap_sent_at and exactly one new S12 run',
+  'complete: pricing-audit-complete; check the Pricing audit's sessions row, the pricing_audits row, the moved Cooldown, recap_sent_at and exactly one new S12 run',
   'replay: the same completion again; expect already_completed, no write and no S12 run',
   'gated: a new audit straight away; expect gated from the chat and from completion, and no write',
   'cleanup: delete by the exact session and audit IDs, restore the saved entitlement, sign the QA session out',
@@ -173,7 +173,7 @@ select json_build_object(
   'user', (select json_build_object(
       'plan', u.plan, 'status', u.status, 'welcome_audit_used', u.welcome_audit_used,
       'last_audit_completed_at', u.last_audit_completed_at::text,
-      'clock_matches_audit', exists (select 1 from public.pricing_audits a
+      'cooldown_matches_audit', exists (select 1 from public.pricing_audits a
         where a.user_id = u.id and a.completed_at = u.last_audit_completed_at))
     from public.users u where u.id = ${lit(user)}),
   'max_other_session_number', (select coalesce(max(s.session_number), 0) from public.sessions s
@@ -327,15 +327,17 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
 
     step = 'opener';
     const messages = [];
-    const opener = await prod.chat(token, { session_id: sessionId, audit_intake: AUDIT_INTAKE, messages: [] });
-    check(opener.status === 200 && typeof opener.data?.reply === 'string' && opener.data.reply.trim(),
-      `opener: HTTP ${opener.status} ${opener.data?.reason ?? ''}`.trim());
-    messages.push({ role: 'assistant', content: opener.data.reply }, { role: 'user', content: QA_TURN });
-    const exchange = await prod.chat(token, { session_id: sessionId, audit_intake: AUDIT_INTAKE, messages });
-    check(exchange.status === 200 && typeof exchange.data?.reply === 'string' && exchange.data.reply.trim(),
-      `exchange: HTTP ${exchange.status} ${exchange.data?.reason ?? ''}`.trim());
-    messages.push({ role: 'assistant', content: exchange.data.reply });
-    emit({ step, ok: true, opener_chars: opener.data.reply.length, reply_chars: exchange.data.reply.length });
+    const marcus = async label => {
+      const r = await prod.chat(token, { session_id: sessionId, audit_intake: AUDIT_INTAKE, messages });
+      check(r.status === 200 && typeof r.data?.reply === 'string' && r.data.reply.trim(),
+        `${label}: HTTP ${r.status} ${r.data?.reason ?? ''}`.trim());
+      messages.push({ role: 'assistant', content: r.data.reply });
+      return r.data.reply;
+    };
+    const opener = await marcus('opener');
+    messages.push({ role: 'user', content: QA_TURN });
+    const reply = await marcus('exchange');
+    emit({ step, ok: true, opener_chars: opener.length, reply_chars: reply.length });
 
     step = 'complete';
     const s12Before = new Set((await prod.s12Runs()).map(e => e.id));
@@ -348,9 +350,9 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     const [session] = run.sessions;
     const [audit] = run.audits;
     check(run.sessions.length === 1 && session.id === sessionId && session.user_id === user,
-      'exactly one audit session with the run\'s ID');
+      'exactly one sessions row with the run\'s ID');
     check(session.is_pricing_audit === true && session.processing_status === 'complete' &&
-      session.summary_is_null === true && session.transcript_chars > 0, 'the audit session fields');
+      session.summary_is_null === true && session.transcript_chars > 0, 'the Pricing audit sessions row fields');
     // jsonb reorders keys, so compare by value.
     check(isDeepStrictEqual(session.audit_intake, AUDIT_INTAKE), 'the stored Audit intake');
     check(session.session_number === run.max_other_session_number + 1, 'the audit takes the next session number');
@@ -361,7 +363,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
       audit.verdict_deadline === result.verdict?.deadline, 'the stored Verdict matches the response');
     check(isDeepStrictEqual(audit.baseline_keys, BASELINE_KEYS), 'the Baseline has its four fields');
     check(audit.next_eligible_date === result.next_eligible_date, 'the next eligible date');
-    check(run.user.welcome_audit_used === true && run.user.clock_matches_audit === true, 'the clock moved to the Completion');
+    check(run.user.welcome_audit_used === true && run.user.cooldown_matches_audit === true, 'the Cooldown moved to the Completion');
     check(audit.recap_sent_at !== null, 'recap_sent_at is set');
     let recaps = [];
     for (let attempt = 0; attempt < 10; attempt++) {
@@ -399,7 +401,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     emit({ step, ok: false, error: error instanceof QaFailure ? error.message : `${error.name}: ${error.message}` });
   }
 
-  const outcome = await cleanUp({ prod, sql, user, runIds, saved, token, readRun, emit });
+  const outcome = await cleanUp({ prod, user, runIds, saved, token, readRun, emit });
   let after;
   if (before) {
     try {
@@ -421,7 +423,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
 // Cleanup runs after every run that got past the preflight, whatever failed. It reads the rows
 // tied to the run's own session IDs and deletes exactly those, then restores the saved
 // entitlement if it changed. The audit ID from the completion response is never trusted alone.
-async function cleanUp({ prod, sql, user, runIds, saved, token, readRun, emit }) {
+async function cleanUp({ prod, user, runIds, saved, token, readRun, emit }) {
   let ok = true;
   if (saved) {
     try {

@@ -65,7 +65,7 @@ function fakeProduction(faults = {}) {
         verdict_deadline: a.verdict.deadline, baseline_keys: ['churn_window', 'friction_read', 'mix', 'value_anchor'],
         recap_sent_at: a.recap_sent_at, next_eligible_date: '2026-12-24',
       })),
-      user: { ...state.user, clock_matches_audit: audits.some(a => a.completed_at === state.user.last_audit_completed_at) },
+      user: { ...state.user, cooldown_matches_audit: audits.some(a => a.completed_at === state.user.last_audit_completed_at) },
       max_other_session_number: Math.max(0, ...others.map(s => s.session_number)),
     } }];
   }

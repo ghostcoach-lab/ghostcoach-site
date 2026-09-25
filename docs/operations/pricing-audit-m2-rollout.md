@@ -352,7 +352,7 @@ accounts. The account must have no pricing audit. The script makes these checks:
 4. **Opener.** It calls `marcus-audit-chat` with no messages, then sends one message that asks
    Marcus for his Verdict and Baseline.
 5. **Complete.** It calls `pricing-audit-complete`. It checks the audit `sessions` row, the
-   `pricing_audits` row, the moved clock, `recap_sent_at`, and exactly one new successful S12
+   `pricing_audits` row, the moved Cooldown, `recap_sent_at`, and exactly one new successful S12
    execution.
 6. **Replay.** It sends the same completion again. It expects `already_completed`, no change in
    the rows and no new S12 execution.
