@@ -24,6 +24,9 @@ const MANAGEMENT_API = 'https://api.supabase.com';
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const PROJECT_URL = /^https:\/\/([a-z0-9]{20})\.supabase\.co$/;
 const BASELINE_KEYS = ['churn_window', 'friction_read', 'mix', 'value_anchor'];
+// The temporary entitlement, and the error its guard raises when the grant did not commit.
+const GRANTED = { plan: 'operator', status: 'active' };
+const GRANT_REFUSED = 'qa grant: the QA account changed since the preflight';
 
 // The Audit intake and the one customer turn. Both say plainly that this is a QA run.
 const AUDIT_INTAKE = {
@@ -47,7 +50,7 @@ export const PLAN = [
   'complete: pricing-audit-complete; check the Pricing audit sessions row, the pricing_audits row, the moved Cooldown, recap_sent_at and exactly one new S12 run',
   'replay: the same completion again; expect already_completed, no write and no S12 run',
   'gated: a new audit straight away; expect gated from the chat and from completion, and no write',
-  'cleanup: delete by the exact session and audit IDs, restore the saved entitlement, sign the QA session out',
+  'cleanup: delete by the exact session and audit IDs, restore the saved entitlement if the grant may have committed and the account still holds it, sign the QA session out',
   'after: the same counts and hashes again; a difference in the QA account\'s rows or the run\'s rows fails the run, and a whole-table count change is only reported (live traffic moves it)',
 ];
 
@@ -117,26 +120,25 @@ select
 from public.users u
 where u.id = ${lit(user)};`,
 
-  // Row counts and md5 hashes of ordered row text, for the QA account's rows and the run's own
-  // session IDs only: live chat inserts a pending sessions row on every page load, so a
-  // whole-table hash would change during the run. Whole tables get a count and no hash. The QA
-  // account's users row leaves out updated_at, which a trigger may move when the entitlement is
-  // granted and restored.
+  // Row counts and md5 hashes of ordered row text, for the QA account's rows and the run's session
+  // IDs only: live chat inserts pending sessions rows at any time. Whole tables get a count and
+  // no hash. The users row leaves out updated_at, which a trigger moves on grant and restore.
   state: (user, runIds) => {
     const hashed = (name, from, order, row = 't::text') =>
       `select ${lit(name)} as name, count(*)::int as rows, md5(coalesce(string_agg(${row}, '|' order by ${order}), '')) as hash from ${from}`;
     const counted = table => `select ${lit(`${table} (all rows)`)} as name, count(*)::int as rows, null::text as hash from public.${table}`;
-    const owner = `t.user_id = ${lit(user)}`;
+    const ownedByQa = `t.user_id = ${lit(user)}`;
+    const runList = uuidList(runIds);
     return `-- qa:state
 ${[
     hashed('users (QA account)', `public.users t where t.id = ${lit(user)}`, 't.id', "(to_jsonb(t) - 'updated_at')::text"),
-    hashed('profiles (QA account)', `public.profiles t where ${owner}`, 't.user_id'),
-    hashed('sessions (QA account and run)', `public.sessions t where ${owner} or t.id in (${uuidList(runIds)})`, 't.id'),
+    hashed('profiles (QA account)', `public.profiles t where ${ownedByQa}`, 't.user_id'),
+    hashed('sessions (QA account and run)', `public.sessions t where ${ownedByQa} or t.id in (${runList})`, 't.id'),
     hashed('pricing_audits (QA account and run)',
-      `public.pricing_audits t where ${owner} or t.session_id in (${uuidList(runIds)})`, 't.id'),
-    hashed('subscriptions (QA account)', `public.subscriptions t where ${owner}`, 't.id'),
-    hashed('digests (QA account)', `public.digests t where ${owner}`, 't.id'),
-    hashed('auth sessions (QA account)', `auth.sessions t where ${owner}`, 't.id', 't.id::text'),
+      `public.pricing_audits t where ${ownedByQa} or t.session_id in (${runList})`, 't.id'),
+    hashed('subscriptions (QA account)', `public.subscriptions t where ${ownedByQa}`, 't.id'),
+    hashed('digests (QA account)', `public.digests t where ${ownedByQa}`, 't.id'),
+    hashed('auth sessions (QA account)', `auth.sessions t where ${ownedByQa}`, 't.id', 't.id::text'),
     ...['users', 'profiles', 'sessions', 'pricing_audits', 'subscriptions', 'digests'].map(counted),
   ].join('\nunion all\n')}
 order by name;`;
@@ -147,14 +149,14 @@ do $qa$
 declare v_rows int;
 begin
   update public.users
-     set plan = 'operator', status = 'active', welcome_audit_used = false, last_audit_completed_at = null
+     set plan = ${lit(GRANTED.plan)}, status = ${lit(GRANTED.status)}, welcome_audit_used = false, last_audit_completed_at = null
    where id = ${lit(user)}
      and plan::text = ${lit(saved.plan)} and status::text = ${lit(saved.status)}
      and welcome_audit_used = ${lit(saved.welcome_audit_used)}
      and last_audit_completed_at is not distinct from ${lit(saved.last_audit_completed_at)}::timestamptz;
   get diagnostics v_rows = row_count;
   if v_rows <> 1 then
-    raise exception 'qa grant: the QA account changed since the preflight';
+    raise exception ${lit(GRANT_REFUSED)};
   end if;
 end $qa$;`,
 
@@ -203,7 +205,7 @@ ${expect('sessions', sessionIds.length)}`);
     // Guarded by the values the grant set, so a real plan change during the run is never overwritten.
     if (restore) steps.push(`  update public.users
      set plan = ${lit(restore.plan)}, status = ${lit(restore.status)}, welcome_audit_used = ${lit(restore.welcome_audit_used)}, last_audit_completed_at = ${lit(restore.last_audit_completed_at)}
-   where id = ${lit(user)} and plan::text = 'operator' and status::text = 'active';
+   where id = ${lit(user)} and plan::text = ${lit(GRANTED.plan)} and status::text = ${lit(GRANTED.status)};
 ${expect('users', 1)}`);
     return `-- qa:cleanup
 do $qa$
@@ -277,9 +279,11 @@ function production(config, fetch) {
   };
 }
 
-const sameEntitlement = (a, b) =>
-  a.plan === b.plan && a.status === b.status && a.welcome_audit_used === b.welcome_audit_used &&
-  a.last_audit_completed_at === b.last_audit_completed_at;
+// The Welcome audit flag and the Cooldown are the fields the run itself moves.
+const sameRunFields = (a, b) =>
+  a.welcome_audit_used === b.welcome_audit_used && a.last_audit_completed_at === b.last_audit_completed_at;
+const sameEntitlement = (a, b) => a.plan === b.plan && a.status === b.status && sameRunFields(a, b);
+const holdsGrant = u => u.plan === GRANTED.plan && u.status === GRANTED.status;
 
 export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promise(r => setTimeout(r, ms)) }) {
   const emit = record => log(JSON.stringify(record));
@@ -308,6 +312,8 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   let saved;
   let token;
   let failure;
+  // not sent, refused (its guard proves it did not commit), unknown (no answer) or granted.
+  let grant = 'not sent';
   let step = 'before';
   const readRun = async () => (await prod.query(sql.runRows(user, runIds)))[0].run;
 
@@ -328,8 +334,15 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     emit({ step, ok: true });
 
     step = 'entitlement';
-    await prod.query(sql.grant(user, saved));
-    emit({ step, ok: true, granted: 'operator/active' });
+    grant = 'unknown';
+    try {
+      await prod.query(sql.grant(user, saved));
+    } catch (error) {
+      if (error.message.includes(GRANT_REFUSED)) grant = 'refused';
+      throw error;
+    }
+    grant = 'granted';
+    emit({ step, ok: true, granted: `${GRANTED.plan}/${GRANTED.status}` });
 
     step = 'opener';
     const messages = [];
@@ -407,7 +420,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     emit({ step, ok: false, error: error instanceof QaFailure ? error.message : `${error.name}: ${error.message}` });
   }
 
-  const outcome = await cleanUp({ prod, user, runIds, saved, token, readRun, emit });
+  const outcome = await cleanUp({ prod, user, runIds, saved, grant, token, readRun, emit });
   let after;
   if (before) {
     try {
@@ -431,28 +444,25 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
 // Cleanup runs after every run that got past the preflight, whatever failed. It reads the rows
 // tied to the run's own session IDs and deletes exactly those, then restores the saved
 // entitlement if it changed. The audit ID from the completion response is never trusted alone.
-async function cleanUp({ prod, user, runIds, saved, token, readRun, emit }) {
+// Only a grant that may have committed is undone, and only while the row still holds it: any
+// other change came from outside the run, is kept, and is reported by the after step.
+async function cleanUp({ prod, user, runIds, saved, grant, token, readRun, emit }) {
   let ok = true;
   if (saved) {
     try {
       const run = await readRun();
       const auditIds = run.audits.filter(a => runIds.includes(a.session_id) && a.user_id === user).map(a => a.id);
       const sessionIds = run.sessions.filter(s => s.user_id === user && s.is_pricing_audit).map(s => s.id);
-      // Restore only over the granted values. A grant whose response was lost still committed, so
-      // the row is read, not assumed. Without the granted values the plan or status changed
-      // outside the run: that change is kept, and the after step reports it. The Welcome audit
-      // flag and the Cooldown are the run's own, so they must still be back at their saved values.
-      const granted = run.user.plan === 'operator' && run.user.status === 'active';
-      const restore = granted && !sameEntitlement(run.user, saved) ? saved : null;
+      const mayHaveGranted = grant === 'granted' || grant === 'unknown';
+      const restore = mayHaveGranted && holdsGrant(run.user) && !sameEntitlement(run.user, saved) ? saved : null;
       if (auditIds.length || sessionIds.length || restore) {
         await prod.query(sql.cleanup(user, { auditIds, sessionIds, restore }));
       }
       const left = await readRun();
       check(left.sessions.length === 0 && left.audits.length === 0, 'rows remain after cleanup');
-      const ownFieldsSaved = left.user.welcome_audit_used === saved.welcome_audit_used &&
-        left.user.last_audit_completed_at === saved.last_audit_completed_at;
-      check(restore ? sameEntitlement(left.user, saved) : ownFieldsSaved,
-        'the entitlement is not back at its saved values');
+      if (restore) check(sameEntitlement(left.user, saved), 'the entitlement was not restored');
+      else if (mayHaveGranted) check(sameRunFields(left.user, saved),
+        'a plan or status change from outside the run blocked the restore; set welcome_audit_used and last_audit_completed_at back by hand');
       emit({ step: 'cleanup', ok: true, deleted_audits: auditIds, deleted_sessions: sessionIds, restored: !!restore });
     } catch (error) {
       ok = false;

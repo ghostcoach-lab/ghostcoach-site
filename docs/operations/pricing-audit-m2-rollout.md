@@ -363,10 +363,11 @@ accounts. The account must have no pricing audit. The script makes these checks:
 8. **Cleanup.** This step always runs after the preflight, even if an earlier step failed. It
    finds the rows by the two session IDs that the run created. It deletes exactly those rows and
    restores the saved entitlement in one guarded statement. It restores the entitlement only if
-   the account still has the granted `operator/active` values. If the plan or status changed
-   outside the run, it keeps that change. Then it signs out the QA session.
+   the grant can have committed and the account still has the granted `operator/active` values.
+   If the plan or status changed outside the run, it keeps that change. Then it signs out the QA
+   session.
 9. **After.** It records the counts and hashes again. A difference in a hashed row fails the run.
-   A change in a whole-table count does not fail the run: live chat inserts a pending `sessions`
+   A change in a whole-table count does not fail the run. Live chat inserts a pending `sessions`
    row on every page load, so these counts move during any run. The `after` line lists them as
    `count_changes`.
 
@@ -426,9 +427,12 @@ The output shows the failed step. Cleanup has already run.
   QA account's rows and the run's rows are hashed, so every difference is in those rows. First
   find out if something outside the run wrote the row, for example a sign-in to the QA account.
   If nothing did, the row is a leftover: clean it up by hand, as described below.
-- `"step":"cleanup","ok":false`: read its `error`. Either the cleanup statement was rolled back
-  as a whole, or the plan or status changed outside the run, which blocks the restore. Clean up
-  by hand with the session IDs printed in the `before` line:
+- `"step":"cleanup","ok":false`: read its `error`. There are two causes:
+  - The cleanup statement was rolled back as a whole.
+  - A change from outside the run set a new plan or status. Then cleanup does not restore the
+    entitlement.
+
+  Clean up by hand with the session IDs printed in the `before` line:
 
   ```sql
   -- Read first; every row must belong to the QA account and to this run's session IDs.
@@ -451,10 +455,19 @@ The output shows the failed step. Cleanup has already run.
   ```
 
   The saved values are the QA account's values before the run. In Milestone 1 QA, the accounts
-  ended as `builder/pending`, `false`, `null`. Confirm them from the QA notes. If the plan or
-  status changed outside the run, keep that change: set only `welcome_audit_used` and
-  `last_audit_completed_at` back to their saved values. If the `sign out` step failed, delete that
-  Auth session by its exact ID.
+  ended as `builder/pending`, `false`, `null`. Confirm them from the QA notes.
+
+  If the plan or status changed outside the run, keep that change. The `update` above then
+  changes 0 rows. Set only the fields that the run changes back to their saved values:
+
+  ```sql
+  update public.users
+     set welcome_audit_used = <saved flag>, last_audit_completed_at = <saved timestamp or null>
+   where id = '<QA account ID>';
+  -- Expect exactly 1 row.
+  ```
+
+  If the `sign out` step failed, delete that Auth session by its exact ID.
 
 **Rollback**
 

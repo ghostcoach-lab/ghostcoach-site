@@ -22,6 +22,7 @@ const hashOf = value => JSON.stringify(value);
 const jsonb = value => value && Object.fromEntries(Object.entries(value)
   .sort(([a], [b]) => a.length - b.length || (a < b ? -1 : 1)));
 const AUDIT_1 = 'bbbbbbbb-0000-4000-8000-000000000001';
+const AUDIT_2 = 'bbbbbbbb-0000-4000-8000-000000000002';
 const OTHER_USER = '99999999-0000-4000-8000-000000000009';
 const OTHER_SESSION = 'cccccccc-0000-4000-8000-000000000001';
 const QA_CHAT_SESSION = 'dddddddd-0000-4000-8000-000000000001';
@@ -32,7 +33,6 @@ const QA_CHAT_SESSION = 'dddddddd-0000-4000-8000-000000000001';
 function fakeProduction(faults = {}) {
   const state = {
     user: { plan: 'builder', status: 'pending', welcome_audit_used: false, last_audit_completed_at: null },
-    otherUsers: 'other users v1',
     sessions: [{ id: 'aaaaaaaa-0000-4000-8000-000000000001', user_id: USER, session_number: 3, is_pricing_audit: false }],
     audits: [],
     authSessions: ['browser-session'],
@@ -41,13 +41,17 @@ function fakeProduction(faults = {}) {
   const initial = structuredClone(state);
   const calls = [];
   const sql = [];
+  const chatSessions = [];
 
-  // Hashes cover the QA account's rows and the rows of the session IDs the query names. The
-  // whole-table rows carry a count and no hash.
+  // Hashes cover the QA account's rows and the rows of the session IDs that each table's part of
+  // the query names. The whole-table rows carry a count and no hash.
   function tableState(query) {
-    const run = uuids(query).filter(id => id !== USER);
-    const sessions = state.sessions.filter(s => s.user_id === USER || run.includes(s.id));
-    const audits = state.audits.filter(a => a.user_id === USER || run.includes(a.session_id));
+    const runIdsIn = name => uuids(query.split('union all').find(part => part.includes(`'${name}'`)) ?? '')
+      .filter(id => id !== USER);
+    const sessionRunIds = runIdsIn('sessions (QA account and run)');
+    const auditRunIds = runIdsIn('pricing_audits (QA account and run)');
+    const sessions = state.sessions.filter(s => s.user_id === USER || sessionRunIds.includes(s.id));
+    const audits = state.audits.filter(a => a.user_id === USER || auditRunIds.includes(a.session_id));
     return [
       { name: 'auth sessions (QA account)', rows: state.authSessions.length, hash: hashOf(state.authSessions) },
       { name: 'pricing_audits (QA account and run)', rows: audits.length, hash: hashOf(audits) },
@@ -62,11 +66,11 @@ function fakeProduction(faults = {}) {
   const entitled = () => state.user.plan === 'operator' && state.user.status === 'active';
 
   function runRows(query) {
-    const run = uuids(query).filter(id => id !== USER);
-    const audits = state.audits.filter(a => a.user_id === USER || run.includes(a.session_id));
-    const others = state.sessions.filter(s => s.user_id === USER && !run.includes(s.id));
+    const runIds = uuids(query).filter(id => id !== USER);
+    const audits = state.audits.filter(a => a.user_id === USER || runIds.includes(a.session_id));
+    const others = state.sessions.filter(s => s.user_id === USER && !runIds.includes(s.id));
     return [{ run: {
-      sessions: state.sessions.filter(s => run.includes(s.id)).map(s => ({
+      sessions: state.sessions.filter(s => runIds.includes(s.id)).map(s => ({
         id: s.id, user_id: s.user_id, is_pricing_audit: s.is_pricing_audit, processing_status: s.processing_status,
         summary_is_null: true, transcript_chars: s.transcript.length, audit_intake: jsonb(s.audit_intake),
         session_number: s.session_number,
@@ -113,19 +117,17 @@ function fakeProduction(faults = {}) {
     if (tag === 'preflight') return json(201, [{ migrated: true, completion_rpc: 1, audits: state.audits.length, ...state.user }]);
     if (tag === 'state') return json(201, tableState(query));
     if (tag === 'grant') {
-      // A real plan change lands after the preflight, so the grant's guard matches no row.
-      if (faults.planChangeBeforeGrant) {
-        state.user = { ...state.user, plan: 'lifetime' };
+      // A change from outside the run lands after the preflight, so the grant's guard matches no row.
+      if (faults.outsideChangeBeforeGrant) {
+        state.user = { ...state.user, ...faults.outsideChangeBeforeGrant };
         return json(400, { message: 'qa grant: the QA account changed since the preflight' });
       }
       state.user = { plan: 'operator', status: 'active', welcome_audit_used: false, last_audit_completed_at: null };
       // The grant committed, but its response was lost.
       if (faults.grantResponseLost) return json(502, { message: 'bad gateway' });
       // Live traffic: another customer's chat page inserts its pending session.
-      if (faults.otherActivity) {
-        state.otherUsers = 'other users v2';
+      if (faults.otherActivity)
         state.sessions.push({ id: OTHER_SESSION, user_id: OTHER_USER, session_number: 7, is_pricing_audit: false });
-      }
       return json(201, []);
     }
     if (tag === 'run-rows') return json(201, runRows(query));
@@ -133,6 +135,12 @@ function fakeProduction(faults = {}) {
       // The QA account's own chat page inserts a pending session that is not part of the run.
       if (faults.qaAccountActivity)
         state.sessions.push({ id: QA_CHAT_SESSION, user_id: USER, session_number: 5, is_pricing_audit: false });
+      // Another account writes rows under the run's gated session ID.
+      if (faults.otherAccountTakesRunId) {
+        const gatedId = chatSessions.at(-1);
+        state.sessions.push({ id: gatedId, user_id: OTHER_USER, session_number: 1, is_pricing_audit: true, transcript: '' });
+        state.audits.push({ id: AUDIT_2, user_id: OTHER_USER, session_id: gatedId, verdict: {} });
+      }
       return cleanup(query);
     }
     return json(400, { message: 'unknown query' });
@@ -165,6 +173,7 @@ function fakeProduction(faults = {}) {
   }
 
   function chat(body) {
+    chatSessions.push(body.session_id);
     if (!entitled()) return json(403, { reason: 'plan_lapsed' });
     if (gatedDate()) return json(403, { reason: 'gated', next_eligible_date: gatedDate() });
     if (state.sessions.some(s => s.id === body.session_id)) return json(409, { reason: 'session_conflict' });
@@ -356,7 +365,7 @@ test('a change in the QA account\'s rows during the run fails loudly and names t
 });
 
 test('a plan change between the preflight and the grant is kept, and cleanup has nothing to do', async () => {
-  const production = fakeProduction({ planChangeBeforeGrant: true });
+  const production = fakeProduction({ outsideChangeBeforeGrant: { plan: 'lifetime' } });
   const { code, out } = await execute(production);
   assert.equal(code, 1);
   assert.match(out.text(), /"step":"entitlement","ok":false.*changed since the preflight/);
@@ -374,6 +383,27 @@ test('a plan change after the Completion is kept, but the run\'s Cooldown left b
   assert.equal(production.state.user.plan, 'builder', 'the real change is kept');
   assert.equal(production.state.audits.length, 0, 'the run\'s audit is still deleted');
   assert.match(out.text(), /"step":"cleanup","ok":false.*by hand/);
+});
+
+test('a refused grant never restores, even when the account already had the granted plan', async () => {
+  const production = fakeProduction({ outsideChangeBeforeGrant: { welcome_audit_used: true } });
+  production.state.user = { plan: 'operator', status: 'active', welcome_audit_used: false, last_audit_completed_at: null };
+  const { code, out } = await execute(production);
+  assert.equal(code, 1);
+  assert.equal(production.state.user.welcome_audit_used, true, 'the outside change is kept');
+  assert.match(out.text(), /"step":"cleanup","ok":true.*"restored":false/);
+  assert.doesNotMatch(out.text(), /by hand/);
+});
+
+test('rows another account writes under one of the run\'s session IDs fail the run and are never deleted', async () => {
+  const production = fakeProduction({ otherAccountTakesRunId: true });
+  const { code, out } = await execute(production);
+  assert.equal(code, 1);
+  assert.match(out.text(), /sessions \(QA account and run\): rows 1 -> 2, hash changed/);
+  assert.match(out.text(), /pricing_audits \(QA account and run\): rows 0 -> 1, hash changed/);
+  assert.match(out.text(), /"step":"cleanup","ok":false.*by hand/);
+  assert.equal(production.state.sessions.filter(s => s.user_id === OTHER_USER).length, 1);
+  assert.equal(production.state.audits.filter(a => a.user_id === OTHER_USER).length, 1);
 });
 
 test('a grant that committed but lost its response is still restored', async () => {
