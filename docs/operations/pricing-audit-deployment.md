@@ -24,6 +24,7 @@ testing and receive frontend release approval.
 
 ```powershell
 node --test tests/js/pricing-audit.test.cjs
+node --test tests/n8n/s12-pricing-audit-recap.test.mjs
 node --experimental-strip-types --test tests/functions/pricing-audit-eligibility.test.ts tests/functions/pricing-audit-eligibility-decision.test.ts tests/functions/pricing-audit-eligibility-parity.test.ts tests/functions/marcus-audit-chat.test.ts tests/functions/marcus-audit-chat-config.test.ts tests/functions/pricing-audit-complete.test.ts tests/functions/pricing-audit-complete-config.test.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/handler.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/index.ts

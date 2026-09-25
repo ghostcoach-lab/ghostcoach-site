@@ -2,8 +2,8 @@
 
 The Edge Function that records a **Completion** (spec #5, tickets #11 and #12, ADR 0002). It is
 JWT-verified (`verify_jwt = true`). It reads Marcus's Verdict and Baseline out of the finished
-conversation and records the audit through the `complete_pricing_audit` RPC. The recap email is
-added in #13.
+conversation and records the audit through the `complete_pricing_audit` RPC. It then asks S12
+to send the recap email (#13, see [pricing-audit-recap.md](pricing-audit-recap.md)).
 
 ## Order of checks
 
@@ -20,6 +20,10 @@ added in #13.
 6. `complete_pricing_audit`, which repeats steps 3 and 4 under the customer's row lock. Its answer
    is authoritative: a replay or a concurrent duplicate gets `already_completed`, and a plan that
    lapsed mid-audit gets `plan_lapsed`. Only `completed` writes anything.
+7. Only after `completed`: the recap. The function reads the customer's email and first name from
+   their own `users` and `profiles` rows and posts them to S12. It sets `recap_sent_at` with the
+   service role only when S12 answers 2xx. A failure or timeout is logged and the customer still
+   gets `200 completed`.
 
 ## Request and response
 
@@ -123,6 +127,12 @@ customer's turns `Founder`: `Marcus: …` and `Founder: …` turns separated by 
 | `AUDIT_COMPLETE_MAX_TOKENS` | `16000` | Covers thinking and the JSON result. |
 | `AUDIT_COMPLETE_TIMEOUT_MS` | `60000` | Per attempt. The SDK retries once. |
 | `AUDIT_COMPLETE_MAX_TRANSCRIPT_CHARS` | `140000` | Above the chat cap, since it includes Marcus's closing Verdict. |
+| `S12_RECAP_URL` | none | The S12 webhook URL, `https` only. Set it together with the secret. |
+| `S12_RECAP_SECRET` | none | S12's own server-only secret, sent as `Authorization: Bearer …`. |
+| `S12_RECAP_TIMEOUT_MS` | `15000` | How long a Completion waits for S12. Keep it above S12's 8-second wait for Resend. |
+
+If neither recap setting is set, each Completion logs "S12 is not configured" and sends no recap.
+If only one is set, or the URL isn't `https`, the configuration is invalid.
 
 An invalid value makes every call return `internal_error`. The log names the setting but not its
 value.
@@ -131,6 +141,7 @@ value.
 
 ```powershell
 node --experimental-strip-types --test tests/functions/pricing-audit-complete.test.ts tests/functions/pricing-audit-complete-config.test.ts
+node --test tests/n8n/s12-pricing-audit-recap.test.mjs
 npx -y deno check supabase/functions/pricing-audit-complete/index.ts
 & ./tests/migrations/run-quarterly-pricing-audit-foundation.ps1   # includes tests/migrations/pricing-audit-completion.sql
 & ./tests/supabase/run-pricing-audit-runtime.ps1

@@ -50,6 +50,36 @@ export default {
         if (error) throw error;
         return data;
       },
+      // The caller's own trusted records, read under RLS. A missing first name is sent as "".
+      readRecipient: async (userId) => {
+        const [user, profile] = await Promise.all([
+          context.supabase.from("users").select("email").eq("id", userId).single<{ email: string }>(),
+          context.supabase.from("profiles").select("firstname").eq("user_id", userId)
+            .maybeSingle<{ firstname: string | null }>(),
+        ]);
+        if (user.error) throw user.error;
+        if (profile.error) throw profile.error;
+        return { email: user.data.email, firstName: profile.data?.firstname?.trim() ?? "" };
+      },
+      postRecap: (target, payload, signal) =>
+        fetch(target.url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${target.secret}` },
+          body: JSON.stringify(payload),
+          signal,
+        }),
+      // Customers can only read their audits, so the service role records the send.
+      recordRecapSent: async (userId, auditId, sentAt) => {
+        const { data, error } = await context.supabaseAdmin
+          .from("pricing_audits")
+          .update({ recap_sent_at: sentAt })
+          .eq("id", auditId)
+          .eq("user_id", userId)
+          .is("recap_sent_at", null)
+          .select("id");
+        if (error) throw error;
+        if (data.length !== 1) throw new Error(`recap_sent_at updated ${data.length} rows, expected 1`);
+      },
       loadConfig: () => readAuditCompleteConfig((name) => Deno.env.get(name)),
       now: () => new Date(),
       logError: (label, detail) => console.error(label, detail),
