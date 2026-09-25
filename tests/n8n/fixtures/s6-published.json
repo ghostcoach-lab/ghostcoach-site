@@ -1,0 +1,1095 @@
+{
+  "name": "GC — S6: Plan Change / Account Deletion",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "gc-s6-fixture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000001",
+      "name": "Webhook — Plan Change",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2880,
+        0
+      ],
+      "webhookId": "00000000-0000-4000-8000-0000000000ff"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000002",
+      "name": "Validate x-gc-secret",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2656,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000003",
+      "name": "Parse Action",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2448,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "upgrade",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "upgrade"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "downgrade",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "downgrade"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "cancel",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "cancel"
+            },
+            {
+              "conditions": {
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.action }}",
+                    "rightValue": "gdpr_delete",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and",
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                }
+              },
+              "renameOutput": true,
+              "outputKey": "gdpr_delete"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000004",
+      "name": "Route by Action",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        -2224,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ `https://api.stripe.com/v1/subscriptions/${$json.id}` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "sendHeaders": false,
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "items[0][id]",
+              "value": "fixture"
+            },
+            {
+              "name": "items[0][price]",
+              "value": "fixture"
+            },
+            {
+              "name": "proration_behavior",
+              "value": "fixture"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000005",
+      "name": "Stripe — Upgrade Subscription",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2032,
+        -368
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ `https://api.stripe.com/v1/subscriptions/${$json.id}` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "options": {},
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "items[0][id]",
+              "value": "fixture"
+            },
+            {
+              "name": "items[0][price]",
+              "value": "fixture"
+            },
+            {
+              "name": "proration_behavior",
+              "value": "fixture"
+            },
+            {
+              "name": "billing_cycle_anchor",
+              "value": "fixture"
+            }
+          ]
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000006",
+      "name": "Stripe — Schedule Downgrade",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2032,
+        -176
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ `https://api.stripe.com/v1/subscriptions/${$json.stripe_subscription_id}` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "sendBody": true,
+        "contentType": "form-urlencoded",
+        "options": {},
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "cancel_at_period_end",
+              "value": "fixture"
+            }
+          ]
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000007",
+      "name": "Stripe — Cancel at Period End",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2048,
+        0
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000008",
+      "name": "GDPR — Hash Identifiers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2064,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/users?id=eq.${$('Parse Action').first().json.user_id}&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000009",
+      "name": "UPDATE users after Upgrade",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1744,
+        -352
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000010",
+      "name": "Build Upgrade Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1568,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000011",
+      "name": "Send Upgrade via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1344,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000012",
+      "name": "Build Downgrade Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1776,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content/Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000013",
+      "name": "Send Downgrade via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1568,
+        -96
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000014",
+      "name": "Build Cancellation Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1776,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000015",
+      "name": "Send Cancellation via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1568,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all();"
+      },
+      "id": "00000000-0000-4000-8000-000000000016",
+      "name": "GDPR — Build Deletion Email",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1776,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000017",
+      "name": "GDPR — Send Deletion Email",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1568,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ `https://api.stripe.com/v1/subscriptions/${$json.sub_id}` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000018",
+      "name": "GDPR — Cancel Stripe Sub",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1344,
+        192
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ `${$vars.BEEHIIV_API_URL ?? 'https://api.beehiiv.com'}/v2/publications/${$vars.BEEHIIV_PUBLICATION_ID}/subscribers/email/${encodeURIComponent($json.email)}` }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $vars.FIXTURE_TOKEN }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000019",
+      "name": "GDPR — Remove from Beehiiv",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1120,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const userId = $json.user_id;\nreturn [{ json: { user_id: userId, email: $json.email, user_id_hash: $json.user_id_hash, email_hash: $json.email_hash, timestamp: $json.timestamp } }];"
+      },
+      "id": "00000000-0000-4000-8000-000000000020",
+      "name": "GDPR — Prep Supabase Delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -896,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/profiles?user_id=eq.${$json.user_id}&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000021",
+      "name": "DELETE profiles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        -16
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$('GDPR — Prep Supabase Delete').first().json.user_id}&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000022",
+      "name": "DELETE sessions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -736,
+        160
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/subscriptions?user_id=eq.${$('GDPR — Prep Supabase Delete').first().json.user_id}&apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000023",
+      "name": "DELETE subscriptions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -720,
+        352
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const userId = $('GDPR — Prep Supabase Delete').first().json.user_id;\nreturn [{ json: { user_id: userId, user_id_hash: $('GDPR — Prep Supabase Delete').first().json.user_id_hash, email_hash: $('GDPR — Prep Supabase Delete').first().json.email_hash, timestamp: $('GDPR — Prep Supabase Delete').first().json.timestamp } }];"
+      },
+      "id": "00000000-0000-4000-8000-000000000024",
+      "name": "Prep Auth Delete",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ `${$vars.SUPABASE_URL}/auth/v1/admin/users/${$json.user_id}?apikey=fixture-api-key` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000025",
+      "name": "DELETE auth.users",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -240,
+        192
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $vars.SUPABASE_URL }}/rest/v1/compliance_log?apikey=fixture-api-key",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "supabaseApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ fixture: true }) }}",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000026",
+      "name": "INSERT compliance_log",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -16,
+        192
+      ],
+      "credentials": {
+        "supabaseApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ ok: true }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "00000000-0000-4000-8000-000000000027",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        208,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ `https://api.stripe.com/v1/subscriptions/${$json.stripe_subscription_id}` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000028",
+      "name": "Stripe — Get Subscription (Upgrade)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2232,
+        -368
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ `https://api.stripe.com/v1/subscriptions/${$json.stripe_subscription_id}` }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "stripeApi",
+        "options": {}
+      },
+      "id": "00000000-0000-4000-8000-000000000029",
+      "name": "Stripe — Get Subscription (Downgrade)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2232,
+        -176
+      ],
+      "credentials": {
+        "stripeApi": {
+          "id": "fixture-credential",
+          "name": "Fixture credential"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook — Plan Change": {
+      "main": [
+        [
+          {
+            "node": "Validate x-gc-secret",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate x-gc-secret": {
+      "main": [
+        [
+          {
+            "node": "Parse Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Action": {
+      "main": [
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Action": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Get Subscription (Upgrade)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stripe — Get Subscription (Downgrade)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Stripe — Cancel at Period End",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "GDPR — Hash Identifiers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Upgrade Subscription": {
+      "main": [
+        [
+          {
+            "node": "UPDATE users after Upgrade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "UPDATE users after Upgrade": {
+      "main": [
+        [
+          {
+            "node": "Build Upgrade Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Upgrade Email": {
+      "main": [
+        [
+          {
+            "node": "Send Upgrade via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Upgrade via Resend": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Schedule Downgrade": {
+      "main": [
+        [
+          {
+            "node": "Build Downgrade Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Downgrade Email": {
+      "main": [
+        [
+          {
+            "node": "Send Downgrade via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Downgrade via Resend": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Cancel at Period End": {
+      "main": [
+        [
+          {
+            "node": "Build Cancellation Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Cancellation Email": {
+      "main": [
+        [
+          {
+            "node": "Send Cancellation via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Cancellation via Resend": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GDPR — Hash Identifiers": {
+      "main": [
+        [
+          {
+            "node": "GDPR — Build Deletion Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GDPR — Build Deletion Email": {
+      "main": [
+        [
+          {
+            "node": "GDPR — Send Deletion Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GDPR — Send Deletion Email": {
+      "main": [
+        [
+          {
+            "node": "GDPR — Cancel Stripe Sub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GDPR — Cancel Stripe Sub": {
+      "main": [
+        [
+          {
+            "node": "GDPR — Remove from Beehiiv",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GDPR — Remove from Beehiiv": {
+      "main": [
+        [
+          {
+            "node": "GDPR — Prep Supabase Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GDPR — Prep Supabase Delete": {
+      "main": [
+        [
+          {
+            "node": "DELETE profiles",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DELETE sessions",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "DELETE subscriptions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE profiles": {
+      "main": [
+        [
+          {
+            "node": "Prep Auth Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE sessions": {
+      "main": [
+        [
+          {
+            "node": "Prep Auth Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE subscriptions": {
+      "main": [
+        [
+          {
+            "node": "Prep Auth Delete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prep Auth Delete": {
+      "main": [
+        [
+          {
+            "node": "DELETE auth.users",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DELETE auth.users": {
+      "main": [
+        [
+          {
+            "node": "INSERT compliance_log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "INSERT compliance_log": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Get Subscription (Upgrade)": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Upgrade Subscription",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stripe — Get Subscription (Downgrade)": {
+      "main": [
+        [
+          {
+            "node": "Stripe — Schedule Downgrade",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
