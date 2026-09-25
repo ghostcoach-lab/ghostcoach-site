@@ -67,6 +67,10 @@ try {
   } 'Pricing-audit runtime assertions failed'
 }
 finally {
+  # Cleanup is best effort. Windows PowerShell 5.1 turns redirected native stderr, such as the
+  # CLI's update notice, into a terminating error under 'Stop', which would fail a passing run
+  # and skip the temp folder removal below.
+  $ErrorActionPreference = 'Continue'
   if ($stackStarted) {
     npx -y "supabase@$cliVersion" stop --workdir $tempRoot --no-backup 2>$null | Out-Null
   }
