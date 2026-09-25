@@ -22,6 +22,9 @@ const hashOf = value => JSON.stringify(value);
 const jsonb = value => value && Object.fromEntries(Object.entries(value)
   .sort(([a], [b]) => a.length - b.length || (a < b ? -1 : 1)));
 const AUDIT_1 = 'bbbbbbbb-0000-4000-8000-000000000001';
+const OTHER_USER = '99999999-0000-4000-8000-000000000009';
+const OTHER_SESSION = 'cccccccc-0000-4000-8000-000000000001';
+const QA_CHAT_SESSION = 'dddddddd-0000-4000-8000-000000000001';
 
 // A small stand-in for production: the rows the run can touch, the deployed functions, Auth,
 // the Management API SQL endpoint (routed by each query's "-- qa:<name>" tag) and the n8n API.
@@ -39,13 +42,22 @@ function fakeProduction(faults = {}) {
   const calls = [];
   const sql = [];
 
-  const tableState = () => [
-    { name: 'auth sessions (QA account)', rows: state.authSessions.length, hash: hashOf(state.authSessions) },
-    { name: 'pricing_audits', rows: state.audits.length, hash: hashOf(state.audits) },
-    { name: 'sessions', rows: state.sessions.length, hash: hashOf(state.sessions) },
-    { name: 'users (QA account)', rows: 1, hash: hashOf(state.user) },
-    { name: 'users (other)', rows: 12, hash: hashOf(state.otherUsers) },
-  ];
+  // Hashes cover the QA account's rows and the rows of the session IDs the query names. The
+  // whole-table rows carry a count and no hash.
+  function tableState(query) {
+    const run = uuids(query).filter(id => id !== USER);
+    const sessions = state.sessions.filter(s => s.user_id === USER || run.includes(s.id));
+    const audits = state.audits.filter(a => a.user_id === USER || run.includes(a.session_id));
+    return [
+      { name: 'auth sessions (QA account)', rows: state.authSessions.length, hash: hashOf(state.authSessions) },
+      { name: 'pricing_audits (QA account and run)', rows: audits.length, hash: hashOf(audits) },
+      { name: 'sessions (QA account and run)', rows: sessions.length, hash: hashOf(sessions) },
+      { name: 'users (QA account)', rows: 1, hash: hashOf(state.user) },
+      { name: 'pricing_audits (all rows)', rows: state.audits.length, hash: null },
+      { name: 'sessions (all rows)', rows: state.sessions.length, hash: null },
+      { name: 'users (all rows)', rows: 13, hash: null },
+    ];
+  }
   const gatedDate = () => state.user.last_audit_completed_at && '2026-12-24';
   const entitled = () => state.user.plan === 'operator' && state.user.status === 'active';
 
@@ -97,14 +109,23 @@ function fakeProduction(faults = {}) {
     sql.push({ tag, query });
     if (faults.sqlFails === tag) return json(400, { message: 'boom' });
     if (tag === 'preflight') return json(201, [{ migrated: true, completion_rpc: 1, audits: state.audits.length, ...state.user }]);
-    if (tag === 'state') return json(201, tableState());
+    if (tag === 'state') return json(201, tableState(query));
     if (tag === 'grant') {
       state.user = { plan: 'operator', status: 'active', welcome_audit_used: false, last_audit_completed_at: null };
-      if (faults.organicChange) state.otherUsers = 'other users v2';
+      // Live traffic: another customer's chat page inserts its pending session.
+      if (faults.otherActivity) {
+        state.otherUsers = 'other users v2';
+        state.sessions.push({ id: OTHER_SESSION, user_id: OTHER_USER, session_number: 7, is_pricing_audit: false });
+      }
       return json(201, []);
     }
     if (tag === 'run-rows') return json(201, runRows(query));
-    if (tag === 'cleanup') return json(201, cleanup(query));
+    if (tag === 'cleanup') {
+      // The QA account's own chat page inserts a pending session that is not part of the run.
+      if (faults.qaAccountActivity)
+        state.sessions.push({ id: QA_CHAT_SESSION, user_id: USER, session_number: 5, is_pricing_audit: false });
+      return json(201, cleanup(query));
+    }
     return json(400, { message: 'unknown query' });
   }
 
@@ -305,12 +326,22 @@ test('a recap that was not sent fails the run', async () => {
   assert.deepEqual(production.state, production.initial);
 });
 
-test('a difference between before and after fails loudly and names the table', async () => {
-  const production = fakeProduction({ organicChange: true });
+test('live traffic outside the QA account during the run is reported, but does not fail the run', async () => {
+  const production = fakeProduction({ otherActivity: true });
+  const { code, out } = await execute(production);
+  assert.equal(code, 0, out.text());
+  assert.doesNotMatch(out.text(), /FAILED/);
+  assert.match(out.text(), /sessions \(all rows\): rows 1 -> 2/);
+  assert.match(out.text(), /"result":"passed"/);
+});
+
+test('a change in the QA account\'s rows during the run fails loudly and names the table', async () => {
+  const production = fakeProduction({ qaAccountActivity: true });
   const { code, out } = await execute(production);
   assert.equal(code, 1);
   assert.match(out.text(), /FAILED: production differs/);
-  assert.match(out.text(), /users \(other\): rows 12 -> 12, hash changed/);
+  assert.match(out.text(), /sessions \(QA account and run\): rows 1 -> 2, hash changed/);
+  assert.match(out.text(), /"result":"failed","failed_step":"after"/);
 });
 
 test('a failed cleanup fails the run and says to clean up by hand', async () => {

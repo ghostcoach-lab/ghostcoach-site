@@ -343,8 +343,10 @@ for them after S12 is fixed.
 accounts. The account must have no pricing audit. The script makes these checks:
 
 1. **Before.** It checks that the migration is applied, the QA account has no audit and S12 is
-   active. Then it records row counts and md5 hashes of `users`, `profiles`, `sessions`,
-   `pricing_audits`, `subscriptions`, `digests` and the QA account's Auth sessions.
+   active. Then it records row counts and md5 hashes of the QA account's rows in `users`,
+   `profiles`, `sessions`, `pricing_audits`, `subscriptions`, `digests` and its Auth sessions.
+   The `sessions` and `pricing_audits` hashes also include any row with one of the run's two
+   session IDs. For information, it also records the row count of each whole table.
 2. **Sign in.** It signs in the QA account with a magic-link token, with no email and no password.
    This updates `auth.users`, so the `gc_s1_new_signup` trigger calls S1, as in the Milestone 1 QA.
 3. **Entitlement.** It grants temporary database-only `operator/active`, with the Welcome audit
@@ -361,7 +363,10 @@ accounts. The account must have no pricing audit. The script makes these checks:
 8. **Cleanup.** This step always runs after the preflight, even if an earlier step failed. It
    finds the rows by the two session IDs that the run created. It deletes exactly those rows and
    restores the saved entitlement in one guarded statement. Then it signs out the QA session.
-9. **After.** It records the counts and hashes again. Any difference from step 1 fails the run.
+9. **After.** It records the counts and hashes again. A difference in a hashed row fails the run.
+   A change in a whole-table count does not fail the run: live chat inserts a pending `sessions`
+   row on every page load, so these counts move during any run. The `after` line lists them as
+   `count_changes`.
 
 The run costs a few Anthropic calls and sends one recap email to the QA account's inbox.
 
@@ -415,10 +420,10 @@ The output shows the failed step. Cleanup has already run.
 
 - `"step":"cleanup","ok":true` and no `FAILED: production differs` line: nothing is left behind.
   Fix the cause, and then run again.
-- `FAILED: production differs`: compare the two `state` lines, table by table. A change in a
-  table that the run cannot touch, for example a new customer session, is organic activity.
-  Confirm it by exact row before you accept it. A change in the QA account's rows is a
-  leftover: clean it up by hand, as described below.
+- `FAILED: production differs`: the `differences` in the `after` line name each table. Only the
+  QA account's rows and the run's rows are hashed, so every difference is in those rows. First
+  find out if something outside the run wrote the row, for example a sign-in to the QA account.
+  If nothing did, the row is a leftover: clean it up by hand, as described below.
 - `"step":"cleanup","ok":false`: the cleanup statement was rolled back as a whole. Clean up by
   hand with the session IDs printed in the `before` line:
 

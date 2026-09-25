@@ -40,7 +40,7 @@ const QA_TURN =
   'Also state the Baseline: the value anchor, the friction read, the customer mix and the churn window.';
 
 export const PLAN = [
-  'before: read-only preflight (migration, QA account, S12 active), then row counts and hashes of the tables the run could touch',
+  'before: read-only preflight (migration, QA account, S12 active), then row counts and hashes of the QA account\'s rows and the run\'s session IDs, and whole-table row counts',
   'sign in: a magic-link session for the QA account (this updates auth.users, so S1 fires as in Milestone 1 QA)',
   'entitlement: temporary database-only operator/active, guarded by the values saved in the preflight',
   'opener: marcus-audit-chat with no messages, then one short exchange asking for the Verdict',
@@ -48,7 +48,7 @@ export const PLAN = [
   'replay: the same completion again; expect already_completed, no write and no S12 run',
   'gated: a new audit straight away; expect gated from the chat and from completion, and no write',
   'cleanup: delete by the exact session and audit IDs, restore the saved entitlement, sign the QA session out',
-  'after: row counts and hashes again; any difference from before fails the run',
+  'after: the same counts and hashes again; a difference in the QA account\'s rows or the run\'s rows fails the run, and a whole-table count change is only reported (live traffic moves it)',
 ];
 
 class QaFailure extends Error {}
@@ -117,21 +117,27 @@ select
 from public.users u
 where u.id = ${lit(user)};`,
 
-  // Row counts and md5 hashes of ordered row text. The QA account's users row leaves out
-  // updated_at, which a trigger may move when the entitlement is granted and restored.
-  state: user => {
-    const table = (name, from, order, row = 't::text') =>
+  // Row counts and md5 hashes of ordered row text, for the QA account's rows and the run's own
+  // session IDs only: live chat inserts a pending sessions row on every page load, so a
+  // whole-table hash would change during the run. Whole tables get a count and no hash. The QA
+  // account's users row leaves out updated_at, which a trigger may move when the entitlement is
+  // granted and restored.
+  state: (user, runIds) => {
+    const hashed = (name, from, order, row = 't::text') =>
       `select ${lit(name)} as name, count(*)::int as rows, md5(coalesce(string_agg(${row}, '|' order by ${order}), '')) as hash from ${from}`;
+    const counted = table => `select ${lit(`${table} (all rows)`)} as name, count(*)::int as rows, null::text as hash from public.${table}`;
+    const owner = `t.user_id = ${lit(user)}`;
     return `-- qa:state
 ${[
-    table('users (other)', `public.users t where t.id <> ${lit(user)}`, 't.id'),
-    table('users (QA account)', `public.users t where t.id = ${lit(user)}`, 't.id', "(to_jsonb(t) - 'updated_at')::text"),
-    table('profiles', 'public.profiles t', 't.user_id'),
-    table('sessions', 'public.sessions t', 't.id'),
-    table('pricing_audits', 'public.pricing_audits t', 't.id'),
-    table('subscriptions', 'public.subscriptions t', 't.id'),
-    table('digests', 'public.digests t', 't.id'),
-    table('auth sessions (QA account)', `auth.sessions t where t.user_id = ${lit(user)}`, 't.id', 't.id::text'),
+    hashed('users (QA account)', `public.users t where t.id = ${lit(user)}`, 't.id', "(to_jsonb(t) - 'updated_at')::text"),
+    hashed('profiles (QA account)', `public.profiles t where ${owner}`, 't.user_id'),
+    hashed('sessions (QA account and run)', `public.sessions t where ${owner} or t.id in (${uuidList(runIds)})`, 't.id'),
+    hashed('pricing_audits (QA account and run)',
+      `public.pricing_audits t where ${owner} or t.session_id in (${uuidList(runIds)})`, 't.id'),
+    hashed('subscriptions (QA account)', `public.subscriptions t where ${owner}`, 't.id'),
+    hashed('digests (QA account)', `public.digests t where ${owner}`, 't.id'),
+    hashed('auth sessions (QA account)', `auth.sessions t where ${owner}`, 't.id', 't.id::text'),
+    ...['users', 'profiles', 'sessions', 'pricing_audits', 'subscriptions', 'digests'].map(counted),
   ].join('\nunion all\n')}
 order by name;`;
   },
@@ -314,7 +320,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     check(workflow.status === 200 && workflow.data?.active === true, 'S12 is not active');
     saved = { plan: pre.plan, status: pre.status, welcome_audit_used: pre.welcome_audit_used,
       last_audit_completed_at: pre.last_audit_completed_at };
-    before = await prod.query(sql.state(user));
+    before = await prod.query(sql.state(user, runIds));
     emit({ step, ok: true, session_id: sessionId, gated_session_id: gatedSessionId, state: before });
 
     step = 'sign in';
@@ -405,13 +411,15 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   let after;
   if (before) {
     try {
-      after = await prod.query(sql.state(user));
+      after = await prod.query(sql.state(user, runIds));
     } catch (error) {
       emit({ step: 'after', ok: false, error: error.message });
     }
   }
-  const differences = before && after ? compareState(before, after) : ['the before or after state is missing'];
-  if (before) emit({ step: 'after', ok: after !== undefined && differences.length === 0, state: after, differences });
+  const { differences, countChanges } = before && after ? compareState(before, after)
+    : { differences: ['the before or after state is missing'], countChanges: [] };
+  if (before) emit({ step: 'after', ok: after !== undefined && differences.length === 0, state: after, differences,
+    count_changes: countChanges });
 
   if (before && after && differences.length)
     log('FAILED: production differs from before the run. Investigate each difference before anything else.');
@@ -457,17 +465,23 @@ async function cleanUp({ prod, user, runIds, saved, token, readRun, emit }) {
   return { ok };
 }
 
+// A hashed row covers the QA account and the run, so any change fails the run. A row without a
+// hash is a whole-table count: live traffic moves it, so a change is only reported.
 function compareState(before, after) {
   const index = rows => new Map(rows.map(r => [r.name, r]));
   const [b, a] = [index(before), index(after)];
   const differences = [];
+  const countChanges = [];
   for (const name of new Set([...b.keys(), ...a.keys()])) {
     const x = b.get(name);
     const y = a.get(name);
-    if (!x || !y || x.rows !== y.rows || x.hash !== y.hash)
+    if (x && y && x.hash === null && y.hash === null) {
+      if (x.rows !== y.rows) countChanges.push(`${name}: rows ${x.rows} -> ${y.rows}`);
+    } else if (!x || !y || x.rows !== y.rows || x.hash !== y.hash) {
       differences.push(`${name}: rows ${x?.rows} -> ${y?.rows}, hash ${x?.hash === y?.hash ? 'same' : 'changed'}`);
+    }
   }
-  return differences;
+  return { differences, countChanges };
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
