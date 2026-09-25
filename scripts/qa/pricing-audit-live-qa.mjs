@@ -438,13 +438,21 @@ async function cleanUp({ prod, user, runIds, saved, token, readRun, emit }) {
       const run = await readRun();
       const auditIds = run.audits.filter(a => runIds.includes(a.session_id) && a.user_id === user).map(a => a.id);
       const sessionIds = run.sessions.filter(s => s.user_id === user && s.is_pricing_audit).map(s => s.id);
-      const restore = sameEntitlement(run.user, saved) ? null : saved;
+      // Restore only over the granted values. A grant whose response was lost still committed, so
+      // the row is read, not assumed. Without the granted values the plan or status changed
+      // outside the run: that change is kept, and the after step reports it. The Welcome audit
+      // flag and the Cooldown are the run's own, so they must still be back at their saved values.
+      const granted = run.user.plan === 'operator' && run.user.status === 'active';
+      const restore = granted && !sameEntitlement(run.user, saved) ? saved : null;
       if (auditIds.length || sessionIds.length || restore) {
         await prod.query(sql.cleanup(user, { auditIds, sessionIds, restore }));
       }
       const left = await readRun();
-      check(left.sessions.length === 0 && left.audits.length === 0 && sameEntitlement(left.user, saved),
-        'rows or entitlement remain after cleanup');
+      check(left.sessions.length === 0 && left.audits.length === 0, 'rows remain after cleanup');
+      const ownFieldsSaved = left.user.welcome_audit_used === saved.welcome_audit_used &&
+        left.user.last_audit_completed_at === saved.last_audit_completed_at;
+      check(restore ? sameEntitlement(left.user, saved) : ownFieldsSaved,
+        'the entitlement is not back at its saved values');
       emit({ step: 'cleanup', ok: true, deleted_audits: auditIds, deleted_sessions: sessionIds, restored: !!restore });
     } catch (error) {
       ok = false;

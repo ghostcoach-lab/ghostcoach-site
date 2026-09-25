@@ -83,11 +83,13 @@ function fakeProduction(faults = {}) {
   }
 
   // Applies the cleanup's statements the way Postgres would: each delete only removes rows whose
-  // IDs it names, and the restore writes the values it names.
+  // IDs it names, and the restore writes the values it names, only over the granted values.
+  // A guard that matches no row rolls the whole statement back.
   function cleanup(query) {
     const auditDelete = query.match(/delete from public\.pricing_audits[^;]*;/i)?.[0] ?? '';
     const sessionDelete = query.match(/delete from public\.sessions[^;]*;/i)?.[0] ?? '';
     const restore = query.match(/update public\.users\s+set([^;]*);/i)?.[1];
+    if (restore && !entitled()) return json(400, { message: 'qa cleanup: users 0 rows, expected 1' });
     const auditIds = uuids(auditDelete);
     const sessionIds = uuids(sessionDelete);
     state.audits = state.audits.filter(a => !(a.user_id === USER && auditIds.includes(a.id)));
@@ -101,7 +103,7 @@ function fakeProduction(faults = {}) {
         last_audit_completed_at: parse(value('last_audit_completed_at')),
       };
     }
-    return [];
+    return json(201, []);
   }
 
   function database(query) {
@@ -111,7 +113,14 @@ function fakeProduction(faults = {}) {
     if (tag === 'preflight') return json(201, [{ migrated: true, completion_rpc: 1, audits: state.audits.length, ...state.user }]);
     if (tag === 'state') return json(201, tableState(query));
     if (tag === 'grant') {
+      // A real plan change lands after the preflight, so the grant's guard matches no row.
+      if (faults.planChangeBeforeGrant) {
+        state.user = { ...state.user, plan: 'lifetime' };
+        return json(400, { message: 'qa grant: the QA account changed since the preflight' });
+      }
       state.user = { plan: 'operator', status: 'active', welcome_audit_used: false, last_audit_completed_at: null };
+      // The grant committed, but its response was lost.
+      if (faults.grantResponseLost) return json(502, { message: 'bad gateway' });
       // Live traffic: another customer's chat page inserts its pending session.
       if (faults.otherActivity) {
         state.otherUsers = 'other users v2';
@@ -124,7 +133,7 @@ function fakeProduction(faults = {}) {
       // The QA account's own chat page inserts a pending session that is not part of the run.
       if (faults.qaAccountActivity)
         state.sessions.push({ id: QA_CHAT_SESSION, user_id: USER, session_number: 5, is_pricing_audit: false });
-      return json(201, cleanup(query));
+      return cleanup(query);
     }
     return json(400, { message: 'unknown query' });
   }
@@ -148,6 +157,8 @@ function fakeProduction(faults = {}) {
     state.sessions.push({ id: body.session_id, user_id: USER, session_number: 4, is_pricing_audit: true,
       processing_status: 'complete', transcript: 'Marcus: …', audit_intake: body.audit_intake });
     state.user = { ...state.user, welcome_audit_used: true, last_audit_completed_at: completedAt };
+    // A real plan change (a Stripe event, say) lands straight after the Completion.
+    if (faults.planChangeAfterComplete) state.user = { ...state.user, plan: 'builder', status: 'canceled' };
     if (!faults.recapNotSent) state.executions.push({ id: '101', status: 'success' });
     if (faults.completeWritesThenFails) return json(500, { reason: 'internal_error' });
     return reply('completed', audit);
@@ -342,6 +353,36 @@ test('a change in the QA account\'s rows during the run fails loudly and names t
   assert.match(out.text(), /FAILED: production differs/);
   assert.match(out.text(), /sessions \(QA account and run\): rows 1 -> 2, hash changed/);
   assert.match(out.text(), /"result":"failed","failed_step":"after"/);
+});
+
+test('a plan change between the preflight and the grant is kept, and cleanup has nothing to do', async () => {
+  const production = fakeProduction({ planChangeBeforeGrant: true });
+  const { code, out } = await execute(production);
+  assert.equal(code, 1);
+  assert.match(out.text(), /"step":"entitlement","ok":false.*changed since the preflight/);
+  assert.equal(production.state.user.plan, 'lifetime', 'the real change is kept');
+  assert.match(out.text(), /"step":"cleanup","ok":true/);
+  assert.doesNotMatch(out.text(), /by hand/);
+  assert.match(out.text(), /users \(QA account\): rows 1 -> 1, hash changed/, 'the after check still reports the change');
+  assert.match(out.text(), /"result":"failed","failed_step":"entitlement"/);
+});
+
+test('a plan change after the Completion is kept, but the run\'s Cooldown left behind needs a hand cleanup', async () => {
+  const production = fakeProduction({ planChangeAfterComplete: true });
+  const { code, out } = await execute(production);
+  assert.equal(code, 1);
+  assert.equal(production.state.user.plan, 'builder', 'the real change is kept');
+  assert.equal(production.state.audits.length, 0, 'the run\'s audit is still deleted');
+  assert.match(out.text(), /"step":"cleanup","ok":false.*by hand/);
+});
+
+test('a grant that committed but lost its response is still restored', async () => {
+  const production = fakeProduction({ grantResponseLost: true });
+  const { code, out } = await execute(production);
+  assert.equal(code, 1);
+  assert.match(out.text(), /"step":"cleanup","ok":true.*"restored":true/);
+  assert.deepEqual(production.state, production.initial);
+  assert.match(out.text(), /"result":"failed","failed_step":"entitlement"/);
 });
 
 test('a failed cleanup fails the run and says to clean up by hand', async () => {
