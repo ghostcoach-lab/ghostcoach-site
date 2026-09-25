@@ -30,7 +30,8 @@ export const AUDIT_COMPLETE_DEFAULTS: AuditCompleteConfig = {
   timeoutMs: 60000,
   maxTranscriptChars: 140000,
   recap: null,
-  recapTimeoutMs: 10000,
+  // Above S12's own 8-second wait for Resend, so a slow send is not cut off after it was accepted.
+  recapTimeoutMs: 15000,
 };
 
 export function readAuditCompleteConfig(env: ReadEnv): AuditCompleteConfig {
@@ -57,12 +58,8 @@ function recapTarget(env: ReadEnv): RecapTarget | null {
   if (!url && !secret) return null;
   if (!url) throw new Error("S12_RECAP_URL must be set with S12_RECAP_SECRET");
   if (!secret) throw new Error("S12_RECAP_SECRET must be set with S12_RECAP_URL");
-  let parsed: URL;
-  try {
-    parsed = new URL(url);
-  } catch {
+  if (!URL.canParse(url) || new URL(url).protocol !== "https:") {
     throw new Error("S12_RECAP_URL must be an https URL");
   }
-  if (parsed.protocol !== "https:") throw new Error("S12_RECAP_URL must be an https URL");
   return { url, secret };
 }

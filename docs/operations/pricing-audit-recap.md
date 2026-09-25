@@ -26,8 +26,9 @@ browser's shared webhook secret. n8n refuses a request without it before the wor
 
 - `audit_id` is a UUID. It is also the Resend `Idempotency-Key`.
 - `email` is one address. The function reads it from the customer's `users` row.
-- `first_name` comes from the customer's `profiles.firstname`. It may be `""`; the email then
-  greets without a name. It is HTML-escaped in the email.
+- `first_name` comes from the customer's `profiles.firstname`. The customer can edit this field, so
+  S12 HTML-escapes it and refuses one over 100 characters. The function sends `""` for a missing
+  name or one over 100 characters; the email then greets without a name.
 - `verdict.number` is `null` for `hold` and set for `raise` and `restructure`. Dates are
   `YYYY-MM-DD`.
 - Any other field, or a missing one, makes the payload invalid.
@@ -39,7 +40,7 @@ browser's shared webhook secret. n8n refuses a request without it before the wor
 | `502 {"sent":false}` | Resend refused the email, failed or timed out (8 s) | logs, leaves it null |
 | n8n `403` | Missing or wrong secret | logs, leaves it null |
 
-The function waits at most `S12_RECAP_TIMEOUT_MS` (default 10 s). The customer gets `200 completed`
+The function waits at most `S12_RECAP_TIMEOUT_MS` (default 15 s). The customer gets `200 completed`
 whatever happens to the recap: a failure is logged as `pricing-audit-complete: recap` with the
 audit ID only, and nothing is rolled back. There is no automatic retry. See **Manual resend**.
 

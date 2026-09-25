@@ -616,3 +616,11 @@ test("recap: a failed recipient read or record write is logged and the customer 
     assert.ok(calls.logs.some(([label]) => String(label).includes("recap")), "the failure is logged");
   }
 });
+
+// The first name is the customer's own editable profile field, and S12 refuses one over 100 characters.
+test("recap: a first name over 100 characters is sent as an empty name, so the recap still goes", async () => {
+  const { handler, calls } = setup({ readRecipient: async () => ({ ...recipient, firstName: "S".repeat(101) }) });
+  assert.equal((await handler(post(valid()))).status, 200);
+  assert.equal((calls.recaps[0].payload as { first_name: string }).first_name, "");
+  assert.equal(calls.recorded.length, 1);
+});

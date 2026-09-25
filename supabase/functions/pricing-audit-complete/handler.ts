@@ -64,9 +64,13 @@ export interface RecapPayload {
   audit_id: string;
   email: string;
   first_name: string;
-  verdict: { action: VerdictAction; number: string | null; deadline: string; reasoning: string };
+  verdict: Verdict;
   next_eligible_date: string;
 }
+
+// S12 refuses a longer name. The name is the customer's own editable field, so a long one is
+// dropped and the email greets without it.
+const MAX_FIRST_NAME_CHARS = 100;
 
 export interface AuditCompleteDependencies {
   authenticate(request: Request): Promise<AuthenticatedUser | null>;
@@ -248,14 +252,12 @@ export function createPricingAuditCompleteHandler(
       return;
     }
     const target = config.recap;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(new Error("recap timed out")), config.recapTimeoutMs);
     try {
       const recipient = await dependencies.readRecipient(userId);
       const payload: RecapPayload = {
         audit_id: auditId,
         email: recipient.email,
-        first_name: recipient.firstName,
+        first_name: recipient.firstName.length > MAX_FIRST_NAME_CHARS ? "" : recipient.firstName,
         verdict: {
           action: row.verdict_action!,
           number: row.verdict_number,
@@ -264,7 +266,15 @@ export function createPricingAuditCompleteHandler(
         },
         next_eligible_date: row.next_eligible_date!,
       };
-      const response = await dependencies.postRecap(target, payload, controller.signal);
+      // The timeout covers only the S12 call, which includes S12's own wait for Resend.
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(new Error("recap timed out")), config.recapTimeoutMs);
+      let response: Response;
+      try {
+        response = await dependencies.postRecap(target, payload, controller.signal);
+      } finally {
+        clearTimeout(timer);
+      }
       if (!response.ok) {
         logError("pricing-audit-complete: recap", { audit_id: auditId, status: response.status });
         return;
@@ -272,8 +282,6 @@ export function createPricingAuditCompleteHandler(
       await dependencies.recordRecapSent(userId, auditId, dependencies.now().toISOString());
     } catch (error) {
       logError("pricing-audit-complete: recap", { audit_id: auditId, error });
-    } finally {
-      clearTimeout(timer);
     }
   }
 }

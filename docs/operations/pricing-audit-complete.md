@@ -129,7 +129,7 @@ customer's turns `Founder`: `Marcus: …` and `Founder: …` turns separated by 
 | `AUDIT_COMPLETE_MAX_TRANSCRIPT_CHARS` | `140000` | Above the chat cap, since it includes Marcus's closing Verdict. |
 | `S12_RECAP_URL` | none | The S12 webhook URL, `https` only. Set it together with the secret. |
 | `S12_RECAP_SECRET` | none | S12's own server-only secret, sent as `Authorization: Bearer …`. |
-| `S12_RECAP_TIMEOUT_MS` | `10000` | How long a Completion waits for S12. |
+| `S12_RECAP_TIMEOUT_MS` | `15000` | How long a Completion waits for S12. Keep it above S12's 8-second wait for Resend. |
 
 If neither recap setting is set, each Completion logs "S12 is not configured" and sends no recap.
 If only one is set, or the URL isn't `https`, the configuration is invalid.

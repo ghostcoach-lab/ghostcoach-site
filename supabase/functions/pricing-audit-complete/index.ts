@@ -70,13 +70,15 @@ export default {
         }),
       // Customers can only read their audits, so the service role records the send.
       recordRecapSent: async (userId, auditId, sentAt) => {
-        const { error } = await context.supabaseAdmin
+        const { data, error } = await context.supabaseAdmin
           .from("pricing_audits")
           .update({ recap_sent_at: sentAt })
           .eq("id", auditId)
           .eq("user_id", userId)
-          .is("recap_sent_at", null);
+          .is("recap_sent_at", null)
+          .select("id");
         if (error) throw error;
+        if (data.length !== 1) throw new Error(`recap_sent_at updated ${data.length} rows, expected 1`);
       },
       loadConfig: () => readAuditCompleteConfig((name) => Deno.env.get(name)),
       now: () => new Date(),

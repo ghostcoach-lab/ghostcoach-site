@@ -87,7 +87,6 @@ export function prepareRecap(body, from) {
   ];
   return {
     ok: true,
-    audit_id: body.audit_id,
     idempotency_key: body.audit_id,
     email: {
       from,

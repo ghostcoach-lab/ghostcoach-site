@@ -141,7 +141,7 @@ test('the email goes to Resend once, keyed by the audit ID', () => {
 
 test('S12 answers 2xx only after Resend accepts the email', () => {
   const workflow = buildS12Candidate(options);
-  const code = n => node(workflow, n).parameters;
+  const params = n => node(workflow, n).parameters;
   assert.deepEqual(next(workflow, 'Webhook — Pricing Audit Recap'), ['Validate Recap Payload']);
   assert.deepEqual(next(workflow, 'Validate Recap Payload'), ['Payload Valid?']);
   assert.deepEqual(next(workflow, 'Payload Valid?', 0), ['Send Recap via Resend']);
@@ -149,9 +149,9 @@ test('S12 answers 2xx only after Resend accepts the email', () => {
   assert.deepEqual(next(workflow, 'Send Recap via Resend', 0), ['Respond 200 Sent']);
   assert.deepEqual(next(workflow, 'Send Recap via Resend', 1), ['Respond 502 Not Sent']);
   assert.equal(node(workflow, 'Send Recap via Resend').onError, 'continueErrorOutput');
-  assert.equal(code('Respond 200 Sent').options.responseCode, 200);
-  assert.equal(code('Respond 502 Not Sent').options.responseCode, 502);
-  assert.equal(code('Respond 400 Invalid').options.responseCode, 400);
+  assert.equal(params('Respond 200 Sent').options.responseCode, 200);
+  assert.equal(params('Respond 502 Not Sent').options.responseCode, 502);
+  assert.equal(params('Respond 400 Invalid').options.responseCode, 400);
   const leaky = structuredClone(workflow);
   leaky.connections['Payload Valid?'].main[1] = [{ node: 'Respond 200 Sent', type: 'main', index: 0 }];
   assert.ok(validateS12Candidate(leaky).length > 0, 'an invalid payload must not answer 200');
