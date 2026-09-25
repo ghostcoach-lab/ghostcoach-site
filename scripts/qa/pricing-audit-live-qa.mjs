@@ -44,7 +44,7 @@ export const PLAN = [
   'sign in: a magic-link session for the QA account (this updates auth.users, so S1 fires as in Milestone 1 QA)',
   'entitlement: temporary database-only operator/active, guarded by the values saved in the preflight',
   'opener: marcus-audit-chat with no messages, then one short exchange asking for the Verdict',
-  'complete: pricing-audit-complete; check the Pricing audit's sessions row, the pricing_audits row, the moved Cooldown, recap_sent_at and exactly one new S12 run',
+  'complete: pricing-audit-complete; check the Pricing audit sessions row, the pricing_audits row, the moved Cooldown, recap_sent_at and exactly one new S12 run',
   'replay: the same completion again; expect already_completed, no write and no S12 run',
   'gated: a new audit straight away; expect gated from the chat and from completion, and no write',
   'cleanup: delete by the exact session and audit IDs, restore the saved entitlement, sign the QA session out',
