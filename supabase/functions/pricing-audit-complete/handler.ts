@@ -7,7 +7,7 @@ import {
   decidePricingAuditEligibility,
   type EligibilityRecord,
 } from "../_shared/pricing-audit-eligibility.ts";
-import type { AuditCompleteConfig } from "./config.ts";
+import type { AuditCompleteConfig, RecapTarget } from "./config.ts";
 import {
   type Baseline,
   EXTRACTION_SCHEMA,
@@ -53,12 +53,30 @@ export interface CompletionRow {
   next_eligible_date: string | null;
 }
 
+// The customer's own trusted details for the recap email.
+export interface Recipient {
+  email: string;
+  firstName: string;
+}
+
+// Everything S12 needs to send the recap. S12 has no database access.
+export interface RecapPayload {
+  audit_id: string;
+  email: string;
+  first_name: string;
+  verdict: { action: VerdictAction; number: string | null; deadline: string; reasoning: string };
+  next_eligible_date: string;
+}
+
 export interface AuditCompleteDependencies {
   authenticate(request: Request): Promise<AuthenticatedUser | null>;
   lookupSession(userId: string, sessionId: string): Promise<CompletionRow>;
   readEligibilityRecord(userId: string): Promise<EligibilityRecord | null>;
   createMessage(params: Anthropic.MessageCreateParamsNonStreaming, timeoutMs: number): Promise<Anthropic.Message>;
   completeAudit(input: CompletionInput): Promise<CompletionRow>;
+  readRecipient(userId: string): Promise<Recipient>;
+  postRecap(target: RecapTarget, payload: RecapPayload, signal: AbortSignal): Promise<Response>;
+  recordRecapSent(userId: string, auditId: string, sentAt: string): Promise<void>;
   loadConfig(): AuditCompleteConfig;
   now(): Date;
   logError(context: string, detail: unknown): void;
@@ -212,8 +230,50 @@ export function createPricingAuditCompleteHandler(
       return refuse(deadlineRejected ? "extraction_incomplete" : "internal_error");
     }
     const settled = settle(row, logError);
-    if (settled) return settled;
-    logError("pricing-audit-complete: completion", "the RPC returned new");
-    return refuse("internal_error");
+    if (!settled) {
+      logError("pricing-audit-complete: completion", "the RPC returned new");
+      return refuse("internal_error");
+    }
+    // Only a new Completion sends a recap; already_completed never does.
+    if (row.status === "completed" && settled.ok) await sendRecap(user.userId, row, config);
+    return settled;
   };
+
+  // A failed recap is logged and leaves recap_sent_at null for the manual resend; it never undoes
+  // the Completion. settle() has already checked that the row carries the audit and its Verdict.
+  async function sendRecap(userId: string, row: CompletionRow, config: AuditCompleteConfig): Promise<void> {
+    const auditId = row.audit_id!;
+    if (!config.recap) {
+      logError("pricing-audit-complete: recap", { audit_id: auditId, error: "S12 is not configured" });
+      return;
+    }
+    const target = config.recap;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(new Error("recap timed out")), config.recapTimeoutMs);
+    try {
+      const recipient = await dependencies.readRecipient(userId);
+      const payload: RecapPayload = {
+        audit_id: auditId,
+        email: recipient.email,
+        first_name: recipient.firstName,
+        verdict: {
+          action: row.verdict_action!,
+          number: row.verdict_number,
+          deadline: row.verdict_deadline!,
+          reasoning: row.verdict_reasoning!,
+        },
+        next_eligible_date: row.next_eligible_date!,
+      };
+      const response = await dependencies.postRecap(target, payload, controller.signal);
+      if (!response.ok) {
+        logError("pricing-audit-complete: recap", { audit_id: auditId, status: response.status });
+        return;
+      }
+      await dependencies.recordRecapSent(userId, auditId, dependencies.now().toISOString());
+    } catch (error) {
+      logError("pricing-audit-complete: recap", { audit_id: auditId, error });
+    } finally {
+      clearTimeout(timer);
+    }
+  }
 }

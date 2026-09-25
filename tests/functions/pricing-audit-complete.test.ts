@@ -61,9 +61,15 @@ const welcomeRecord = {
   plan: "operator", status: "active", trial_end: null, welcome_audit_used: false, last_audit_completed_at: null,
 };
 
+const recapTarget = { url: "https://recap.example.test/webhook/recap", secret: "recap-test-secret" };
+const recipient = { email: "founder@example.test", firstName: "Sam" };
+
 function setup(overrides: Record<string, unknown> = {}, reply: unknown = extraction) {
-  const calls: { params: any[]; rpc: any[]; logs: unknown[][]; lookups: unknown[][] } = {
-    params: [], rpc: [], logs: [], lookups: [],
+  const calls: {
+    params: any[]; rpc: any[]; logs: unknown[][]; lookups: unknown[][];
+    recaps: { target: unknown; payload: unknown }[]; recorded: unknown[][];
+  } = {
+    params: [], rpc: [], logs: [], lookups: [], recaps: [], recorded: [],
   };
   const handler = createPricingAuditCompleteHandler({
     authenticate: async () => ({ userId: "user-1" }),
@@ -80,7 +86,15 @@ function setup(overrides: Record<string, unknown> = {}, reply: unknown = extract
       calls.rpc.push(input);
       return completedRow;
     },
-    loadConfig: () => AUDIT_COMPLETE_DEFAULTS,
+    readRecipient: async () => recipient,
+    postRecap: async (target: unknown, payload: unknown) => {
+      calls.recaps.push({ target, payload });
+      return new Response('{"sent":true}', { status: 200 });
+    },
+    recordRecapSent: async (...args: unknown[]) => {
+      calls.recorded.push(args);
+    },
+    loadConfig: () => ({ ...AUDIT_COMPLETE_DEFAULTS, recap: recapTarget }),
     now: () => new Date("2026-09-24T12:00:00.000Z"),
     logError: (...args: unknown[]) => calls.logs.push(args),
     ...overrides,
@@ -512,3 +526,93 @@ for (const [label, overrides] of Object.entries(unexpected)) {
     assert.ok(calls.logs.length > 0, "the cause is logged");
   });
 }
+
+// Recap (#13).
+
+test("recap: a new Completion posts one recap to S12 and records that it was sent", async () => {
+  const { handler, calls } = setup();
+  assert.equal((await handler(post(valid()))).status, 200);
+  assert.deepEqual(calls.recaps, [{
+    target: recapTarget,
+    payload: {
+      audit_id: completedRow.audit_id,
+      email: "founder@example.test",
+      first_name: "Sam",
+      verdict: {
+        action: "raise",
+        number: "59 per month",
+        deadline: "2026-11-01",
+        reasoning: "Customers buy it for the time it saves.",
+      },
+      next_eligible_date: "2026-12-23",
+    },
+  }]);
+  assert.deepEqual(calls.recorded, [["user-1", completedRow.audit_id, "2026-09-24T12:00:00.000Z"]]);
+});
+
+test("recap: already_completed never sends a recap, from the lookup or from the RPC", async () => {
+  for (const overrides of [{ lookupSession: async () => savedRow }, { completeAudit: async () => savedRow }]) {
+    const { handler, calls } = setup(overrides);
+    assert.equal((await handler(post(valid()))).status, 200);
+    assert.equal(calls.recaps.length, 0);
+    assert.equal(calls.recorded.length, 0);
+  }
+});
+
+test("recap: a non-2xx answer from S12 leaves recap_sent_at null and the customer still gets 200", async () => {
+  const { handler, calls } = setup({
+    postRecap: async (target: unknown, payload: unknown) => {
+      calls.recaps.push({ target, payload });
+      return new Response('{"sent":false}', { status: 502 });
+    },
+  });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).status, "completed");
+  assert.equal(calls.recaps.length, 1);
+  assert.equal(calls.recorded.length, 0);
+  assert.ok(calls.logs.some(([label]) => String(label).includes("recap")), "the failure is logged");
+});
+
+// A fake S12 that never answers, so only the handler's own timeout ends the call.
+const hangingRecap = (calls: { recaps: unknown[] }) => (target: unknown, payload: unknown, signal: AbortSignal) => {
+  calls.recaps.push({ target, payload });
+  return new Promise<Response>((_, reject) => signal.addEventListener("abort", () => reject(signal.reason)));
+};
+
+test("recap: a timeout leaves recap_sent_at null and the customer still gets 200", async () => {
+  const calls = { recaps: [] as unknown[] };
+  const { handler, calls: seen } = setup({
+    postRecap: hangingRecap(calls),
+    loadConfig: () => ({ ...AUDIT_COMPLETE_DEFAULTS, recap: recapTarget, recapTimeoutMs: 20 }),
+  });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 200);
+  assert.equal((await response.json()).status, "completed");
+  assert.equal(calls.recaps.length, 1);
+  assert.equal(seen.recorded.length, 0);
+  assert.ok(seen.logs.some(([label]) => String(label).includes("recap")), "the timeout is logged");
+});
+
+test("recap: when S12 is not configured, nothing is posted and the customer still gets 200", async () => {
+  const { handler, calls } = setup({ loadConfig: () => AUDIT_COMPLETE_DEFAULTS });
+  const response = await handler(post(valid()));
+  assert.equal(response.status, 200);
+  assert.equal(calls.recaps.length, 0);
+  assert.equal(calls.recorded.length, 0);
+  assert.ok(calls.logs.some(([label]) => String(label).includes("recap")), "the missing configuration is logged");
+});
+
+test("recap: a failed recipient read or record write is logged and the customer still gets 200", async () => {
+  const failures = [
+    { readRecipient: async () => { throw new Error("read failed"); } },
+    { recordRecapSent: async () => { throw new Error("write failed"); } },
+  ];
+  for (const overrides of failures) {
+    const { handler, calls } = setup(overrides);
+    const response = await handler(post(valid()));
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).status, "completed");
+    assert.ok(calls.logs.some(([label]) => String(label).includes("recap")), "the failure is logged");
+  }
+});
