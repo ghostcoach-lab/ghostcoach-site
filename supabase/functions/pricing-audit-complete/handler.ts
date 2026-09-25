@@ -3,6 +3,10 @@ import type Anthropic from "npm:@anthropic-ai/sdk@0.128.0";
 import { readTextReply } from "../_shared/anthropic-response.ts";
 import { type AuditIntake, parseAuditRequest } from "../_shared/audit-request.ts";
 import { json, methodNotAllowed, preflight, refuse } from "../_shared/http.ts";
+import {
+  decidePricingAuditEligibility,
+  type EligibilityRecord,
+} from "../_shared/pricing-audit-eligibility.ts";
 import type { AuditCompleteConfig } from "./config.ts";
 import {
   type Baseline,
@@ -28,20 +32,31 @@ export interface CompletionInput {
   baseline: Baseline;
 }
 
-// One row from complete_pricing_audit. Dates arrive as YYYY-MM-DD strings.
+// A row from pricing_audit_session_state or complete_pricing_audit. Only completed and
+// already_completed carry an audit; gated carries the next eligible date. Dates are YYYY-MM-DD.
+export type CompletionStatus =
+  | "new"
+  | "completed"
+  | "already_completed"
+  | "session_conflict"
+  | "plan_lapsed"
+  | "gated";
+
 export interface CompletionRow {
-  audit_id: string;
-  status: "completed";
-  is_welcome_audit: boolean;
-  verdict_action: VerdictAction;
+  audit_id: string | null;
+  status: CompletionStatus;
+  is_welcome_audit: boolean | null;
+  verdict_action: VerdictAction | null;
   verdict_number: string | null;
-  verdict_deadline: string;
-  verdict_reasoning: string;
-  next_eligible_date: string;
+  verdict_deadline: string | null;
+  verdict_reasoning: string | null;
+  next_eligible_date: string | null;
 }
 
 export interface AuditCompleteDependencies {
   authenticate(request: Request): Promise<AuthenticatedUser | null>;
+  lookupSession(userId: string, sessionId: string): Promise<CompletionRow>;
+  readEligibilityRecord(userId: string): Promise<EligibilityRecord | null>;
   createMessage(params: Anthropic.MessageCreateParamsNonStreaming, timeoutMs: number): Promise<Anthropic.Message>;
   completeAudit(input: CompletionInput): Promise<CompletionRow>;
   loadConfig(): AuditCompleteConfig;
@@ -49,9 +64,87 @@ export interface AuditCompleteDependencies {
   logError(context: string, detail: unknown): void;
 }
 
+const EXTRACTION_ATTEMPTS = 2;
+
+type Extracted = { ok: true; verdict: Verdict; baseline: Baseline } | { ok: false; response: Response };
+
+// The response for a row that settles the request, or null for a new session. Anything
+// unexpected in the row is an internal error.
+function settle(row: CompletionRow, logError: AuditCompleteDependencies["logError"]): Response | null {
+  switch (row.status) {
+    case "new":
+      return null;
+    case "completed":
+    case "already_completed":
+      if (row.audit_id && row.verdict_action && row.verdict_deadline && row.verdict_reasoning &&
+          row.next_eligible_date && typeof row.is_welcome_audit === "boolean") {
+        return json({
+          status: row.status,
+          audit_id: row.audit_id,
+          is_welcome_audit: row.is_welcome_audit,
+          verdict: {
+            action: row.verdict_action,
+            number: row.verdict_number,
+            deadline: row.verdict_deadline,
+            reasoning: row.verdict_reasoning,
+          },
+          next_eligible_date: row.next_eligible_date,
+        }, 200);
+      }
+      break;
+    case "session_conflict":
+    case "plan_lapsed":
+      return refuse(row.status);
+    case "gated":
+      if (row.next_eligible_date) return refuse("gated", { next_eligible_date: row.next_eligible_date });
+      break;
+  }
+  logError("pricing-audit-complete: unexpected completion row", { status: row.status });
+  return refuse("internal_error");
+}
+
 export function createPricingAuditCompleteHandler(
   dependencies: AuditCompleteDependencies,
 ): (request: Request) => Promise<Response> {
+  const { logError } = dependencies;
+
+  async function extract(transcript: string, completionDate: string, config: AuditCompleteConfig): Promise<Extracted> {
+    // An invalid result is retried once; "no verdict" and an AI failure are not.
+    for (let attempt = 1; attempt <= EXTRACTION_ATTEMPTS; attempt++) {
+      let message: Anthropic.Message;
+      try {
+        message = await dependencies.createMessage({
+          model: config.model,
+          max_tokens: config.maxTokens,
+          output_config: {
+            effort: config.effort,
+            format: { type: "json_schema", schema: EXTRACTION_SCHEMA },
+          },
+          system: EXTRACTION_SYSTEM_PROMPT,
+          messages: [{ role: "user", content: extractionRequestText(transcript, completionDate) }],
+        }, config.timeoutMs);
+      } catch (error) {
+        logError("pricing-audit-complete: extraction call", error);
+        return { ok: false, response: refuse("ai_unavailable") };
+      }
+      const reply = readTextReply(message);
+      if (!reply.ok) {
+        logError("pricing-audit-complete: extraction reply", reply.detail);
+        return { ok: false, response: refuse("ai_unavailable") };
+      }
+      let result;
+      try {
+        result = validateExtraction(JSON.parse(reply.text), completionDate);
+      } catch {
+        result = { ok: false as const, detail: "reply is not JSON", retry: true };
+      }
+      if (result.ok) return result;
+      logError("pricing-audit-complete: extraction", `attempt ${attempt}: ${result.detail}`);
+      if (!result.retry) break;
+    }
+    return { ok: false, response: refuse("extraction_incomplete") };
+  }
+
   return async (request: Request) => {
     if (request.method === "OPTIONS") return preflight();
     if (request.method !== "POST") return methodNotAllowed();
@@ -64,7 +157,7 @@ export function createPricingAuditCompleteHandler(
     try {
       config = dependencies.loadConfig();
     } catch (error) {
-      dependencies.logError("pricing-audit-complete: configuration", error);
+      logError("pricing-audit-complete: configuration", error);
       return refuse("internal_error");
     }
 
@@ -76,48 +169,32 @@ export function createPricingAuditCompleteHandler(
     }
     const parsed = parseAuditRequest(body, { maxTranscriptChars: config.maxTranscriptChars }, "completion");
     if (!parsed.ok) {
-      dependencies.logError("pricing-audit-complete: request", parsed.detail);
+      logError("pricing-audit-complete: request", parsed.detail);
       return refuse(parsed.reason);
     }
     const { sessionId, auditIntake, messages } = parsed.value;
+
+    // Idempotency and the eligibility pre-check come before any AI call.
+    try {
+      const settled = settle(await dependencies.lookupSession(user.userId, sessionId), logError);
+      if (settled) return settled;
+
+      const record = await dependencies.readEligibilityRecord(user.userId);
+      if (!record) throw new Error("Application user record is missing");
+      const decision = decidePricingAuditEligibility(record, dependencies.now());
+      if (decision.state === "not_entitled") return refuse("plan_lapsed");
+      if (decision.state === "gated") return refuse("gated", { next_eligible_date: decision.nextEligibleDate });
+    } catch (error) {
+      logError("pricing-audit-complete: pre-checks", error);
+      return refuse("internal_error");
+    }
+
     const transcript = formatTranscript(messages);
     const completionDate = dependencies.now().toISOString().slice(0, 10);
+    const extracted = await extract(transcript, completionDate, config);
+    if (!extracted.ok) return extracted.response;
 
-    let message: Anthropic.Message;
-    try {
-      message = await dependencies.createMessage({
-        model: config.model,
-        max_tokens: config.maxTokens,
-        output_config: {
-          effort: config.effort,
-          format: { type: "json_schema", schema: EXTRACTION_SCHEMA },
-        },
-        system: EXTRACTION_SYSTEM_PROMPT,
-        messages: [{ role: "user", content: extractionRequestText(transcript, completionDate) }],
-      }, config.timeoutMs);
-    } catch (error) {
-      dependencies.logError("pricing-audit-complete: extraction call", error);
-      return refuse("ai_unavailable");
-    }
-
-    const reply = readTextReply(message);
-    if (!reply.ok) {
-      dependencies.logError("pricing-audit-complete: extraction reply", reply.detail);
-      return refuse("ai_unavailable");
-    }
-    let extracted: unknown;
-    try {
-      extracted = JSON.parse(reply.text);
-    } catch {
-      dependencies.logError("pricing-audit-complete: extraction", "reply is not JSON");
-      return refuse("extraction_incomplete");
-    }
-    const result = validateExtraction(extracted, completionDate);
-    if (!result.ok) {
-      dependencies.logError("pricing-audit-complete: extraction", result.detail);
-      return refuse("extraction_incomplete");
-    }
-
+    // The RPC re-checks idempotency, Entitlement and the Cooldown under the customer's row lock.
     let row: CompletionRow;
     try {
       row = await dependencies.completeAudit({
@@ -125,27 +202,18 @@ export function createPricingAuditCompleteHandler(
         sessionId,
         transcript,
         auditIntake,
-        verdict: result.verdict,
-        baseline: result.baseline,
+        verdict: extracted.verdict,
+        baseline: extracted.baseline,
       });
     } catch (error) {
-      dependencies.logError("pricing-audit-complete: completion", error);
+      logError("pricing-audit-complete: completion", error);
       // The RPC re-checks the deadline against its own completion date (invalid_parameter_value).
       const deadlineRejected = (error as { code?: unknown } | null)?.code === "22023";
       return refuse(deadlineRejected ? "extraction_incomplete" : "internal_error");
     }
-
-    return json({
-      status: row.status,
-      audit_id: row.audit_id,
-      is_welcome_audit: row.is_welcome_audit,
-      verdict: {
-        action: row.verdict_action,
-        number: row.verdict_number,
-        deadline: row.verdict_deadline,
-        reasoning: row.verdict_reasoning,
-      },
-      next_eligible_date: row.next_eligible_date,
-    }, 200);
+    const settled = settle(row, logError);
+    if (settled) return settled;
+    logError("pricing-audit-complete: completion", "the RPC returned new");
+    return refuse("internal_error");
   };
 }

@@ -124,16 +124,20 @@ where oid in (
 
 \ir ../../supabase/migrations/20260924170000_pricing_audit_completion.sql
 
--- Customers: A is on the Welcome audit with two normal sessions; B has nothing yet.
+-- Customers: A is on the Welcome audit with two normal sessions; B has nothing yet;
+-- C is on Builder, so not Entitled.
 insert into auth.users (id) values
   ('00000000-0000-0000-0000-00000000000a'),
-  ('00000000-0000-0000-0000-00000000000b');
+  ('00000000-0000-0000-0000-00000000000b'),
+  ('00000000-0000-0000-0000-00000000000c');
 insert into public.users (id, email, plan, status) values
   ('00000000-0000-0000-0000-00000000000a', 'a@example.test', 'operator', 'active'),
-  ('00000000-0000-0000-0000-00000000000b', 'b@example.test', 'lifetime', 'active');
+  ('00000000-0000-0000-0000-00000000000b', 'b@example.test', 'lifetime', 'active'),
+  ('00000000-0000-0000-0000-00000000000c', 'c@example.test', 'builder', 'active');
 insert into public.profiles (user_id, goal_90_day, goal_progress, goal_start_date) values
   ('00000000-0000-0000-0000-00000000000a', 'Reach 10k MRR', 42, '2026-08-01T00:00:00Z'),
-  ('00000000-0000-0000-0000-00000000000b', null, 0, null);
+  ('00000000-0000-0000-0000-00000000000b', null, 0, null),
+  ('00000000-0000-0000-0000-00000000000c', null, 0, null);
 insert into public.sessions (user_id, transcript, summary, goal_progress_score, action_committed, processing_status) values
   ('00000000-0000-0000-0000-00000000000a', 'Founder: hi', 'First.', 60, 'Ship onboarding', 'complete'),
   ('00000000-0000-0000-0000-00000000000a', 'Founder: again', 'Second.', 70, 'Call five churned users', 'complete');
@@ -177,23 +181,77 @@ begin
 end;
 $$;
 
--- Only the service role may execute the Completion RPC.
+-- The SQL eligibility rule agrees with the TypeScript decision on the shared table of cases
+-- (tests/functions/pricing-audit-eligibility-parity.test.ts asserts the same file).
+\set eligibility_cases `cat /workspace/tests/fixtures/pricing-audit-eligibility-cases.json`
+create temp table eligibility_cases as
+select value as eligibility_case from jsonb_array_elements(:'eligibility_cases'::jsonb);
+
+-- The rule must not depend on the session time zone (the fixture includes a DST change).
+set timezone = 'America/New_York';
+
 do $$
 declare
-  rpc regprocedure := 'public.complete_pricing_audit(uuid, uuid, text, jsonb, text, text, date, text, jsonb)';
+  test_case jsonb;
+  decision record;
+  actual jsonb;
 begin
-  if has_function_privilege('anon', rpc, 'EXECUTE') then
-    raise exception 'anon must not execute complete_pricing_audit';
+  for test_case in select eligibility_case from eligibility_cases loop
+    begin
+      select * into strict decision from public.pricing_audit_decide_eligibility(
+        (test_case #>> '{record,plan}')::public.plan_type,
+        (test_case #>> '{record,status}')::public.user_status,
+        (test_case #>> '{record,trial_end}')::timestamptz,
+        (test_case #>> '{record,welcome_audit_used}')::boolean,
+        (test_case #>> '{record,last_audit_completed_at}')::timestamptz,
+        (test_case ->> 'now')::timestamptz
+      );
+    exception
+      when raise_exception then
+        if (test_case #>> '{expected,error}')::boolean is not true then
+          raise exception 'parity case "%" raised: %', test_case ->> 'name', sqlerrm;
+        end if;
+        continue;
+    end;
+    actual := case decision.state
+      when 'eligible' then jsonb_build_object('state', 'eligible', 'is_welcome_audit', decision.is_welcome_audit)
+      when 'gated' then jsonb_build_object('state', 'gated', 'next_eligible_date', decision.next_eligible_date)
+      else jsonb_build_object('state', decision.state)
+    end;
+    if actual is distinct from test_case -> 'expected' then
+      raise exception 'parity case "%": SQL gave %, expected %', test_case ->> 'name', actual, test_case -> 'expected';
+    end if;
+  end loop;
+  if (select count(*) from eligibility_cases) < 17 then
+    raise exception 'the parity table did not load';
   end if;
-  if has_function_privilege('authenticated', rpc, 'EXECUTE') then
-    raise exception 'authenticated must not execute complete_pricing_audit';
-  end if;
-  if exists (select 1 from pg_proc, aclexplode(proacl) as acl where oid = rpc and acl.grantee = 0) then
-    raise exception 'PUBLIC must not execute complete_pricing_audit';
-  end if;
-  if not has_function_privilege('service_role', rpc, 'EXECUTE') then
-    raise exception 'service_role must execute complete_pricing_audit';
-  end if;
+end;
+$$;
+reset timezone;
+
+-- Only the service role may execute the Completion RPCs.
+do $$
+declare
+  rpc regprocedure;
+begin
+  foreach rpc in array array[
+    'public.complete_pricing_audit(uuid, uuid, text, jsonb, text, text, date, text, jsonb)'::regprocedure,
+    'public.pricing_audit_session_state(uuid, uuid)'::regprocedure,
+    'public.pricing_audit_decide_eligibility(public.plan_type, public.user_status, timestamptz, boolean, timestamptz, timestamptz)'::regprocedure
+  ] loop
+    if has_function_privilege('anon', rpc, 'EXECUTE') then
+      raise exception 'anon must not execute %', rpc;
+    end if;
+    if has_function_privilege('authenticated', rpc, 'EXECUTE') then
+      raise exception 'authenticated must not execute %', rpc;
+    end if;
+    if exists (select 1 from pg_proc, aclexplode(proacl) as acl where oid = rpc and acl.grantee = 0) then
+      raise exception 'PUBLIC must not execute %', rpc;
+    end if;
+    if not has_function_privilege('service_role', rpc, 'EXECUTE') then
+      raise exception 'service_role must execute %', rpc;
+    end if;
+  end loop;
 end;
 $$;
 
@@ -282,7 +340,143 @@ begin
 end;
 $$;
 
--- A later audit is not a Welcome audit, takes the next number and moves the Cooldown again.
+-- Replaying a completed session returns the saved audit without a second record or clock move.
+create temp table before_replay as
+select
+  (select last_audit_completed_at from public.users where id = '00000000-0000-0000-0000-00000000000a') as clock,
+  (select count(*) from public.sessions) as sessions,
+  (select count(*) from public.pricing_audits) as audits;
+
+set role service_role;
+create temp table replay_result as
+select * from public.complete_pricing_audit(
+  '00000000-0000-0000-0000-00000000000a',
+  '20000000-0000-0000-0000-0000000000a1',
+  'Marcus: A different ending.', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 10,
+  'A different Verdict must not replace the saved one.',
+  '{"value_anchor": "a", "friction_read": "b", "mix": "c", "churn_window": "d"}'::jsonb
+);
+create temp table state_completed as
+select * from public.pricing_audit_session_state('00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-0000000000a1');
+create temp table state_new as
+select * from public.pricing_audit_session_state('00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-0000000000a7');
+create temp table state_other_customer as
+select * from public.pricing_audit_session_state('00000000-0000-0000-0000-00000000000b', '20000000-0000-0000-0000-0000000000a1');
+create temp table state_coaching_session as
+select * from public.pricing_audit_session_state(
+  '00000000-0000-0000-0000-00000000000a',
+  (select id from public.sessions where user_id = '00000000-0000-0000-0000-00000000000a' and not is_pricing_audit limit 1)
+);
+reset role;
+
+do $$
+declare
+  replay record;
+  saved record;
+  state record;
+begin
+  select * into strict replay from replay_result;
+  select * into strict saved from welcome_result;
+  if replay.status <> 'already_completed' or replay.audit_id <> saved.audit_id
+     or (replay.verdict_action, replay.verdict_number, replay.verdict_deadline, replay.verdict_reasoning,
+         replay.is_welcome_audit, replay.next_eligible_date)
+        is distinct from (saved.verdict_action, saved.verdict_number, saved.verdict_deadline, saved.verdict_reasoning,
+         saved.is_welcome_audit, saved.next_eligible_date) then
+    raise exception 'a replay must return the saved audit: %', row_to_json(replay);
+  end if;
+  if (select clock from before_replay)
+       <> (select last_audit_completed_at from public.users where id = '00000000-0000-0000-0000-00000000000a')
+     or (select sessions from before_replay) <> (select count(*) from public.sessions)
+     or (select audits from before_replay) <> (select count(*) from public.pricing_audits) then
+    raise exception 'a replay wrote a second record or moved the clock';
+  end if;
+
+  select * into strict state from state_completed;
+  if state.status <> 'already_completed' or state.audit_id <> saved.audit_id
+     or state.next_eligible_date <> saved.next_eligible_date or state.verdict_number <> '59' then
+    raise exception 'session state for a completed audit: %', row_to_json(state);
+  end if;
+  select * into strict state from state_new;
+  if state.status <> 'new' or state.audit_id is not null then
+    raise exception 'session state for an unused ID: %', row_to_json(state);
+  end if;
+  select * into strict state from state_other_customer;
+  if state.status <> 'session_conflict' or state.audit_id is not null then
+    raise exception 'session state for another customer''s session: %', row_to_json(state);
+  end if;
+  select * into strict state from state_coaching_session;
+  if state.status <> 'session_conflict' then
+    raise exception 'session state for a coaching session: %', row_to_json(state);
+  end if;
+end;
+$$;
+
+-- Refusals under the row lock write nothing: another customer's session, a coaching session,
+-- a customer inside the Cooldown, and a customer who isn't Entitled.
+create temp table before_refusals as
+select
+  (select count(*) from public.sessions) as sessions,
+  (select count(*) from public.pricing_audits) as audits,
+  (select jsonb_agg(to_jsonb(u) order by id) from public.users as u) as customers;
+
+set role service_role;
+create temp table refusals as
+select 'other customer' as label, r.* from public.complete_pricing_audit(
+  '00000000-0000-0000-0000-00000000000b', '20000000-0000-0000-0000-0000000000a1',
+  'Marcus: x', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 10, 'r', '{}'::jsonb) as r
+union all
+select 'coaching session', r.* from public.complete_pricing_audit(
+  '00000000-0000-0000-0000-00000000000a',
+  (select id from public.sessions where user_id = '00000000-0000-0000-0000-00000000000a' and not is_pricing_audit limit 1),
+  'Marcus: x', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 10, 'r', '{}'::jsonb) as r
+union all
+select 'inside the Cooldown', r.* from public.complete_pricing_audit(
+  '00000000-0000-0000-0000-00000000000a', '20000000-0000-0000-0000-0000000000a3',
+  'Marcus: x', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 10, 'r', '{}'::jsonb) as r
+union all
+select 'not Entitled', r.* from public.complete_pricing_audit(
+  '00000000-0000-0000-0000-00000000000c', '20000000-0000-0000-0000-0000000000c1',
+  'Marcus: x', '{}'::jsonb, 'hold', null, (now() at time zone 'UTC')::date + 10, 'r', '{}'::jsonb) as r;
+reset role;
+
+do $$
+declare
+  refusal record;
+begin
+  for refusal in select * from refusals loop
+    if refusal.audit_id is not null or refusal.verdict_action is not null or refusal.status <> (case refusal.label
+      when 'other customer' then 'session_conflict'
+      when 'coaching session' then 'session_conflict'
+      when 'inside the Cooldown' then 'gated'
+      when 'not Entitled' then 'plan_lapsed'
+    end) then
+      raise exception 'unexpected refusal for %: %', refusal.label, row_to_json(refusal);
+    end if;
+    if (refusal.label = 'inside the Cooldown') <> (refusal.next_eligible_date is not null) then
+      raise exception 'only gated carries the next eligible date: %', row_to_json(refusal);
+    end if;
+  end loop;
+  if (select next_eligible_date from refusals where label = 'inside the Cooldown')
+     <> (select public.pricing_audit_next_eligible_date(last_audit_completed_at)
+         from public.users where id = '00000000-0000-0000-0000-00000000000a') then
+    raise exception 'gated must carry the next eligible date';
+  end if;
+  if (select count(*) from refusals) <> 4
+     or (select sessions from before_refusals) <> (select count(*) from public.sessions)
+     or (select audits from before_refusals) <> (select count(*) from public.pricing_audits)
+     or (select customers from before_refusals)
+        <> (select jsonb_agg(to_jsonb(u) order by id) from public.users as u) then
+    raise exception 'a refused Completion changed the database';
+  end if;
+end;
+$$;
+
+-- A later audit, once the Cooldown is over, is not a Welcome audit, takes the next number and
+-- moves the Cooldown again.
+update public.users
+set last_audit_completed_at = now() - interval '91 days'
+where id = '00000000-0000-0000-0000-00000000000a';
+
 set role service_role;
 create temp table later_result as
 select * from public.complete_pricing_audit(

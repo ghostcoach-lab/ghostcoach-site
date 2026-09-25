@@ -14,6 +14,23 @@ export default {
         const userId = context.userClaims?.id;
         return userId ? { userId } : null;
       },
+      // Privileged, so it sees every session: another customer's or a coaching session is a conflict.
+      lookupSession: async (userId, sessionId) => {
+        const { data, error } = await context.supabaseAdmin
+          .rpc("pricing_audit_session_state", { p_user_id: userId, p_session_id: sessionId })
+          .single<CompletionRow>();
+        if (error) throw error;
+        return data;
+      },
+      readEligibilityRecord: async (userId) => {
+        const { data, error } = await context.supabase
+          .from("users")
+          .select("plan, status, trial_end, welcome_audit_used, last_audit_completed_at")
+          .eq("id", userId)
+          .single();
+        if (error) throw error;
+        return data;
+      },
       createMessage: (params, timeoutMs) => anthropic.messages.create(params, { timeout: timeoutMs }),
       // Only the service role can execute the Completion RPC.
       completeAudit: async ({ userId, sessionId, transcript, auditIntake, verdict, baseline }) => {
