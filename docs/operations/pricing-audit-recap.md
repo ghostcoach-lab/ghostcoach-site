@@ -69,6 +69,12 @@ Keep the options file and the emitted JSON in `%LOCALAPPDATA%\GhostCoach\private
 The workflow reads the Resend key from the n8n variable `RESEND_API_KEY`, which S3 already uses.
 The sender must be on the domain that S3 sends from, which Resend has already verified.
 
+S12 saves its successful executions (`saveDataSuccessExecution: 'all'`), whatever the instance
+default is. The live QA needs them: it checks that each Completion gives exactly one successful S12
+run. The candidate refuses to build without this setting. A saved execution keeps the recap
+payload: the customer's email address, first name and Verdict. n8n keeps it in the execution
+history until the plan's pruning removes it.
+
 ## Going live (ticket #16, one approval per step)
 
 1. Generate a new random secret. Create an n8n **Header Auth** credential with the name

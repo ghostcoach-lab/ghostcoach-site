@@ -157,6 +157,17 @@ test('S12 answers 2xx only after Resend accepts the email', () => {
   assert.ok(validateS12Candidate(leaky).length > 0, 'an invalid payload must not answer 200');
 });
 
+test('S12 saves successful executions, so the live QA can count exactly one recap run', () => {
+  const workflow = buildS12Candidate(options);
+  assert.equal(workflow.settings.saveDataSuccessExecution, 'all');
+  assert.deepEqual(validateS12Candidate(workflow), []);
+  const unsaved = structuredClone(workflow);
+  unsaved.settings.saveDataSuccessExecution = 'none';
+  assert.ok(validateS12Candidate(unsaved).some(p => /successful executions/.test(p)));
+  delete unsaved.settings.saveDataSuccessExecution;
+  assert.ok(validateS12Candidate(unsaved).some(p => /successful executions/.test(p)), 'the instance default is not enough');
+});
+
 test('S12 has no database access and no secret in its JSON', () => {
   const source = JSON.stringify(buildS12Candidate(options));
   assert.doesNotMatch(source, /supabase|\/rest\/v1\//i);

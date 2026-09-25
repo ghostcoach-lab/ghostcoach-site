@@ -174,7 +174,8 @@ export function buildS12Candidate(options) {
       [VALID]: edge(SEND, INVALID),
       [SEND]: edge(SENT, NOT_SENT),
     },
-    settings: { executionOrder: 'v1' },
+    // Saved successful runs let the live QA count exactly one recap per Completion.
+    settings: { executionOrder: 'v1', saveDataSuccessExecution: 'all' },
   };
   const problems = validateS12Candidate(workflow);
   if (problems.length) throw new Error('candidate validation: ' + problems.join('; '));
@@ -189,6 +190,7 @@ export function validateS12Candidate(workflow) {
   for (const name of [WEBHOOK, VALIDATE, VALID, SEND, SENT, NOT_SENT, INVALID])
     check(byName(name).length === 1, name + ' must exist exactly once');
   check(new Set(nodes.map(n => n.name)).size === nodes.length, 'duplicate node names');
+  check(workflow.settings?.saveDataSuccessExecution === 'all', 'S12 must save successful executions');
 
   const triggers = nodes.filter(n => /trigger|webhook/i.test(n.type) && n.type !== 'n8n-nodes-base.respondToWebhook');
   check(triggers.length === 1 && triggers[0].name === WEBHOOK, WEBHOOK + ' must be the only trigger');
