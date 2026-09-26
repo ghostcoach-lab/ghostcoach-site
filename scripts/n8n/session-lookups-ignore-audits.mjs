@@ -4,10 +4,11 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { validateS3Repair } from './s3-session-end-repair.mjs';
 
-const AUDIT_FILTER = '&is_pricing_audit=is.false';
+// Skip audits, and skip chats that were opened but never finished (still `pending`).
+const SESSION_FILTERS = '&is_pricing_audit=is.false&processing_status=eq.complete';
 const API_KEY = /&apikey=[^`&$]+(?=`)/;
 // Each lookup URL as published, with the live apikey value replaced by KEY.
-// The filter goes in immediately before &select=.
+// The filters go in immediately before &select=.
 const LOOKUPS = {
   s4: {
     node: 'Fetch 3 Recent Sessions1',
@@ -20,7 +21,7 @@ const LOOKUPS = {
     url: "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$('Validate Claimed Session').first().json.user_id}&id=neq.${$('Validate Claimed Session').first().json.session_id}&select=action_committed,session_number&order=created_at.desc&limit=1&apikey=KEY` }}",
   },
 };
-const withAuditFilter = url => url.replace('&select=', AUDIT_FILTER + '&select=');
+const withAuditFilter = url => url.replace('&select=', SESSION_FILTERS + '&select=');
 const withoutKey = url => (url ?? '').replace(API_KEY, '&apikey=KEY');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 

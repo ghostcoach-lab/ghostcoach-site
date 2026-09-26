@@ -22,12 +22,13 @@ const lookupUrl = (wf, name) => new URL(runInNewContext(node(wf, name).parameter
   $: () => ({ first: () => ({ json: { user_id: userId, session_id: sessionId } }) }),
 }, { timeout: 1000 }));
 const params = url => Object.fromEntries([...url.searchParams].filter(([k]) => k !== 'apikey'));
+const ADDED_FILTERS = { is_pricing_audit: 'is.false', processing_status: 'eq.complete' };
 
-test('the S4 recent-sessions lookup excludes audit sessions and nothing else changes in it', () => {
+test('the S4 recent-sessions lookup keeps only completed coaching sessions and nothing else changes in it', () => {
   const before = lookupUrl(s4, S4_LOOKUP);
   const after = lookupUrl(excludeAuditsFromS4(s4), S4_LOOKUP);
   assert.equal(after.pathname, '/rest/v1/sessions');
-  assert.deepEqual(params(after), { ...params(before), is_pricing_audit: 'is.false' });
+  assert.deepEqual(params(after), { ...params(before), ...ADDED_FILTERS });
   assert.deepEqual(params(before), {
     user_id: 'eq.' + userId,
     select: 'summary,action_committed,goal_progress_score,created_at',
@@ -37,11 +38,11 @@ test('the S4 recent-sessions lookup excludes audit sessions and nothing else cha
   assert.equal(after.searchParams.get('apikey'), before.searchParams.get('apikey'));
 });
 
-test('the S3 previous-session lookup excludes audit sessions and nothing else changes in it', () => {
+test('the S3 previous-session lookup keeps only completed coaching sessions and nothing else changes in it', () => {
   const before = lookupUrl(s3, S3_LOOKUP);
   const after = lookupUrl(excludeAuditsFromS3(s3), S3_LOOKUP);
   assert.equal(after.pathname, '/rest/v1/sessions');
-  assert.deepEqual(params(after), { ...params(before), is_pricing_audit: 'is.false' });
+  assert.deepEqual(params(after), { ...params(before), ...ADDED_FILTERS });
   assert.deepEqual(params(before), {
     user_id: 'eq.' + userId,
     id: 'neq.' + sessionId,
@@ -74,7 +75,8 @@ for (const [label, transform, source, lookup] of [
     const variants = {
       'missing lookup': wf => { wf.nodes = wf.nodes.filter(n => n.name !== lookup); },
       'duplicate lookup': wf => { wf.nodes.push({ ...node(wf, lookup), id: 'dup' }); },
-      'lookup already filtered': wf => { node(wf, lookup).parameters.url = node(wf, lookup).parameters.url.replace('&select=', '&is_pricing_audit=is.false&select='); },
+      'lookup already filters audits': wf => { node(wf, lookup).parameters.url = node(wf, lookup).parameters.url.replace('&select=', '&is_pricing_audit=is.false&select='); },
+      'lookup already filters status': wf => { node(wf, lookup).parameters.url = node(wf, lookup).parameters.url.replace('&select=', '&processing_status=eq.complete&select='); },
       'lookup query changed': wf => { node(wf, lookup).parameters.url = node(wf, lookup).parameters.url.replace('order=created_at.desc', 'order=id.desc'); },
       'lookup table changed': wf => { node(wf, lookup).parameters.url = node(wf, lookup).parameters.url.replace('/sessions?', '/digests?'); },
       'lookup is not a read': wf => { node(wf, lookup).parameters.method = 'DELETE'; },

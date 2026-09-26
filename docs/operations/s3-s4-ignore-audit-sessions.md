@@ -4,18 +4,22 @@ Status: candidates only. Publishing S4 and S3 is a separate step that needs appr
 
 ## The change
 
-Each candidate adds `is_pricing_audit=is.false` to exactly one `sessions` lookup and changes
-nothing else. The column is `not null` with default `false`, so every existing row is kept and the
-filter has no effect until an audit exists.
+Each candidate adds two filters to exactly one `sessions` lookup and changes nothing else:
+
+- `is_pricing_audit=is.false` skips audit sessions. The column is `not null` with default
+  `false`, so this filter has no effect until an audit exists.
+- `processing_status=eq.complete` skips chats that were opened and never finished. The chat page
+  creates a `pending` row on page load, and S3 sets `complete` when a session ends. This filter
+  takes effect at once: abandoned `pending` rows stop showing in the digest and in goal-progress
+  scoring. The client approved it as a paid addition.
 
 | Workflow | Node | Effect |
 | --- | --- | --- |
-| S4 Monday digest | `Fetch 3 Recent Sessions1` | The 3 most recent sessions are coaching sessions only, so an audit can't take a slot and show as "No summary". |
-| S3 session end | `Fetch Previous Session` | The previous session used for goal-progress scoring is the last coaching session, never an audit. |
+| S4 Monday digest | `Fetch 3 Recent Sessions1` | The 3 most recent sessions are finished coaching sessions only, so an audit or an abandoned chat can't take a slot and show as "No summary". |
+| S3 session end | `Fetch Previous Session` | The previous session used for goal-progress scoring is the last finished coaching session, never an audit or an abandoned chat. |
 
-The filter goes in just before `&select=`. The owner filter, the other filters, the columns, the
-order, the limit, the credential and the `apikey` are unchanged. The optional filter for abandoned
-`pending` sessions is not part of this change.
+The filters go in just before `&select=`. The owner filter, the other filters, the columns, the
+order, the limit, the credential and the `apikey` are unchanged.
 
 The S3 transformer also checks the input and the candidate against the session-end repair from #4
 (`validateS3Repair`). It refuses an S3 that doesn't have the repair, and fails if the candidate
@@ -42,7 +46,7 @@ never calls n8n or any other service.
    Expect `changedNodes` to hold only the lookup node, with empty `addedNodes`, `removedNodes`,
    `changedConnections` and `otherChanges`, and no `validationProblems`. A failed run prints only a
    generic message; inspect the input privately. The transformer refuses a snapshot whose lookup
-   query, method or credential has changed, or that already has the filter.
+   query, method or credential has changed, or that already has either filter.
 3. **Write each candidate privately:**
 
    ```powershell
@@ -51,7 +55,7 @@ never calls n8n or any other service.
 
    Never print this output; it includes the live credentials and keys from the input.
 4. **Review.** Compare each candidate with its snapshot's `activeVersion` key-order-insensitively.
-   The only difference is the lookup URL, with the filter in front of `&select=`.
+   The only difference is the lookup URL, with the two filters in front of `&select=`.
 
 When publishing S3, keep the unrelated unpublished draft edits: start from the published version,
 publish the candidate, then re-save the draft edits on top as a draft.
