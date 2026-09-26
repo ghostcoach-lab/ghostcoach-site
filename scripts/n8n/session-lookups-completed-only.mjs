@@ -12,16 +12,16 @@ const API_KEY = /&apikey=[^`&$]+(?=`)/;
 const LOOKUPS = {
   s4: {
     node: 'Fetch 3 Recent Sessions1',
-    transform: excludeAuditsFromS4,
+    transform: keepCompletedSessionsInS4,
     url: '={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$json.user_id}&select=summary,action_committed,goal_progress_score,created_at&order=created_at.desc&limit=3&apikey=KEY` }}',
   },
   s3: {
     node: 'Fetch Previous Session',
-    transform: excludeAuditsFromS3,
+    transform: keepCompletedSessionsInS3,
     url: "={{ `${$vars.SUPABASE_URL}/rest/v1/sessions?user_id=eq.${$('Validate Claimed Session').first().json.user_id}&id=neq.${$('Validate Claimed Session').first().json.session_id}&select=action_committed,session_number&order=created_at.desc&limit=1&apikey=KEY` }}",
   },
 };
-const withAuditFilter = url => url.replace('&select=', SESSION_FILTERS + '&select=');
+const withSessionFilters = url => url.replace('&select=', SESSION_FILTERS + '&select=');
 const withoutKey = url => (url ?? '').replace(API_KEY, '&apikey=KEY');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
@@ -43,39 +43,39 @@ function isSupabaseRead(n) {
     n.parameters.nodeCredentialType === 'supabaseApi' && !!n.credentials?.supabaseApi?.id;
 }
 
-function addAuditFilter(source, which) {
+function addSessionFilters(source, which) {
   const { node: name, url } = lookupFor(which);
   const workflow = structuredClone(source);
   const lookup = onlyNode(workflow, name);
   if (!isSupabaseRead(lookup)) throw new Error('expected ' + name + ' to be a Supabase read');
   if (withoutKey(lookup.parameters.url) !== url) throw new Error('unexpected ' + name + ' query');
-  lookup.parameters.url = withAuditFilter(lookup.parameters.url);
-  const problems = validateAuditFilter(workflow, which);
+  lookup.parameters.url = withSessionFilters(lookup.parameters.url);
+  const problems = validateSessionFilters(workflow, which);
   if (problems.length) throw new Error('candidate validation: ' + problems.join('; '));
   return workflow;
 }
 
-export function excludeAuditsFromS4(source) {
-  return addAuditFilter(source, 's4');
+export function keepCompletedSessionsInS4(source) {
+  return addSessionFilters(source, 's4');
 }
 
-export function excludeAuditsFromS3(source) {
+export function keepCompletedSessionsInS3(source) {
   if (validateS3Repair(source).length) throw new Error('expected S3 with the session-end repair published');
-  const workflow = addAuditFilter(source, 's3');
+  const workflow = addSessionFilters(source, 's3');
   const problems = validateS3Repair(workflow);
   if (problems.length) throw new Error('candidate lost the session-end repair: ' + problems.join('; '));
   return workflow;
 }
 
-export function validateAuditFilter(workflow, which) {
+export function validateSessionFilters(workflow, which) {
   const { node: name, url } = lookupFor(which);
   const problems = [];
   const matches = workflow.nodes?.filter(n => n.name === name) ?? [];
   if (matches.length !== 1) return [name + ' must exist exactly once'];
   const [lookup] = matches;
   if (!isSupabaseRead(lookup)) problems.push(name + ' must be a Supabase read');
-  if (withoutKey(lookup.parameters.url) !== withAuditFilter(url))
-    problems.push(name + ' must exclude audit sessions and otherwise keep its query');
+  if (withoutKey(lookup.parameters.url) !== withSessionFilters(url))
+    problems.push(name + ' must keep only completed coaching sessions and otherwise keep its query');
   return problems;
 }
 
@@ -105,7 +105,7 @@ export function prepareCandidate(snapshot, which) {
   const candidate = transform(base);
   return { candidate, report: { workflow: which, sourceActiveVersionId: wrapper.activeVersionId,
     sourceDraftVersionId: wrapper.versionId, diff: diffWorkflows(base, candidate),
-    validationProblems: validateAuditFilter(candidate, which) } };
+    validationProblems: validateSessionFilters(candidate, which) } };
 }
 
 // Default CLI prints a safe report; --emit-private-json output holds live credentials and must never be logged.

@@ -1,4 +1,4 @@
-# S4 and S3 candidates: ignore audit sessions
+# S4 and S3 candidates: completed coaching sessions only
 
 Status: candidates only. Publishing S4 and S3 is a separate step that needs approval (#15).
 
@@ -11,7 +11,7 @@ Each candidate adds two filters to exactly one `sessions` lookup and changes not
 - `processing_status=eq.complete` skips chats that were opened and never finished. The chat page
   creates a `pending` row on page load, and S3 sets `complete` when a session ends. This filter
   takes effect at once: abandoned `pending` rows stop showing in the digest and in goal-progress
-  scoring. The client approved it as a paid addition.
+  scoring. Added at the client's request (paid addition).
 
 | Workflow | Node | Effect |
 | --- | --- | --- |
@@ -21,13 +21,17 @@ Each candidate adds two filters to exactly one `sessions` lookup and changes not
 The filters go in just before `&select=`. The owner filter, the other filters, the columns, the
 order, the limit, the credential and the `apikey` are unchanged.
 
+Publish one candidate per workflow, with both filters at once. The transformer refuses a lookup
+that already has either filter, so it can't add the second filter to a workflow that was
+published with only the first.
+
 The S3 transformer also checks the input and the candidate against the session-end repair from #4
 (`validateS3Repair`). It refuses an S3 that doesn't have the repair, and fails if the candidate
 loses it.
 
 ## Producing and reviewing the candidates
 
-The transformer is `scripts/n8n/session-lookups-ignore-audits.mjs`. It is pure and offline, and
+The transformer is `scripts/n8n/session-lookups-completed-only.mjs`. It is pure and offline, and
 never calls n8n or any other service.
 
 1. **Export the live workflows (read-only).** For each workflow, fetch it with the n8n public API:
@@ -39,8 +43,8 @@ never calls n8n or any other service.
 2. **Print the safe report for each workflow:**
 
    ```powershell
-   node scripts/n8n/session-lookups-ignore-audits.mjs --report s4 <private S4 snapshot>
-   node scripts/n8n/session-lookups-ignore-audits.mjs --report s3 <private S3 snapshot>
+   node scripts/n8n/session-lookups-completed-only.mjs --report s4 <private S4 snapshot>
+   node scripts/n8n/session-lookups-completed-only.mjs --report s3 <private S3 snapshot>
    ```
 
    Expect `changedNodes` to hold only the lookup node, with empty `addedNodes`, `removedNodes`,
@@ -50,7 +54,7 @@ never calls n8n or any other service.
 3. **Write each candidate privately:**
 
    ```powershell
-   node scripts/n8n/session-lookups-ignore-audits.mjs --emit-private-json s4 <private S4 snapshot> > <private-backups>\s4-ignore-audits-candidate-<date>.json
+   node scripts/n8n/session-lookups-completed-only.mjs --emit-private-json s4 <private S4 snapshot> > <private-backups>\s4-completed-only-candidate-<date>.json
    ```
 
    Never print this output; it includes the live credentials and keys from the input.
@@ -60,7 +64,7 @@ never calls n8n or any other service.
 When publishing S3, keep the unrelated unpublished draft edits: start from the published version,
 publish the candidate, then re-save the draft edits on top as a draft.
 
-Tests: `node --test tests/n8n/session-lookups-ignore-audits.test.mjs`.
+Tests: `node --test tests/n8n/session-lookups-completed-only.test.mjs`.
 - **S4 fixture:** `tests/n8n/fixtures/s4-published.json` is a sanitized copy of the published
   workflow. Credentials, keys, node IDs, email content and code are replaced with placeholders.
 - **S3 test input:** the published S3 is rebuilt in the tests by applying the #4 repair to the

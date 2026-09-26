@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { repairS3Workflow, validateS3Repair } from '../../scripts/n8n/s3-session-end-repair.mjs';
 import {
-  excludeAuditsFromS3, excludeAuditsFromS4, validateAuditFilter, diffWorkflows, prepareCandidate,
-} from '../../scripts/n8n/session-lookups-ignore-audits.mjs';
+  keepCompletedSessionsInS3, keepCompletedSessionsInS4, validateSessionFilters, diffWorkflows, prepareCandidate,
+} from '../../scripts/n8n/session-lookups-completed-only.mjs';
 
 const fixture = name => JSON.parse(readFileSync(new URL(`./fixtures/${name}`, import.meta.url)));
 const s4 = fixture('s4-published.json');
@@ -26,7 +26,7 @@ const ADDED_FILTERS = { is_pricing_audit: 'is.false', processing_status: 'eq.com
 
 test('the S4 recent-sessions lookup keeps only completed coaching sessions and nothing else changes in it', () => {
   const before = lookupUrl(s4, S4_LOOKUP);
-  const after = lookupUrl(excludeAuditsFromS4(s4), S4_LOOKUP);
+  const after = lookupUrl(keepCompletedSessionsInS4(s4), S4_LOOKUP);
   assert.equal(after.pathname, '/rest/v1/sessions');
   assert.deepEqual(params(after), { ...params(before), ...ADDED_FILTERS });
   assert.deepEqual(params(before), {
@@ -40,7 +40,7 @@ test('the S4 recent-sessions lookup keeps only completed coaching sessions and n
 
 test('the S3 previous-session lookup keeps only completed coaching sessions and nothing else changes in it', () => {
   const before = lookupUrl(s3, S3_LOOKUP);
-  const after = lookupUrl(excludeAuditsFromS3(s3), S3_LOOKUP);
+  const after = lookupUrl(keepCompletedSessionsInS3(s3), S3_LOOKUP);
   assert.equal(after.pathname, '/rest/v1/sessions');
   assert.deepEqual(params(after), { ...params(before), ...ADDED_FILTERS });
   assert.deepEqual(params(before), {
@@ -53,8 +53,8 @@ test('the S3 previous-session lookup keeps only completed coaching sessions and 
 });
 
 for (const [label, transform, source, lookup] of [
-  ['S4', excludeAuditsFromS4, s4, S4_LOOKUP],
-  ['S3', excludeAuditsFromS3, s3, S3_LOOKUP],
+  ['S4', keepCompletedSessionsInS4, s4, S4_LOOKUP],
+  ['S3', keepCompletedSessionsInS3, s3, S3_LOOKUP],
 ]) {
   test(`${label}: the diff shows only the lookup URL change`, () => {
     const before = JSON.stringify(source);
@@ -67,8 +67,8 @@ for (const [label, transform, source, lookup] of [
     const { url: _before, ...original } = node(source, lookup).parameters;
     assert.deepEqual(rest, original);
     assert.deepEqual({ ...node(candidate, lookup), parameters: null }, { ...node(source, lookup), parameters: null });
-    assert.deepEqual(validateAuditFilter(candidate, label.toLowerCase()), []);
-    assert.ok(validateAuditFilter(source, label.toLowerCase()).length);
+    assert.deepEqual(validateSessionFilters(candidate, label.toLowerCase()), []);
+    assert.ok(validateSessionFilters(source, label.toLowerCase()).length);
   });
 
   test(`${label}: input that does not match the expected shape is refused`, () => {
@@ -91,10 +91,10 @@ for (const [label, transform, source, lookup] of [
 }
 
 test('S3: the #4 repair is preserved, and an unrepaired S3 is refused', () => {
-  const candidate = excludeAuditsFromS3(s3);
+  const candidate = keepCompletedSessionsInS3(s3);
   assert.deepEqual(validateS3Repair(s3), []);
   assert.deepEqual(validateS3Repair(candidate), []);
-  assert.throws(() => excludeAuditsFromS3(fixture('s3-published.json')), /repair/);
+  assert.throws(() => keepCompletedSessionsInS3(fixture('s3-published.json')), /repair/);
 });
 
 test('S3 repair code is generated with LF line endings on any checkout', () => {

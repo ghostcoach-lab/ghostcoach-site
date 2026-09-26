@@ -53,7 +53,7 @@ Each correction is a no-op while no audit exists, so all three go live first. Th
 The procedure for each workflow is in its candidate runbook:
 
 - S6: `docs/operations/s6-account-deletion-audits.md` (PR #18);
-- S4 and S3: `docs/operations/s3-s4-ignore-audit-sessions.md` (PR #19).
+- S4 and S3: `docs/operations/s3-s4-completed-sessions-only.md` (PR #19).
 
 Publish one workflow at a time, with an approval that names it.
 
