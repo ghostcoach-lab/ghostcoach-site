@@ -6,6 +6,7 @@ $tempRoot = Join-Path $tempBase "ghostcoach-pricing-audit-runtime-$PID"
 $projectId = 'ghostcoach-pricing-audit-runtime-test'
 $cliVersion = '2.117.0'
 $stackStarted = $false
+$cleanupFailed = $false
 
 function Invoke-Checked([scriptblock] $Command, [string] $FailureMessage) {
   & $Command
@@ -15,11 +16,11 @@ function Invoke-Checked([scriptblock] $Command, [string] $FailureMessage) {
 }
 
 try {
-  New-Item -ItemType Directory -Path (Join-Path $tempRoot 'supabase/functions') -Force | Out-Null
+  New-Item -ItemType Directory -Path (Join-Path $tempRoot 'supabase') -Force | Out-Null
   Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'config.toml') `
     -Destination (Join-Path $tempRoot 'supabase/config.toml')
-  Copy-Item -LiteralPath (Join-Path $repoRoot 'supabase/functions/pricing-audit-eligibility') `
-    -Destination (Join-Path $tempRoot 'supabase/functions/pricing-audit-eligibility') `
+  Copy-Item -LiteralPath (Join-Path $repoRoot 'supabase/functions') `
+    -Destination (Join-Path $tempRoot 'supabase/functions') `
     -Recurse
 
   Invoke-Checked {
@@ -38,12 +39,16 @@ try {
     throw "Could not install the runtime baseline (exit code $LASTEXITCODE)."
   }
 
-  Get-Content -Raw -LiteralPath `
-    (Join-Path $repoRoot 'supabase/migrations/20260919105053_quarterly_pricing_audit_foundation.sql') |
-    docker exec --interactive $dbContainer `
-      psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres
-  if ($LASTEXITCODE -ne 0) {
-    throw "Could not apply the pricing-audit migration (exit code $LASTEXITCODE)."
+  foreach ($migration in @(
+    '20260919105053_quarterly_pricing_audit_foundation.sql',
+    '20260924170000_pricing_audit_completion.sql'
+  )) {
+    Get-Content -Raw -LiteralPath (Join-Path $repoRoot "supabase/migrations/$migration") |
+      docker exec --interactive $dbContainer `
+        psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres
+    if ($LASTEXITCODE -ne 0) {
+      throw "Could not apply migration $migration (exit code $LASTEXITCODE)."
+    }
   }
 
   docker exec $dbContainer psql --set ON_ERROR_STOP=1 --username postgres --dbname postgres `
@@ -67,8 +72,16 @@ try {
   } 'Pricing-audit runtime assertions failed'
 }
 finally {
+  # Windows PowerShell 5.1 turns redirected native stderr, such as the CLI's update notice, into
+  # a terminating error under 'Stop', which would fail a passing run and skip the temp folder
+  # removal below. So cleanup judges the exit code instead.
+  $ErrorActionPreference = 'Continue'
   if ($stackStarted) {
     npx -y "supabase@$cliVersion" stop --workdir $tempRoot --no-backup 2>$null | Out-Null
+    if ($LASTEXITCODE -ne 0) {
+      $cleanupFailed = $true
+      Write-Warning "Could not stop the isolated Supabase stack (exit code $LASTEXITCODE). Stop it with: npx supabase@$cliVersion stop --project-id $projectId --no-backup"
+    }
   }
 
   $resolvedTempRoot = [IO.Path]::GetFullPath($tempRoot)
@@ -81,4 +94,8 @@ finally {
   ) {
     Remove-Item -LiteralPath $resolvedTempRoot -Recurse -Force -ErrorAction SilentlyContinue
   }
+}
+
+if ($cleanupFailed) {
+  exit 1
 }

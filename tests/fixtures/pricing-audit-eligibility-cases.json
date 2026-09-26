@@ -1,0 +1,104 @@
+[
+  {
+    "name": "active Operator, Welcome audit available",
+    "record": { "plan": "operator", "status": "active", "trial_end": null, "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "eligible", "is_welcome_audit": true }
+  },
+  {
+    "name": "Operator in an unexpired trial",
+    "record": { "plan": "operator", "status": "trialing", "trial_end": "2026-09-20T12:00:00.000Z", "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "eligible", "is_welcome_audit": true }
+  },
+  {
+    "name": "Operator at the trial expiry instant",
+    "record": { "plan": "operator", "status": "trialing", "trial_end": "2026-09-19T12:00:00.000Z", "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "Operator trial with no end date",
+    "record": { "plan": "operator", "status": "trialing", "trial_end": null, "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "active Lifetime customer",
+    "record": { "plan": "lifetime", "status": "active", "trial_end": null, "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "eligible", "is_welcome_audit": true }
+  },
+  {
+    "name": "active Builder",
+    "record": { "plan": "builder", "status": "active", "trial_end": null, "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "trialing Builder",
+    "record": { "plan": "builder", "status": "trialing", "trial_end": "2026-09-20T12:00:00.000Z", "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "past-due Operator",
+    "record": { "plan": "operator", "status": "past_due", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": "2026-06-01T08:00:00.000Z" },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "canceled Lifetime customer",
+    "record": { "plan": "lifetime", "status": "canceled", "trial_end": null, "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "pending Operator",
+    "record": { "plan": "operator", "status": "pending", "trial_end": null, "welcome_audit_used": false, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "inside the Cooldown",
+    "record": { "plan": "operator", "status": "active", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": "2026-08-01T09:30:00.000Z" },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "gated", "next_eligible_date": "2026-10-30" }
+  },
+  {
+    "name": "one millisecond before 90 days",
+    "record": { "plan": "lifetime", "status": "active", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": "2026-06-21T12:00:00.000Z" },
+    "now": "2026-09-19T11:59:59.999Z",
+    "expected": { "state": "gated", "next_eligible_date": "2026-09-19" }
+  },
+  {
+    "name": "exactly 90 days after the last Completion",
+    "record": { "plan": "operator", "status": "active", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": "2026-06-21T12:00:00.000Z" },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "eligible", "is_welcome_audit": false }
+  },
+  {
+    "name": "Cooldown over a DST change and a non-UTC completion time",
+    "record": { "plan": "operator", "status": "active", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": "2026-02-10T23:30:00.000-05:00" },
+    "now": "2026-05-12T04:29:59.000Z",
+    "expected": { "state": "gated", "next_eligible_date": "2026-05-12" }
+  },
+  {
+    "name": "trialing Operator inside the Cooldown",
+    "record": { "plan": "operator", "status": "trialing", "trial_end": "2026-09-20T12:00:00.000Z", "welcome_audit_used": true, "last_audit_completed_at": "2026-09-18T23:30:00.000Z" },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "gated", "next_eligible_date": "2026-12-17" }
+  },
+  {
+    "name": "not Entitled with an inconsistent audit state",
+    "record": { "plan": "builder", "status": "active", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "state": "not_entitled" }
+  },
+  {
+    "name": "Entitled with a used Welcome audit but no Completion time",
+    "record": { "plan": "operator", "status": "active", "trial_end": null, "welcome_audit_used": true, "last_audit_completed_at": null },
+    "now": "2026-09-19T12:00:00.000Z",
+    "expected": { "error": true }
+  }
+]

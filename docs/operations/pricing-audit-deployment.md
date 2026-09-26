@@ -1,5 +1,9 @@
 # Pricing audit deployment and rollback
 
+> Milestone 2 (completion, audit chat, S12 and the live QA run) has its own runbook:
+> [pricing-audit-m2-rollout.md](pricing-audit-m2-rollout.md). This page covers the Milestone 1
+> foundation.
+
 The account-page adapter is live through Netlify and is protected by
 `GC.PRICING_AUDIT_ENABLED`, which defaults to `false`. While disabled, the entire pricing-audit
 section remains hidden and the browser does not invoke the eligibility Edge Function. Do not
@@ -24,9 +28,13 @@ testing and receive frontend release approval.
 
 ```powershell
 node --test tests/js/pricing-audit.test.cjs
-node --experimental-strip-types --test tests/functions/pricing-audit-eligibility.test.ts
+node --test tests/n8n/s12-pricing-audit-recap.test.mjs
+node --test tests/qa/pricing-audit-live-qa.test.mjs
+node --experimental-strip-types --test tests/functions/pricing-audit-eligibility.test.ts tests/functions/pricing-audit-eligibility-decision.test.ts tests/functions/pricing-audit-eligibility-parity.test.ts tests/functions/marcus-audit-chat.test.ts tests/functions/marcus-audit-chat-config.test.ts tests/functions/pricing-audit-complete.test.ts tests/functions/pricing-audit-complete-config.test.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/handler.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/index.ts
+npx -y deno check supabase/functions/marcus-audit-chat/index.ts
+npx -y deno check supabase/functions/pricing-audit-complete/index.ts
 & ./tests/migrations/run-quarterly-pricing-audit-foundation.ps1
 & ./tests/supabase/run-pricing-audit-runtime.ps1
 ```
