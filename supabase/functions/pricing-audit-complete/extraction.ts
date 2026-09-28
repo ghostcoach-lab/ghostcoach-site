@@ -51,7 +51,7 @@ Report only what Marcus actually said. Never infer, guess or fill a gap. The cus
 - number: for raise or restructure, the new price or figure Marcus named, as he wrote it (with currency or unit). null for hold.
 - deadline: the date by which the customer must act, as YYYY-MM-DD. Resolve a relative phrase ("in 30 days", "by the end of next month") from the completion date given, in UTC.
 - reasoning: Marcus's reasoning for the Verdict, briefly, in his words.
-- baseline: what Marcus recorded for value_anchor (what customers pay for), friction_read (friction in buying or paying), mix (who the customers are) and churn_window (when customers leave).
+- baseline: what Marcus recorded for value_anchor (what the product replaces for the customer, and what that alternative costs them), friction_read (friction in buying or paying), mix (the billing mix across monthly, annual and one-time, and where revenue is concentrated) and churn_window (when customers leave).
 
 If Marcus gave no Verdict, gave more than one without settling on one, or left the action, number, deadline, reasoning or any part of the Baseline missing or unclear, set verdict_found to false and every other field to null.`;
 

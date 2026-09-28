@@ -13,7 +13,11 @@ create table public.users (
 
 create table public.profiles (
   user_id uuid primary key references public.users(id) on delete cascade,
-  pricing_audit_last_date timestamptz
+  pricing_audit_last_date timestamptz,
+  product text,
+  stage text,
+  bottleneck text,
+  goal_90_day text
 );
 
 -- Mirrors the live sessions columns and numbering trigger.
@@ -58,6 +62,11 @@ alter table public.sessions enable row level security;
 create policy users_select_own
 on public.users for select to authenticated
 using ((select auth.uid()) = id);
+
+-- The live frontend reads its own profile with the user's JWT (js/pages/chat.js).
+create policy profiles_select_own
+on public.profiles for select to authenticated
+using ((select auth.uid()) = user_id);
 
 create policy sessions_select_own
 on public.sessions for select to authenticated

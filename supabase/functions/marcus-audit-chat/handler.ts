@@ -13,6 +13,14 @@ export interface AuthenticatedUser {
   userId: string;
 }
 
+// The profiles columns given to Marcus. index.ts selects exactly these.
+const BUSINESS_PROFILE_FIELDS = ["product", "stage", "bottleneck", "goal_90_day"] as const;
+// Profile fields are user-editable, so each is cut to this length before it reaches Marcus.
+export const BUSINESS_PROFILE_FIELD_MAX_CHARS = 1000;
+type BusinessProfileField = typeof BUSINESS_PROFILE_FIELDS[number];
+
+export type BusinessProfileRow = Record<BusinessProfileField, string | null>;
+
 export interface PriorAuditRow {
   completed_at: string;
   verdict_action: string;
@@ -27,6 +35,7 @@ export interface AuditChatDependencies {
   readEligibilityRecord(userId: string): Promise<EligibilityRecord | null>;
   sessionExists(sessionId: string): Promise<boolean>;
   readPriorAudits(userId: string, limit: number): Promise<PriorAuditRow[]>;
+  readBusinessProfile(userId: string): Promise<BusinessProfileRow | null>;
   createMessage(params: Anthropic.MessageCreateParamsNonStreaming, timeoutMs: number): Promise<Anthropic.Message>;
   loadConfig(): AuditChatConfig;
   now(): Date;
@@ -38,22 +47,44 @@ export const AUDIT_OPENING_TURN =
   "(Pricing audit starting. My audit intake is in the audit data. Open the audit, per your instructions.)";
 const PRIOR_AUDIT_LIMIT = 2;
 
-function auditDataBlock(priorAudits: PriorAuditRow[], intake: AuditIntake, now: Date): string {
+function businessProfile(row: BusinessProfileRow | null): BusinessProfileRow | null {
+  if (!row) return null;
+  return Object.fromEntries(BUSINESS_PROFILE_FIELDS.map((field) => {
+    const value = row[field];
+    return [field, typeof value === "string" && value.trim() ? value.slice(0, BUSINESS_PROFILE_FIELD_MAX_CHARS) : null];
+  })) as BusinessProfileRow;
+}
+
+function priorAudit(audit: PriorAuditRow | undefined, today: string) {
+  if (!audit) return null;
+  return {
+    completed_on: audit.completed_at.slice(0, 10),
+    verdict: {
+      action: audit.verdict_action,
+      number: audit.verdict_number,
+      deadline: audit.verdict_deadline,
+      reasoning: audit.verdict_reasoning,
+    },
+    baseline: audit.baseline,
+    deadline_passed: audit.verdict_deadline === null ? null : today > audit.verdict_deadline,
+  };
+}
+
+// Keys are the names the audit prompt expects. priorAudits is newest first.
+function auditDataBlock(
+  isWelcomeAudit: boolean,
+  profile: BusinessProfileRow | null,
+  priorAudits: PriorAuditRow[],
+  intake: AuditIntake,
+  now: Date,
+): string {
   const today = now.toISOString().slice(0, 10);
   const data = {
     today,
-    welcome_audit: priorAudits.length === 0,
-    prior_audits: priorAudits.map((audit) => ({
-      completed_on: audit.completed_at.slice(0, 10),
-      verdict: {
-        action: audit.verdict_action,
-        number: audit.verdict_number,
-        deadline: audit.verdict_deadline,
-        reasoning: audit.verdict_reasoning,
-      },
-      baseline: audit.baseline,
-      deadline_passed: audit.verdict_deadline === null ? null : today > audit.verdict_deadline,
-    })),
+    is_welcome_audit: isWelcomeAudit,
+    business_profile: businessProfile(profile),
+    prior_audit: priorAudit(priorAudits[0], today),
+    earlier_audit: priorAudit(priorAudits[1], today),
     audit_intake: intake,
   };
   return `<audit_data>\n${JSON.stringify(data, null, 2)}\n</audit_data>`;
@@ -105,11 +136,18 @@ export function createMarcusAuditChatHandler(
       if (decision.state === "gated") return refuse("gated", { next_eligible_date: decision.nextEligibleDate });
       if (await dependencies.sessionExists(sessionId)) return refuse("session_conflict");
 
-      const priorAudits = await dependencies.readPriorAudits(user.userId, PRIOR_AUDIT_LIMIT);
+      const [priorAudits, profile] = await Promise.all([
+        dependencies.readPriorAudits(user.userId, PRIOR_AUDIT_LIMIT),
+        dependencies.readBusinessProfile(user.userId),
+      ]);
       system = [
         // The prompt is identical for every caller, so it is cached separately from the data.
         { type: "text", text: config.prompt, cache_control: { type: "ephemeral" } },
-        { type: "text", text: auditDataBlock(priorAudits, auditIntake, dependencies.now()) },
+        {
+          type: "text",
+          // The eligibility decision is also Completion's source for the Welcome audit flag.
+          text: auditDataBlock(decision.isWelcomeAudit, profile, priorAudits, auditIntake, dependencies.now()),
+        },
       ];
     } catch (error) {
       dependencies.logError("marcus-audit-chat: data access", error);

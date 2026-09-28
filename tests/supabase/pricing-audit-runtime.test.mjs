@@ -74,8 +74,8 @@ await serviceInsert("users", [
   { id: otherId, plan: "builder", status: "active" },
 ]);
 await serviceInsert("profiles", [
-  { user_id: ownerId },
-  { user_id: otherId },
+  { user_id: ownerId, product: null },
+  { user_id: otherId, product: "Other user's business profile." },
 ]);
 
 const ownerSession = "10000000-0000-0000-0000-000000000001";
@@ -212,6 +212,9 @@ try {
     welcome_audit_used: true,
     last_audit_completed_at: "2026-05-01T09:00:00.000Z",
   }]);
+  await serviceInsert("profiles", [{
+    user_id: returningId, product: "Returning product.", stage: "Growing", bottleneck: null, goal_90_day: "Hit 10k MRR",
+  }]);
   const returningSessions = [
     ["10000000-0000-0000-0000-000000000003", "2026-01-10T09:00:00.000Z", "returning-oldest"],
     ["10000000-0000-0000-0000-000000000004", "2026-03-01T09:00:00.000Z", "returning-middle"],
@@ -255,12 +258,15 @@ try {
   assert.equal(sent.body.model, "claude-opus-5-5");
   assert.equal(sent.body.system[0].text, "Runtime-test placeholder audit prompt.");
   const data = JSON.parse(sent.body.system[1].text.replace(/^<audit_data>\n|\n<\/audit_data>$/g, ""));
-  assert.equal(data.welcome_audit, false);
+  assert.equal(data.is_welcome_audit, false);
   assert.deepEqual(
-    data.prior_audits.map((audit) => audit.verdict.reasoning),
+    [data.prior_audit.verdict.reasoning, data.earlier_audit.verdict.reasoning],
     ["returning-newest", "returning-middle"],
   );
-  for (const foreign of ["Owner-only audit history.", "Other user's audit history."]) {
+  assert.deepEqual(data.business_profile, {
+    product: "Returning product.", stage: "Growing", bottleneck: null, goal_90_day: "Hit 10k MRR",
+  });
+  for (const foreign of ["Owner-only audit history.", "Other user's audit history.", "Other user's business profile."]) {
     assert.equal(JSON.stringify(sent.body).includes(foreign), false);
   }
 
