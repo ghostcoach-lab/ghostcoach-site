@@ -20,6 +20,10 @@ _Avoid_: Result, outcome, recommendation
 The point-in-time pricing picture captured during an audit (value anchor, friction read, mix, churn window). The next audit compares against it.
 _Avoid_: Snapshot, metrics
 
+**Business profile**:
+The customer's own description of their business, from their profile: product, stage, bottleneck and 90-day goal. Marcus is given it with each audit; it is user-editable, so it is context, never entitlement.
+_Avoid_: Profile data, onboarding answers
+
 **Audit intake**:
 The figures the customer states before an audit starts (MRR, customer count, churn, current pricing, last pricing change).
 _Avoid_: Onboarding data, form data

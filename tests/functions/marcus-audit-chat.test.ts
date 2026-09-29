@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createMarcusAuditChatHandler } from "../../supabase/functions/marcus-audit-chat/handler.ts";
+import {
+  BUSINESS_PROFILE_FIELD_MAX_CHARS,
+  createMarcusAuditChatHandler,
+} from "../../supabase/functions/marcus-audit-chat/handler.ts";
 import { AUDIT_CHAT_DEFAULTS } from "../../supabase/functions/marcus-audit-chat/config.ts";
 
 const PROMPT = "TEST-AUDIT-PROMPT-MARKER: run the pricing audit.";
@@ -44,8 +47,10 @@ const thinking = { type: "thinking", thinking: "", signature: "fixture-signature
 const text = (value: string) => ({ type: "text", text: value, citations: null });
 
 function setup(overrides: Record<string, unknown> = {}) {
-  const calls: { params: any[]; priorAudits: unknown[][]; sessions: string[]; logs: unknown[][] } = {
-    params: [], priorAudits: [], sessions: [], logs: [],
+  const calls: {
+    params: any[]; priorAudits: unknown[][]; profiles: string[]; sessions: string[]; logs: unknown[][];
+  } = {
+    params: [], priorAudits: [], profiles: [], sessions: [], logs: [],
   };
   const handler = createMarcusAuditChatHandler({
     authenticate: async () => ({ userId: "user-1" }),
@@ -57,6 +62,10 @@ function setup(overrides: Record<string, unknown> = {}) {
     readPriorAudits: async (...args: unknown[]) => {
       calls.priorAudits.push(args);
       return [];
+    },
+    readBusinessProfile: async (userId: string) => {
+      calls.profiles.push(userId);
+      return null;
     },
     createMessage: async (params: unknown) => {
       calls.params.push(params);
@@ -80,6 +89,15 @@ function post(body: unknown, init: RequestInit = {}) {
 }
 
 const valid = (messages: unknown[] = []) => ({ session_id: sessionId, audit_intake: intake, messages });
+
+const priorRow = (completed: string, deadline: string | null, action = "raise") => ({
+  completed_at: completed,
+  verdict_action: action,
+  verdict_number: action === "hold" ? null : "59",
+  verdict_deadline: deadline,
+  verdict_reasoning: `Reasoning from ${completed}.`,
+  baseline: { value_anchor: "a", friction_read: "b", mix: "c", churn_window: "d" },
+});
 
 function auditData(params: any) {
   const block = params.system[1].text as string;
@@ -147,9 +165,71 @@ test("with no Prior audits the data block marks a Welcome audit", async () => {
   await handler(post(valid()));
   assert.deepEqual(calls.priorAudits, [["user-1", 2]]);
   const data = auditData(calls.params[0]);
-  assert.equal(data.welcome_audit, true);
-  assert.deepEqual(data.prior_audits, []);
+  assert.equal(data.is_welcome_audit, true);
+  assert.equal(data.prior_audit, null);
+  assert.equal(data.earlier_audit, null);
   assert.equal(data.today, "2026-09-24");
+  assert.equal("welcome_audit" in data, false);
+  assert.equal("prior_audits" in data, false);
+});
+
+test("is_welcome_audit follows the user record, as at Completion, not the Prior audit count", async () => {
+  const { handler, calls } = setup({
+    readEligibilityRecord: async () => returningRecord,
+    readPriorAudits: async () => [],
+  });
+  assert.equal((await handler(post(valid()))).status, 200);
+  const data = auditData(calls.params[0]);
+  assert.equal(data.is_welcome_audit, false);
+  assert.equal(data.prior_audit, null);
+});
+
+test("the business profile appears in the data block, read for the caller", async () => {
+  const profile = { product: "Invoicing app", stage: "Growing", bottleneck: "Churn", goal_90_day: "Hit 10k MRR" };
+  const { handler, calls } = setup({
+    readBusinessProfile: async (userId: string) => {
+      calls.profiles.push(userId);
+      return profile;
+    },
+  });
+  await handler(post(valid()));
+  assert.deepEqual(calls.profiles, ["user-1"]);
+  assert.deepEqual(auditData(calls.params[0]).business_profile, profile);
+});
+
+test("a customer with no profile can still run an audit", async () => {
+  const { handler, calls } = setup();
+  assert.equal((await handler(post(valid()))).status, 200);
+  assert.equal(auditData(calls.params[0]).business_profile, null);
+});
+
+test("each business profile field is cut to the cap, and blank fields become null", async () => {
+  const cap = BUSINESS_PROFILE_FIELD_MAX_CHARS;
+  const { handler, calls } = setup({
+    readBusinessProfile: async () => ({
+      product: "p".repeat(cap + 50), stage: "s".repeat(cap), bottleneck: "  ", goal_90_day: null,
+    }),
+  });
+  await handler(post(valid()));
+  assert.deepEqual(auditData(calls.params[0]).business_profile, {
+    product: "p".repeat(cap), stage: "s".repeat(cap), bottleneck: null, goal_90_day: null,
+  });
+});
+
+test("the prompt block is identical for every caller; only the data block differs", async () => {
+  const first = setup();
+  const second = setup({
+    authenticate: async () => ({ userId: "user-2" }),
+    readEligibilityRecord: async () => returningRecord,
+    readPriorAudits: async () => [priorRow("2026-05-01T09:00:00.000Z", "2026-06-30")],
+    readBusinessProfile: async () => ({ product: "x", stage: "y", bottleneck: "z", goal_90_day: "w" }),
+  });
+  await first.handler(post(valid()));
+  await second.handler(post(valid([{ role: "assistant", content: "Hi" }, { role: "user", content: "Hello" }])));
+  const [a, b] = [first.calls.params[0].system, second.calls.params[0].system];
+  assert.deepEqual(a[0], { type: "text", text: PROMPT, cache_control: { type: "ephemeral" } });
+  assert.deepEqual(b[0], a[0]);
+  assert.notEqual(a[1].text, b[1].text);
 });
 
 test("the Audit intake appears in the data block", async () => {
@@ -158,16 +238,7 @@ test("the Audit intake appears in the data block", async () => {
   assert.deepEqual(auditData(calls.params[0]).audit_intake, intake);
 });
 
-const priorRow = (completed: string, deadline: string | null, action = "raise") => ({
-  completed_at: completed,
-  verdict_action: action,
-  verdict_number: action === "hold" ? null : "59",
-  verdict_deadline: deadline,
-  verdict_reasoning: `Reasoning from ${completed}.`,
-  baseline: { value_anchor: "a", friction_read: "b", mix: "c", churn_window: "d" },
-});
-
-test("one Prior audit gives one entry with its Verdict, Baseline and deadline flag", async () => {
+test("one Prior audit becomes prior_audit with its Verdict, Baseline and deadline flag", async () => {
   const row = priorRow("2026-05-01T09:00:00.000Z", "2026-06-30");
   const { handler, calls } = setup({
     readEligibilityRecord: async () => returningRecord,
@@ -176,16 +247,17 @@ test("one Prior audit gives one entry with its Verdict, Baseline and deadline fl
   const response = await handler(post(valid()));
   assert.equal(response.status, 200);
   const data = auditData(calls.params[0]);
-  assert.equal(data.welcome_audit, false);
-  assert.deepEqual(data.prior_audits, [{
+  assert.equal(data.is_welcome_audit, false);
+  assert.deepEqual(data.prior_audit, {
     completed_on: "2026-05-01",
     verdict: { action: "raise", number: "59", deadline: "2026-06-30", reasoning: "Reasoning from 2026-05-01T09:00:00.000Z." },
     baseline: row.baseline,
     deadline_passed: true,
-  }]);
+  });
+  assert.equal(data.earlier_audit, null);
 });
 
-test("two Prior audits are listed newest first with per-audit deadline flags", async () => {
+test("two Prior audits: the newest is prior_audit, the one before it is earlier_audit", async () => {
   const newer = priorRow("2026-05-01T09:00:00.000Z", "2026-09-24");
   const older = priorRow("2026-01-15T09:00:00.000Z", null, "hold");
   const { handler, calls } = setup({
@@ -194,10 +266,11 @@ test("two Prior audits are listed newest first with per-audit deadline flags", a
   });
   await handler(post(valid()));
   const data = auditData(calls.params[0]);
-  assert.deepEqual(data.prior_audits.map((a: any) => a.completed_on), ["2026-05-01", "2026-01-15"]);
-  assert.equal(data.prior_audits[0].deadline_passed, false, "the deadline day itself has not passed");
-  assert.equal(data.prior_audits[1].deadline_passed, null, "a hold has no deadline");
-  assert.equal(data.prior_audits[1].verdict.number, null);
+  assert.equal(data.prior_audit.completed_on, "2026-05-01");
+  assert.equal(data.earlier_audit.completed_on, "2026-01-15");
+  assert.equal(data.prior_audit.deadline_passed, false, "the deadline day itself has not passed");
+  assert.equal(data.earlier_audit.deadline_passed, null, "a hold has no deadline");
+  assert.equal(data.earlier_audit.verdict.number, null);
 });
 
 test("a Prior audit whose deadline is tomorrow has not passed", async () => {
@@ -206,7 +279,7 @@ test("a Prior audit whose deadline is tomorrow has not passed", async () => {
     readPriorAudits: async () => [priorRow("2026-05-01T09:00:00.000Z", "2026-09-25")],
   });
   await handler(post(valid()));
-  assert.equal(auditData(calls.params[0]).prior_audits[0].deadline_passed, false);
+  assert.equal(auditData(calls.params[0]).prior_audit.deadline_passed, false);
 });
 
 const invalidBodies: Record<string, unknown> = {
@@ -335,6 +408,7 @@ const internal: Record<string, Record<string, unknown>> = {
   },
   "a failed session check": { sessionExists: async () => { throw new Error("sensitive db detail"); } },
   "a failed Prior audit read": { readPriorAudits: async () => { throw new Error("sensitive db detail"); } },
+  "a failed business profile read": { readBusinessProfile: async () => { throw new Error("sensitive db detail"); } },
 };
 
 for (const [label, overrides] of Object.entries(internal)) {

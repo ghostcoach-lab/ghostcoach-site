@@ -44,6 +44,17 @@ export default {
         if (error) throw error;
         return data;
       },
+      // Caller-scoped, so RLS limits this to the caller's own profile. No row means no profile.
+      readBusinessProfile: async (userId) => {
+        const { data, error } = await context.supabase
+          .from("profiles")
+          // A literal, so supabase-js can type the row: keep it equal to BUSINESS_PROFILE_FIELDS.
+          .select("product, stage, bottleneck, goal_90_day")
+          .eq("user_id", userId)
+          .maybeSingle();
+        if (error) throw error;
+        return data;
+      },
       createMessage: (params, timeoutMs) => anthropic.messages.create(params, { timeout: timeoutMs }),
       loadConfig: () => readAuditChatConfig((name) => Deno.env.get(name)),
       now: () => new Date(),

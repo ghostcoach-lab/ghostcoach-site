@@ -34,13 +34,18 @@ logged.
 
 ## System prompt
 
-The audit prompt (cached, the same for every caller), followed by an `<audit_data>` JSON block:
+The audit prompt (cached, the same for every caller), followed by an `<audit_data>` JSON block.
+Its keys are the names the audit prompt expects:
 
 - `today`: the UTC date of the request;
-- `welcome_audit`: `true` when the caller has no Prior audits;
-- `prior_audits`: up to two, newest first. Each has `completed_on`, `verdict` (`action`, `number`,
-  `deadline`, `reasoning`), `baseline` and `deadline_passed`. `deadline_passed` is `null` when
-  there is no deadline, and `false` on the deadline day itself.
+- `is_welcome_audit`: from the eligibility decision (`true` while `users.welcome_audit_used` is
+  false), the same source Completion uses for the Welcome audit flag;
+- `business_profile`: the caller's Business profile, `product`, `stage`, `bottleneck` and `goal_90_day` from the caller's own
+  `profiles` row, each cut to 1,000 characters, blank as `null`. `null` when there is no row;
+- `prior_audit`: the most recent Prior audit, or `null`. It has `completed_on`, `verdict`
+  (`action`, `number`, `deadline`, `reasoning`), `baseline` and `deadline_passed`.
+  `deadline_passed` is `null` when there is no deadline, and `false` on the deadline day itself;
+- `earlier_audit`: the other Prior audit, the one before `prior_audit`, in the same shape, or `null`;
 - `audit_intake`: the intake from this request.
 
 ## Configuration (Edge Function secrets)
