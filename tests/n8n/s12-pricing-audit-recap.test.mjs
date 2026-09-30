@@ -60,6 +60,22 @@ test('a hold Verdict has no number and says so without "null"', () => {
   assert.doesNotMatch(result.email.text, /null/);
 });
 
+test('a restructure Verdict may have no or a blank number, and says so without "null"', () => {
+  for (const number of [null, '   ']) {
+    const result = runValidation({ ...payload, verdict: { ...payload.verdict, action: 'restructure', number } });
+    assert.equal(result.ok, true, String(number));
+    assert.match(result.email.text, /Verdict: Restructure\n/);
+    assert.doesNotMatch(result.email.text, /null/);
+  }
+});
+
+test('a number of exactly 60 characters after trimming is accepted', () => {
+  for (const number of ['9'.repeat(60), `  ${'9'.repeat(60)}  `]) {
+    const result = runValidation({ ...payload, verdict: { ...payload.verdict, number } });
+    assert.equal(result.ok, true, number.length);
+  }
+});
+
 test('a missing first name still greets the customer', () => {
   const result = runValidation({ ...payload, first_name: '  ' });
   assert.equal(result.ok, true);
@@ -80,6 +96,7 @@ test('an invalid payload is refused, and the problems never echo its values', ()
     'a hold with a number': verdict({ action: 'hold' }),
     'a raise without a number': verdict({ number: null }),
     'a blank number': verdict({ number: '  ' }),
+    'a number over 60 characters': verdict({ number: '9'.repeat(61) }),
     'an impossible deadline': verdict({ deadline: '2026-02-30' }),
     'blank reasoning': verdict({ reasoning: '   ' }),
     'an extra Verdict field': verdict({ baseline: {} }),
