@@ -34,7 +34,7 @@ Node 22 and PowerShell. Where a command needs the project ref, use `<project ref
 Run the full local regression on the reviewed branch. Every test must pass:
 
 ```powershell
-node --test tests/js/pricing-audit.test.cjs tests/n8n/s12-pricing-audit-recap.test.mjs tests/qa/pricing-audit-live-qa.test.mjs
+node --test tests/js/pricing-audit.test.cjs tests/n8n/s12-pricing-audit-recap.test.mjs tests/n8n/s13-pricing-audit-available.test.mjs tests/qa/pricing-audit-live-qa.test.mjs
 node --experimental-strip-types --test tests/functions/*.test.ts
 npx -y deno check supabase/functions/pricing-audit-eligibility/index.ts supabase/functions/marcus-audit-chat/index.ts supabase/functions/pricing-audit-complete/index.ts
 & ./tests/migrations/run-quarterly-pricing-audit-foundation.ps1
@@ -148,14 +148,16 @@ Nothing changed in production. If the restore fails, fix the dump and repeat thi
 
 ## 3. Migration
 
-The migration is `supabase/migrations/20260924170000_pricing_audit_completion.sql`. It adds
-`pricing_audits.recap_sent_at` and four functions. It changes no existing row.
+Apply the completion migration, followed by the S13 availability-email migration. They add
+`pricing_audits.recap_sent_at`, the Completion functions, the S13 delivery ledger and its two
+service-only RPCs. They change no existing row.
 
 **Pre-check**
 
 - Step 2 passed in the last hour, and nothing was deployed since.
 - `npx -y supabase@2.117.0 link --project-ref <project ref>`, then
-  `npx -y supabase@2.117.0 migration list`: only `20260924170000` is pending.
+  `npx -y supabase@2.117.0 migration list`: the reviewed Milestone 2 migrations are pending and
+  appear in timestamp order.
 - Save the Milestone 1 function definitions for the comparison:
 
   ```sql
@@ -174,7 +176,7 @@ npx -y supabase@2.117.0 db push
 
 **Verification** (read-only)
 
-- `migration list` shows `20260924170000` as applied.
+- `migration list` shows both reviewed Milestone 2 migrations as applied.
 - `pricing_audits.recap_sent_at` exists and is nullable.
 - `pricing_audit_next_eligible_date`, `pricing_audit_decide_eligibility`,
   `pricing_audit_session_state` and `complete_pricing_audit` exist. Only `service_role` can
@@ -190,6 +192,9 @@ npx -y supabase@2.117.0 db push
   ```
 
   Expect `true` only for `service_role`.
+- `pricing_audit_availability_emails` exists, has RLS enabled and has zero rows. Only
+  `service_role` can access it or execute `pricing_audit_availability_candidates` and
+  `record_pricing_audit_availability_email`.
 - The Milestone 1 definitions and grants are the same as in the pre-check.
 - `select public.pricing_audit_next_eligible_date('2026-09-25T23:30:00Z')` returns `2026-12-24`.
 - Run the Supabase security and performance advisors. Compare them with the baseline in the
@@ -202,6 +207,10 @@ Before the first Completion (`pricing_audits` still has 0 rows), roll back step 
 
 ```sql
 begin;
+drop function public.record_pricing_audit_availability_email(uuid, uuid, timestamptz, text);
+drop function public.pricing_audit_availability_candidates(timestamptz, uuid);
+drop table public.pricing_audit_availability_emails;
+delete from supabase_migrations.schema_migrations where version = '20260930131654';
 drop function public.complete_pricing_audit(uuid, uuid, text, jsonb, text, text, date, text, jsonb);
 drop function public.pricing_audit_session_state(uuid, uuid);
 drop function public.pricing_audit_decide_eligibility(public.plan_type, public.user_status, timestamptz, boolean, timestamptz, timestamptz);
