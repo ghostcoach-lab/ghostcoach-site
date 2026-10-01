@@ -43,3 +43,7 @@ _Avoid_: Eligible (eligibility also accounts for the Cooldown), paid, premium
 **Prior audit**:
 One of the customer's two most recent completed Pricing audits. Both are given to Marcus when the next audit starts, so he can spot a verdict that failed more than once.
 _Avoid_: Last quarter's audit, history
+
+**Availability email**:
+The one-time S13 email sent when a Welcome audit or later Pricing audit becomes available. Each audit opportunity gets at most one accepted send.
+_Avoid_: Digest line, reminder

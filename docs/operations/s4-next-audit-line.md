@@ -1,7 +1,7 @@
 # S4 candidate: next pricing audit line in the Monday digest
 
-Status: candidate only (#26). It is published on launch day, together with the release flag and
-with its own approval, so "available now" never links to a page that isn't live yet.
+Status: superseded by the separate S13 availability email (#32). This S4 candidate was never
+published and must not be published. The remaining content is retained as the record of #26.
 
 ## Prerequisites
 
