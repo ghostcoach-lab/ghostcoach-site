@@ -34,6 +34,7 @@ export function prepareRecap(body, from) {
     return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
   };
   const text = (v, max) => typeof v === 'string' && v.trim().length > 0 && v.length <= max;
+  const verdictNumber = v => typeof v === 'string' && v.trim().length > 0 && v.trim().length <= 60;
 
   if (!isObject(body)) return { ok: false, problems: ['body must be an object'] };
   exactKeys(body, ['audit_id', 'email', 'first_name', 'verdict', 'next_eligible_date'], 'body');
@@ -52,8 +53,11 @@ export function prepareRecap(body, from) {
     exactKeys(verdict, ['action', 'number', 'deadline', 'reasoning'], 'verdict');
     if (!['raise', 'hold', 'restructure'].includes(verdict.action))
       problems.push('verdict.action must be raise, hold or restructure');
-    else if (verdict.action === 'hold' ? verdict.number !== null : !text(verdict.number, 200))
-      problems.push('verdict.number must be null for hold and set otherwise');
+    // Completion saves a raise with a number, a restructure with or without one, a hold without.
+    else if (verdict.action === 'hold' ? verdict.number !== null
+      : !(verdictNumber(verdict.number) || (verdict.action === 'restructure' &&
+        (verdict.number === null || (typeof verdict.number === 'string' && verdict.number.trim() === '')))))
+      problems.push('verdict.number must be set for raise, optional for restructure, null for hold, and at most 60 characters');
     if (!isDate(verdict.deadline)) problems.push('verdict.deadline must be a date');
     if (!text(verdict.reasoning, 4000)) problems.push('verdict.reasoning must be set');
   }
@@ -69,8 +73,10 @@ export function prepareRecap(body, from) {
     return d + ' ' + months[m - 1] + ' ' + y;
   };
   const name = body.first_name.trim();
+  const number = verdict.action === 'restructure' && typeof verdict.number === 'string' &&
+    verdict.number.trim() === '' ? null : verdict.number;
   const decision = { raise: 'Raise', hold: 'Hold', restructure: 'Restructure' }[verdict.action] +
-    (verdict.number === null ? '' : ': ' + verdict.number.trim());
+    (number === null ? '' : ': ' + number.trim());
   const deadline = longDate(verdict.deadline);
   const nextDate = longDate(body.next_eligible_date);
 

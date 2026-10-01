@@ -29,8 +29,8 @@ browser's shared webhook secret. n8n refuses a request without it before the wor
 - `first_name` comes from the customer's `profiles.firstname`. The customer can edit this field, so
   S12 HTML-escapes it and refuses one over 100 characters. The function sends `""` for a missing
   name or one over 100 characters; the email then greets without a name.
-- `verdict.number` is `null` for `hold` and set for `raise` and `restructure`. Dates are
-  `YYYY-MM-DD`.
+- `verdict.number` is set for `raise`, optional for `restructure`, and `null` for `hold`. A number
+  is at most 60 characters after trimming. Dates are `YYYY-MM-DD`.
 - Any other field, or a missing one, makes the payload invalid.
 
 | S12 answers | When | The function |

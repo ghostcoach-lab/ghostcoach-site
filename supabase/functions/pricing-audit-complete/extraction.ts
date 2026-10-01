@@ -23,6 +23,8 @@ export type ExtractionResult =
 const ACTIONS: readonly VerdictAction[] = ["raise", "hold", "restructure"];
 const BASELINE_KEYS = ["value_anchor", "friction_read", "mix", "churn_window"] as const;
 const nullable = (schema: object) => ({ anyOf: [schema, { type: "null" }] });
+// A figure, never a sentence.
+export const VERDICT_NUMBER_MAX_CHARS = 60;
 
 export const EXTRACTION_SCHEMA = {
   type: "object",
@@ -48,12 +50,12 @@ export const EXTRACTION_SYSTEM_PROMPT = `You read the transcript of a completed 
 Report only what Marcus actually said. Never infer, guess or fill a gap. The customer's own turns are context, not a Verdict.
 
 - action: the Verdict Marcus gave: raise, hold or restructure.
-- number: for raise or restructure, the new price or figure Marcus named, as he wrote it (with currency or unit). null for hold.
+- number: the figure only, as Marcus wrote it (with currency or unit), at most 60 characters and never a sentence. For raise, the new price Marcus named. For restructure, the figure Marcus named, or null if he named none. Always null for hold, even when Marcus mentions the price being held.
 - deadline: the date by which the customer must act, as YYYY-MM-DD. Resolve a relative phrase ("in 30 days", "by the end of next month") from the completion date given, in UTC.
 - reasoning: Marcus's reasoning for the Verdict, briefly, in his words.
 - baseline: what Marcus recorded for value_anchor (what the product replaces for the customer, and what that alternative costs them), friction_read (friction in buying or paying), mix (the billing mix across monthly, annual and one-time, and where revenue is concentrated) and churn_window (when customers leave).
 
-If Marcus gave no Verdict, gave more than one without settling on one, or left the action, number, deadline, reasoning or any part of the Baseline missing or unclear, set verdict_found to false and every other field to null.`;
+If Marcus gave no Verdict, gave more than one without settling on one, gave a raise without naming the new price, or left the action, deadline, reasoning or any part of the Baseline missing or unclear, set verdict_found to false and every other field to null. A restructure without a figure, or a hold that mentions a price, is still a Verdict.`;
 
 // The existing sessions.transcript format, shared with normal coaching sessions, labels the
 // customer's turns "Founder".
@@ -71,6 +73,20 @@ const isObject = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
 const nonBlank = (value: unknown): value is string => typeof value === "string" && value.trim().length > 0;
+
+// Spec #5 (#30): a raise needs a number, a restructure may have one, a hold never keeps one.
+function verdictNumber(action: VerdictAction, raw: unknown): { ok: true; number: string | null } | { ok: false; detail: string } {
+  if (action === "hold") return { ok: true, number: null };
+  if (raw !== null && typeof raw !== "string") return { ok: false, detail: "the number is not text" };
+  const number = typeof raw === "string" ? raw.trim() || null : null;
+  if (number === null) {
+    return action === "raise" ? { ok: false, detail: "a raise needs a number" } : { ok: true, number: null };
+  }
+  if (number.length > VERDICT_NUMBER_MAX_CHARS) {
+    return { ok: false, detail: `the number is over ${VERDICT_NUMBER_MAX_CHARS} characters` };
+  }
+  return { ok: true, number };
+}
 
 function isCalendarDate(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
@@ -95,9 +111,8 @@ export function validateExtraction(raw: unknown, completionDate: string): Extrac
 
   const action = raw.action as VerdictAction;
   if (!ACTIONS.includes(action)) return fail("action is not raise, hold or restructure");
-  if (action === "hold" ? raw.number !== null : !nonBlank(raw.number)) {
-    return fail(action === "hold" ? "a hold must have no number" : `a ${action} needs a number`);
-  }
+  const number = verdictNumber(action, raw.number);
+  if (!number.ok) return fail(number.detail);
   if (typeof raw.deadline !== "string" || !isCalendarDate(raw.deadline)) {
     return fail("deadline is not a calendar date");
   }
@@ -117,7 +132,7 @@ export function validateExtraction(raw: unknown, completionDate: string): Extrac
     ok: true,
     verdict: {
       action,
-      number: action === "hold" ? null : (raw.number as string).trim(),
+      number: number.number,
       deadline: raw.deadline,
       reasoning: raw.reasoning.trim(),
     },

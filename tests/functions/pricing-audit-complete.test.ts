@@ -207,18 +207,40 @@ test("extracted values are trimmed before they are recorded", async () => {
   assert.equal(calls.rpc[0].baseline.mix, "Mostly solo founders");
 });
 
-test("a hold is recorded with no number", async () => {
-  const { handler, calls } = setup({}, { ...extraction, action: "hold", number: null });
-  assert.equal((await handler(post(valid()))).status, 200);
-  assert.equal(calls.rpc[0].verdict.number, null);
+const recordedNumber = async (reply: unknown) => {
+  const { handler, calls } = setup({}, reply);
+  assert.equal((await handler(post(valid()))).status, 200, JSON.stringify(reply));
+  return calls.rpc[0].verdict.number;
+};
+
+test("a hold is recorded with no number, whatever number the extraction returns", async () => {
+  for (const number of [null, "49", "Builder at $79", 79, "  "]) {
+    assert.equal(await recordedNumber({ ...extraction, action: "hold", number }), null, String(number));
+  }
+});
+
+test("a restructure is recorded with its number, trimmed, or with none", async () => {
+  const restructure = { ...extraction, action: "restructure" };
+  assert.equal(await recordedNumber({ ...restructure, number: " Two tiers: $49 and $99 " }), "Two tiers: $49 and $99");
+  assert.equal(await recordedNumber({ ...restructure, number: null }), null);
+  assert.equal(await recordedNumber({ ...restructure, number: "   " }), null);
+});
+
+test("a number of exactly 60 characters is accepted, counted after trimming", async () => {
+  const sixty = "9".repeat(60);
+  assert.equal(await recordedNumber({ ...extraction, number: sixty }), sixty);
+  assert.equal(await recordedNumber({ ...extraction, action: "restructure", number: ` ${sixty}  ` }), sixty);
 });
 
 const invalidExtractions: Record<string, unknown> = {
   "no verdict": { ...extraction, verdict_found: false },
   "an action outside the set": { ...extraction, action: "lower" },
   "a raise without a number": { ...extraction, number: null },
-  "a restructure with a blank number": { ...extraction, action: "restructure", number: "  " },
-  "a hold with a number": { ...extraction, action: "hold", number: "49" },
+  "a raise with a blank number": { ...extraction, number: "  " },
+  "a raise with a non-text number": { ...extraction, number: 59 },
+  "a raise number over 60 characters": { ...extraction, number: "9".repeat(61) },
+  "a restructure number over 60 characters": { ...extraction, action: "restructure", number: "x".repeat(61) },
+  "a restructure with a non-text number": { ...extraction, action: "restructure", number: 59 },
   "a missing deadline": { ...extraction, deadline: null },
   "a deadline that is not a date": { ...extraction, deadline: "soon" },
   "a deadline in month 13": { ...extraction, deadline: "2026-13-01" },

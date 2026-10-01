@@ -71,7 +71,9 @@ completion date in UTC so the model can resolve relative deadlines. The result i
 code:
 
 - `action` is `raise`, `hold` or `restructure`;
-- `number` is non-blank for `raise` and `restructure`, and `null` for `hold`;
+- `number` is required for `raise`, optional for `restructure` (blank becomes `null`) and always
+  stored as `null` for `hold`, whatever the extraction returns; a stored number is at most 60
+  characters after trimming;
 - `deadline` is a real calendar date after the completion date and at most one year later
   (from 29 February, the limit is 28 February);
 - `reasoning` is non-blank;
