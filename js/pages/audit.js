@@ -191,11 +191,76 @@
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const err = new Error('Marcus is unavailable right now. Try again in a moment.');
+      const err = new Error('marcus-audit-chat failed');
       err.reason = data.reason;
+      err.nextEligibleDate = data.next_eligible_date;
       throw err;
     }
     return data.reply;
+  }
+
+  // ── Failure handling ──────────────────────────────────────────────────────
+  // Reason codes come from supabase/functions/_shared/http.ts (9 of them).
+  // The wording below is PROPOSED copy, not yet approved by Product. Any code
+  // not listed (including a network failure, which has no code) falls back to
+  // the generic message — never a blank or technical-looking one.
+  // `terminal` means retrying cannot help, so the conversation is closed.
+  function formatDate(iso) {
+    const d = new Date(iso + 'T00:00:00Z');
+    return isNaN(d) ? iso : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+  }
+  function describeFailure(reason, nextEligibleDate) {
+    switch (reason) {
+      case 'unauthorized':
+        return { text: 'Your session has expired. Taking you back to sign in\u2026', terminal: true, login: true };
+      case 'plan_lapsed':
+        return { text: 'Your plan no longer includes the pricing audit.', terminal: true };
+      case 'gated':
+        return {
+          text: nextEligibleDate
+            ? 'Your next pricing audit will be available on ' + formatDate(nextEligibleDate) + '.'
+            : 'Your next pricing audit isn\u2019t available yet.',
+          terminal: true
+        };
+      case 'session_conflict':
+        return { text: 'This audit session can\u2019t be continued. Start a new audit from your account page.', terminal: true };
+      case 'audit_too_long':
+        return { text: 'This audit has reached its length limit and can\u2019t continue.', terminal: true };
+      case 'invalid_request':
+        return { text: 'That message couldn\u2019t be processed. Please try sending it again.', terminal: false };
+      case 'ai_unavailable':
+        return { text: 'Marcus is unavailable right now. Try again in a moment.', terminal: false };
+      case 'internal_error':
+        return { text: 'Something went wrong on our side. Try again in a moment, and contact support if it keeps happening.', terminal: false };
+      default:
+        return { text: 'Something went wrong. Please try again in a moment.', terminal: false };
+    }
+  }
+
+  function appendNotice(text, withBackLink) {
+    const div = document.createElement('div');
+    div.className = 'audit-notice';
+    div.setAttribute('role', 'alert');
+    div.appendChild(document.createTextNode(text));
+    if (withBackLink) {
+      const a = document.createElement('a');
+      a.href = '/account/';
+      a.textContent = 'Back to account';
+      div.appendChild(document.createElement('br'));
+      div.appendChild(a);
+    }
+    messagesEl.appendChild(div);
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+    return div;
+  }
+
+  // Shows the failure. Returns true if the failure was terminal (conversation closed).
+  function handleFailure(err) {
+    const info = describeFailure(err && err.reason, err && err.nextEligibleDate);
+    appendNotice(info.text, info.terminal);
+    if (info.login) setTimeout(() => { window.location.href = '/login/'; }, 1500);
+    if (info.terminal) lockConversation();
+    return info.terminal;
   }
 
   // Returns { completed: true, verdict, nextEligibleDate } once Marcus has
@@ -253,6 +318,12 @@
     intakeWrapEl.style.display = 'none';
     conversationEl.style.display = 'flex';
 
+    startOpener();
+  });
+
+  // Asks Marcus for the opener. On a retryable failure, offers a retry button
+  // so the founder is never left with a dead input box.
+  async function startOpener() {
     const thinking = appendThinking();
     try {
       const opener = await callAuditChat([]); // empty messages = opener, same convention as /chat/
@@ -263,12 +334,25 @@
       wireInput();
     } catch (err) {
       thinking.remove();
-      appendMessage('assistant', err.message);
+      if (handleFailure(err)) return;
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'audit-retry';
+      retry.textContent = 'Try again';
+      retry.addEventListener('click', () => {
+        retry.previousSibling && retry.previousSibling.remove();
+        retry.remove();
+        startOpener();
+      });
+      messagesEl.appendChild(retry);
     }
-  });
+  }
 
   // ── Conversation ──────────────────────────────────────────────────────────
+  let inputWired = false;
   function wireInput() {
+    if (inputWired) return;
+    inputWired = true;
     sendBtn.addEventListener('click', sendMessage);
     inputEl.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
@@ -284,19 +368,35 @@
     isSending = true;
     inputEl.value = '';
     sendBtn.disabled = true;
-    appendMessage('user', text);
+    const userBubble = appendMessage('user', text);
     transcript.push({ role: 'user', content: text });
 
     const thinking = appendThinking();
+    let reply;
     try {
-      const reply = await callAuditChat(transcript);
+      reply = await callAuditChat(transcript);
+    } catch (err) {
+      // Roll back the unanswered turn. The server requires strict
+      // user/assistant alternation, so leaving it in would make every later
+      // message fail as invalid_request. The text goes back in the box.
       thinking.remove();
-      appendMessage('assistant', reply);
-      transcript.push({ role: 'assistant', content: reply });
+      userBubble.remove();
+      transcript.pop();
+      inputEl.value = text;
+      handleFailure(err);
+      isSending = false;
+      if (!isDone) { sendBtn.disabled = false; inputEl.focus(); }
+      return;
+    }
 
-      // Quietly check whether that reply was the Verdict (see file header) —
-      // but only once the audit is far enough along for a Verdict to be
-      // plausible. Each check is a full claude-opus-5-5 extraction call.
+    thinking.remove();
+    appendMessage('assistant', reply);
+    transcript.push({ role: 'assistant', content: reply });
+
+    // Quietly check whether that reply was the Verdict (see file header) —
+    // but only once the audit is far enough along for a Verdict to be
+    // plausible. Each check is a full claude-opus-5-5 extraction call.
+    try {
       if (marcusTurnCount() >= COMPLETION_CHECK_FROM_TURN) {
         const result = await tryComplete(transcript);
         if (result.completed) {
@@ -304,9 +404,6 @@
           lockConversation();
         }
       }
-    } catch (err) {
-      thinking.remove();
-      appendMessage('assistant', err.message);
     } finally {
       isSending = false;
       if (!isDone) { sendBtn.disabled = false; inputEl.focus(); }
@@ -324,7 +421,7 @@
       return;
     }
     if (elig.state === 'gated') {
-      const next = new Date(elig.next_eligible_date + 'T00:00:00Z').toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+      const next = formatDate(elig.next_eligible_date);
       gateTitleEl.textContent = 'Your next audit isn’t available yet';
       gateDescEl.textContent = 'Audits run once per quarter. Yours will be available on ' + next + '.';
       gateCtaEl.style.display = 'inline-block';
