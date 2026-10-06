@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover,interactive-widget=resizes-content">
+<script>
+  // Mobile viewport-height fix — same pattern as /chat/. See chat/index.html
+  // for the full rationale: 100vh includes browser chrome on phones, and
+  // iOS/Android "pan" the visual viewport when the keyboard opens without
+  // actually scrolling the document, which drifts a position:fixed layout
+  // out of view. This keeps the page aligned with what's actually visible.
+  (function () {
+    function setVH() {
+      var vv = window.visualViewport;
+      var h = vv ? vv.height : window.innerHeight;
+      document.documentElement.style.setProperty('--vh', (h * 0.01) + 'px');
+      if (vv) {
+        document.documentElement.style.transform = 'translateY(' + vv.offsetTop + 'px)';
+      }
+    }
+    setVH();
+    window.addEventListener('resize', setVH);
+    window.addEventListener('orientationchange', setVH);
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', setVH);
+      window.visualViewport.addEventListener('scroll', setVH);
+    }
+    document.addEventListener('focusin', function (e) {
+      if (e.target && e.target.id === 'gc-audit-input') {
+        var page = document.querySelector('.audit-page');
+        if (page) page.classList.add('kb-focused');
+      }
+    });
+    document.addEventListener('focusout', function (e) {
+      if (e.target && e.target.id === 'gc-audit-input') {
+        var page = document.querySelector('.audit-page');
+        if (page) page.classList.remove('kb-focused');
+      }
+    });
+  })();
+</script>
+<title>Quarterly pricing audit | GhostCoach</title>
+<meta name="description" content="Your quarterly pricing audit with Marcus.">
+<meta name="robots" content="noindex,nofollow">
+<link rel="canonical" href="https://getghostcoach.com/account/audit/">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
+<link rel="stylesheet" href="/fonts/fonts.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+
+/* ── RESET & VARIABLES — identical pattern to /chat/ ──────────────── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{
+  height:100%;height:calc(var(--vh,1vh) * 100);
+  overflow:hidden;
+  position:fixed;inset:0;
+}
+body{font-family:'DM Sans',sans-serif;background:#0F1117;color:#F7F5F0;}
+
+:root{
+  --ink:#0F1117;
+  --ink-soft:#1A1D27;
+  --amber:#C8861E;
+  --amber-lt:#E8A832;
+  --cream:#F7F5F0;
+  --muted:#8B8A98;
+  --teal:#0B7A60;
+  --teal-lt:#0DD4A8;
+  --err:#E55353;
+}
+
+.audit-page{
+  height:100vh;height:calc(var(--vh,1vh) * 100);
+  background:var(--ink);
+  display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+.audit-page-glow{
+  position:fixed;bottom:-200px;right:-100px;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(200,134,30,0.04) 0%,transparent 65%);
+  pointer-events:none;z-index:0;
+}
+
+/* ── NAV — funnel-nav treatment: logo only, no marketing links ────── */
+.cn{
+  height:52px;flex-shrink:0;
+  background:rgba(15,17,23,0.98);
+  border-bottom:0.5px solid rgba(247,245,240,0.07);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;z-index:10;
+}
+.cn-left{display:flex;align-items:center;gap:12px;}
+.cn-back{
+  font-size:13px;color:var(--muted);
+  background:none;border:none;cursor:pointer;padding:0;
+  transition:color .2s;display:flex;align-items:center;gap:4px;
+  text-decoration:none;
+}
+.cn-back:hover{color:#F7F5F0;}
+.cn-sep{width:0.5px;height:16px;background:rgba(247,245,240,0.1);}
+.cn-brand{display:flex;align-items:baseline;}
+.cn-ghost{font-family:'Playfair Display',serif;font-size:16px;color:#F7F5F0;}
+.cn-coach{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:var(--amber-lt);}
+.cn-status{display:flex;align-items:center;gap:6px;}
+.cn-dot{width:6px;height:6px;background:#0DD4A8;border-radius:50%;animation:cpulse 2.5s infinite;}
+@keyframes cpulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+.cn-label{font-size:12px;color:rgba(247,245,240,0.45);}
+.cn-label b{color:rgba(247,245,240,0.75);font-weight:500;}
+
+@media(max-width:768px){
+  .cn{padding:0 16px;overflow:hidden;transition:height .2s ease, padding .2s ease, opacity .15s ease, border-color .2s ease;}
+  .audit-page.kb-focused .cn{height:0;padding-top:0;padding-bottom:0;opacity:0;border-bottom-color:transparent;}
+}
+
+/* ── GATE / LOADING STATE ──────────────────────────────────────────── */
+.gate-wrap{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:40px 24px;gap:14px;
+}
+.gate-dots{display:flex;gap:6px;}
+.gate-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);opacity:.4;animation:gdot 1.4s infinite;}
+.gate-dot:nth-child(2){animation-delay:.2s;}
+.gate-dot:nth-child(3){animation-delay:.4s;}
+@keyframes gdot{0%,60%,100%{opacity:.4;transform:translateY(0);}30%{opacity:1;transform:translateY(-4px);}}
+.gate-title{font-family:'Playfair Display',serif;font-size:20px;color:#F7F5F0;}
+.gate-desc{font-size:13px;color:var(--muted);max-width:360px;line-height:1.6;}
+.gate-cta{
+  margin-top:10px;background:var(--amber);color:var(--ink);border:none;border-radius:10px;
+  padding:11px 22px;font:500 14px 'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-block;
+}
+
+/* ── INTAKE FORM ────────────────────────────────────────────────────── */
+.intake-wrap{flex:1;overflow-y:auto;padding:28px 20px 40px;}
+.intake-card{max-width:520px;margin:0 auto;}
+.intake-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:500;color:#F7F5F0;margin-bottom:6px;}
+.intake-title em{font-style:italic;color:var(--amber-lt);}
+.intake-sub{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:26px;}
+.intake-field{margin-bottom:18px;}
+.intake-label{display:block;font-size:12px;font-weight:500;color:rgba(247,245,240,0.75);margin-bottom:6px;}
+.intake-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+.intake-input{
+  width:100%;padding:11px 14px;background:#1C2030;
+  border:0.5px solid rgba(247,245,240,0.1);border-radius:10px;
+  font:14px 'DM Sans',sans-serif;color:#F7F5F0;outline:none;transition:border-color .2s;
+}
+.intake-input::placeholder{color:rgba(139,138,152,0.4);}
+.intake-input:focus{border-color:rgba(200,134,30,0.4);}
+.intake-row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media(max-width:560px){.intake-row2{grid-template-columns:1fr;}}
+.intake-error{font-size:12px;color:var(--err);margin-top:14px;display:none;}
+.intake-submit{
+  width:100%;margin-top:8px;background:var(--amber);color:var(--ink);border:none;border-radius:10px;
+  padding:13px;font:500 15px 'DM Sans',sans-serif;cursor:pointer;transition:background .2s;
+}
+.intake-submit:hover{background:var(--amber-lt);}
+.intake-submit:disabled{background:rgba(200,134,30,0.25);cursor:not-allowed;}
+
+/* ── MESSAGES — identical bubble system to /chat/, for visual parity ── */
+.chat-msgs{flex:1;overflow-y:auto;position:relative;z-index:1;scroll-behavior:smooth;}
+.chat-msgs::-webkit-scrollbar{width:3px;}
+.chat-msgs::-webkit-scrollbar-thumb{background:rgba(247,245,240,0.08);border-radius:2px;}
+.msgs-inner{max-width:680px;margin:0 auto;padding:0 20px;display:flex;flex-direction:column;gap:16px;min-height:100%;justify-content:flex-end;padding-bottom:8px;}
+
+.gc-message{max-width:80%;border-radius:14px;margin-bottom:14px;word-wrap:break-word;}
+.gc-message--user{
+  background:rgba(247,245,240,0.04);border:0.5px solid rgba(247,245,240,0.08);
+  color:rgba(247,245,240,0.65);font:400 14px/1.65 'DM Sans',sans-serif;
+  border-radius:12px;padding:12px 16px;max-width:68%;margin-left:auto;white-space:pre-wrap;
+}
+.gc-message--assistant{
+  position:relative;background:#1A1D27;color:#F7F5F0;border-radius:14px;
+  padding:28px 32px;max-width:78%;font:400 15px/1.7 'DM Sans',sans-serif;
+}
+.gc-message--assistant p{margin:0;}
+.gc-message--assistant p + p{margin-top:20px;}
+.gc-message--assistant ul{margin:20px 0 0;padding-left:1.2em;}
+.gc-message--assistant li{margin-bottom:6px;}
+.gc-message--assistant strong{font-weight:500;color:#E8A832;}
+.gc-message--assistant em{font-style:italic;}
+.gc-message--assistant .copy{
+  opacity:0;transition:opacity 0.2s ease;display:block;margin-top:16px;
+  font:500 11px/1 'DM Sans',sans-serif;letter-spacing:0.08em;color:#8B8A98;
+  background:none;border:none;padding:0;cursor:pointer;position:relative;
+}
+.gc-message--assistant .copy::before{content:'';position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:44px;height:44px;}
+.gc-message--assistant:hover .copy,.gc-message--assistant:focus-within .copy{opacity:1;}
+.gc-message--assistant .copy:hover{color:#F7F5F0;}
+.gc-message--assistant .copy:focus-visible{outline:1.5px solid #C8861E;outline-offset:3px;opacity:1;}
+.gc-message--thinking{padding:13px 17px;font:400 14.5px/1.62 'DM Sans',sans-serif;color:rgba(247,245,240,0.5);font-style:italic;}
+
+@media (max-width:480px){
+  .gc-message--assistant{max-width:100%;padding:20px 18px;font-size:14px;}
+  .gc-message--user{max-width:80%;}
+  .gc-message--assistant .copy{opacity:1;}
+}
+
+/* ── VERDICT CARD — deliberately NOT a chat bubble ─────────────────── */
+/* The one message the founder has to act on gets its own treatment:
+   amber-bordered, full width within the thread, structured fields rather
+   than prose, so it reads as a decision record rather than another reply. */
+.verdict-card{
+  max-width:92%;margin:8px 0 14px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(200,134,30,0.10),rgba(200,134,30,0.03));
+  border:1px solid rgba(200,134,30,0.35);padding:26px 28px;
+}
+.verdict-eyebrow{
+  font:600 11px/1 'DM Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--amber-lt);margin-bottom:10px;
+}
+.verdict-headline{font-family:'Playfair Display',serif;font-size:21px;font-weight:500;color:#F7F5F0;line-height:1.35;margin-bottom:14px;}
+.verdict-reasoning{font:400 14px/1.7 'DM Sans',sans-serif;color:rgba(247,245,240,0.8);margin-bottom:16px;white-space:pre-wrap;}
+.verdict-deadline{
+  display:flex;align-items:center;gap:8px;font:500 13px 'DM Sans',sans-serif;
+  color:var(--amber-lt);border-top:0.5px solid rgba(200,134,30,0.2);padding-top:14px;
+}
+.verdict-footer{margin-top:18px;}
+.verdict-done-btn{
+  background:var(--amber);color:var(--ink);border:none;border-radius:10px;
+  padding:11px 20px;font:500 14px 'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-block;
+}
+.verdict-done-btn:hover{background:var(--amber-lt);}
+
+/* ── NOTICES & RETRY — failures shown as notices, not as Marcus speaking ── */
+.audit-notice{
+  max-width:92%;margin:4px 0 14px;padding:14px 18px;border-radius:12px;
+  background:rgba(229,83,83,0.08);border:0.5px solid rgba(229,83,83,0.3);
+  font:400 13.5px/1.6 'DM Sans',sans-serif;color:rgba(247,245,240,0.85);
+}
+.audit-notice a{color:var(--amber-lt);text-decoration:underline;}
+.audit-retry{
+  align-self:flex-start;margin:0 0 14px;background:transparent;color:var(--amber-lt);
+  border:0.5px solid rgba(200,134,30,0.45);border-radius:10px;padding:8px 16px;
+  font:500 13px 'DM Sans',sans-serif;cursor:pointer;
+}
+.audit-retry:hover{background:rgba(200,134,30,0.1);}
+
+/* ── INPUT — identical to /chat/ ───────────────────────────────────── */
+.chat-input-wrap{
+  flex-shrink:0;padding:10px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  background:rgba(15,17,23,0.98);border-top:0.5px solid rgba(247,245,240,0.06);z-index:10;
+}
+.chat-input-inner{max-width:680px;margin:0 auto;display:flex;gap:8px;align-items:flex-end;}
+.chat-textarea{
+  flex:1;background:#1C2030;border:0.5px solid rgba(247,245,240,0.1);border-radius:12px;
+  padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:16px;color:#F7F5F0;
+  resize:none;outline:none;min-height:46px;max-height:120px;line-height:1.5;
+  transition:border-color .2s;overflow-y:auto;
+}
+.chat-textarea::placeholder{color:rgba(139,138,152,0.4);}
+.chat-textarea:focus{border-color:rgba(200,134,30,0.35);}
+.chat-send{
+  width:42px;height:42px;border-radius:10px;background:var(--amber);border:none;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .2s;
+}
+.chat-send:hover{background:var(--amber-lt);}
+.chat-send:disabled{background:rgba(200,134,30,0.2);cursor:not-allowed;}
+.chat-send svg{width:17px;height:17px;fill:var(--ink);}
+.chat-hint{font-size:11px;color:rgba(139,138,152,0.3);text-align:center;margin-top:6px;}
+
+@media(max-width:768px){
+  .msgs-inner{padding:0 14px;}
+  .chat-input-wrap{padding:8px 14px calc(12px + env(safe-area-inset-bottom, 0px));}
+}
+</style>
+</head>
+<body>
+
+<div class="audit-page">
+  <div class="audit-page-glow"></div>
+
+  <div class="cn">
+    <div class="cn-left">
+      <a class="cn-back" href="/account/">&larr; Back</a>
+      <div class="cn-sep"></div>
+      <div class="cn-brand"><span class="cn-ghost">Ghost</span><span class="cn-coach">Coach</span></div>
+    </div>
+    <div class="cn-status">
+      <div class="cn-dot"></div>
+      <div class="cn-label"><b>Pricing audit</b></div>
+    </div>
+  </div>
+
+  <!-- State 1: checking eligibility. Shown first, replaced by exactly one
+       of the states below once pricing-audit-eligibility answers. -->
+  <div class="gate-wrap" id="gc-gate" style="display:flex;">
+    <div class="gate-dots"><div class="gate-dot"></div><div class="gate-dot"></div><div class="gate-dot"></div></div>
+    <div class="gate-title" id="gc-gate-title">Checking your audit eligibility&hellip;</div>
+    <div class="gate-desc" id="gc-gate-desc"></div>
+    <a class="gate-cta" id="gc-gate-cta" href="/account/" style="display:none;">Back to account</a>
+  </div>
+
+  <!-- State 2: intake form. Hidden until eligibility says 'eligible'. -->
+  <div class="intake-wrap" id="gc-intake" style="display:none;">
+    <div class="intake-card">
+      <div class="intake-title">Before we start, a few <em>numbers</em></div>
+      <div class="intake-sub">Marcus needs these to ground the audit in your actual business, not generic advice.</div>
+      <form id="gc-intake-form">
+        <div class="intake-row2">
+          <div class="intake-field">
+            <label class="intake-label" for="gc-in-mrr">Monthly revenue (MRR)</label>
+            <input class="intake-input" type="number" min="0" step="1" id="gc-in-mrr" placeholder="4200" required>
+          </div>
+          <div class="intake-field">
+            <label class="intake-label" for="gc-in-customers">Customers</label>
+            <input class="intake-input" type="number" min="0" step="1" id="gc-in-customers" placeholder="58" required>
+          </div>
+          <div class="intake-field">
+            <label class="intake-label" for="gc-in-churn">Monthly churn %</label>
+            <input class="intake-input" type="number" min="0" step="0.1" id="gc-in-churn" placeholder="4.5" required>
+          </div>
+        </div>
+        <div class="intake-field">
+          <label class="intake-label" for="gc-in-pricing">Your current pricing</label>
+          <input class="intake-input" type="text" id="gc-in-pricing" placeholder="e.g. $29/mo single plan, no annual option" required maxlength="2000">
+          <div class="intake-hint">Plan names, prices, what's included — however it's structured today.</div>
+        </div>
+        <div class="intake-field">
+          <label class="intake-label" for="gc-in-lastchange">Last time you changed pricing</label>
+          <input class="intake-input" type="text" id="gc-in-lastchange" placeholder="e.g. Never, or: raised from $19 to $29 in March 2026" required maxlength="2000">
+        </div>
+        <div class="intake-error" id="gc-intake-error"></div>
+        <button type="submit" class="intake-submit" id="gc-intake-submit">Begin audit &rarr;</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- State 3: the conversation itself. Hidden until intake is submitted. -->
+  <div id="gc-conversation" style="display:none;flex:1;flex-direction:column;overflow:hidden;">
+    <div class="chat-msgs" id="chat-msgs">
+      <div class="msgs-inner" id="gc-chat-messages"></div>
+    </div>
+    <div class="chat-input-wrap" id="gc-input-wrap">
+      <div class="chat-input-inner">
+        <textarea class="chat-textarea" id="gc-audit-input" placeholder="Answer Marcus's question..." rows="1"></textarea>
+        <button class="chat-send" id="gc-audit-send">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="chat-hint">Enter to send &middot; Shift+Enter for new line</div>
+    </div>
+  </div>
+</div>
+
+<script src="/js/config.js"></script>
+<script src="/js/supabase-client.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/webhooks.js"></script>
+<script src="/js/pages/audit.js"></script>
+<script src="/js/cookie-banner.js"></script>
+</body>
+</html>
