@@ -24,7 +24,7 @@ const GC = {
   // Feature flag — quarterly pricing audit.
   // Keep false until /account/audit/ and its final session/verdict payload
   // contract pass integration testing and receive frontend release approval.
-  PRICING_AUDIT_ENABLED: false,
+  PRICING_AUDIT_ENABLED: true,
 
   // Stripe publishable key — safe for frontend
   STRIPE_KEY: 'pk_test_51TTgErCwJBxjKaPH3yZRNzRYJBUTLOpTFNwn2IyA6jTwjji8aCr9kqER9dmoHSfCCMvnozznJeFxx1YNyANbgEnf00C3rGkj8j',
