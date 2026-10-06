@@ -36,6 +36,9 @@
   const inputEl        = document.getElementById('gc-audit-input');
   const sendBtn         = document.getElementById('gc-audit-send');
   const inputWrapEl    = document.getElementById('gc-input-wrap');
+  const gateDotsEl     = gateEl.querySelector('.gate-dots');
+  // The animated dots mean "checking". Stop showing them once the gate has an answer.
+  const stopChecking   = () => { if (gateDotsEl) gateDotsEl.style.display = 'none'; };
 
   // ── Session state ────────────────────────────────────────────────────────
   let sessionId   = null;
@@ -411,8 +414,19 @@
   }
 
   // ── Init: auth is already confirmed above. Gate on eligibility next. ────
+  // Launch switch: with PRICING_AUDIT_ENABLED off, the page is closed even
+  // to someone who types the URL. Checked before any eligibility call.
+  if (!GC.PRICING_AUDIT_ENABLED) {
+    stopChecking();
+    gateTitleEl.textContent = 'The pricing audit isn’t available yet';
+    gateDescEl.textContent = 'It isn’t open yet. Head back to your account page.';
+    gateCtaEl.style.display = 'inline-block';
+    return;
+  }
+
   try {
     const elig = await checkEligibility();
+    stopChecking();
 
     if (elig.state === 'not_entitled') {
       gateTitleEl.textContent = 'The pricing audit isn’t on your plan';
@@ -432,6 +446,7 @@
     gateEl.style.display = 'none';
     intakeWrapEl.style.display = 'block';
   } catch (err) {
+    stopChecking();
     gateTitleEl.textContent = 'Something went wrong';
     gateDescEl.textContent = err.message || 'Could not check your eligibility right now. Please try again from your account page.';
     gateCtaEl.style.display = 'inline-block';
