@@ -19,7 +19,7 @@
 // COMPLETION_CHECK_FROM_TURN.
 
 (async () => {
-  const session = await GCAuth.requireAuth('/login/');
+  const session = await GCAuth.requireAuth('/login/?next=/account/audit/');
   if (!session) return;
 
   // ── DOM refs ────────────────────────────────────────────────────────────
@@ -143,7 +143,7 @@
     const action = verdict.action;
     if (action === 'raise') return 'Raise your pricing to ' + (verdict.number || '—');
     if (action === 'restructure') {
-      return verdict.number ? 'Restructure pricing: ' + verdict.number : 'Restructure your pricing';
+      return verdict.number ? 'Restructure pricing: ' + verdict.number : 'Restructure: the advice is below';
     }
     return 'Hold your current pricing';
   }
