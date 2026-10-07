@@ -212,6 +212,18 @@
     const d = new Date(iso + 'T00:00:00Z');
     return isNaN(d) ? iso : d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
   }
+  // Rate-limit messages (pricing-audit-complete, HTTP 429, reason
+  // 'rate_limited', body field 'limit'). 'user' = the daily per-user limit
+  // (temporary; counted over a rolling 24 hours). Anything else, including a missing field, gets the final
+  // per-audit message, which makes no promise that a retry will work.
+  const RATE_LIMIT_COPY = {
+    session: "This audit can’t continue, and it wasn’t saved. Nothing was recorded, any Verdict shown here was not saved, and no 90-day slot was used. Your quarterly audit is still available: start a new audit to try again.",
+    user: "The daily audit limit was reached, so this audit can’t continue or be saved. Nothing was recorded, any Verdict shown here was not saved, and no 90-day slot was used. Trying again later is fine: start a new audit then."
+  };
+  function rateLimitText(limit) {
+    return limit === 'user' ? RATE_LIMIT_COPY.user : RATE_LIMIT_COPY.session;
+  }
+
   function describeFailure(reason, nextEligibleDate) {
     switch (reason) {
       case 'unauthorized':
@@ -267,9 +279,10 @@
   }
 
   // Returns { completed: true, verdict, nextEligibleDate } once Marcus has
-  // actually delivered a Verdict, or { completed: false } for every other
-  // outcome (no Verdict yet, or a transient failure) — callers treat both
-  // the same way: keep going.
+  // actually delivered a Verdict. Returns { completed: false, rateLimited: true,
+  // limit } when the function refuses with 429 'rate_limited' (the audit can no
+  // longer be saved). Every other outcome (no Verdict yet, or a transient
+  // failure) is { completed: false } — callers keep going.
   async function tryComplete(messages) {
     try {
       const token = await GCAuth.getToken();
@@ -281,6 +294,9 @@
       const data = await res.json().catch(() => ({}));
       if (res.ok && (data.status === 'completed' || data.status === 'already_completed')) {
         return { completed: true, verdict: data.verdict, nextEligibleDate: data.next_eligible_date };
+      }
+      if (res.status === 429 && data.reason === 'rate_limited') {
+        return { completed: false, rateLimited: true, limit: data.limit };
       }
       return { completed: false };
     } catch (e) {
@@ -404,6 +420,11 @@
         const result = await tryComplete(transcript);
         if (result.completed) {
           renderVerdict(result.verdict);
+          lockConversation();
+        } else if (result.rateLimited) {
+          // The audit cannot produce a saved Verdict any more. Close it and
+          // stop all further automatic checks (lockConversation sets isDone).
+          appendNotice(rateLimitText(result.limit), true);
           lockConversation();
         }
       }
