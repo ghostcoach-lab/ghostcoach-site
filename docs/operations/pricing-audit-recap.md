@@ -44,10 +44,10 @@ The function waits at most `S12_RECAP_TIMEOUT_MS` (default 15 s). The customer g
 whatever happens to the recap: a failure is logged as `pricing-audit-complete: recap` with the
 audit ID only, and nothing is rolled back. There is no automatic retry. See **Manual resend**.
 
-The email text is a **placeholder**, marked `[PLACEHOLDER]` in the subject and body. The client
-supplies the final wording before the release flag is turned on. It holds the Verdict, the reasoning, the
-deadline, and a line saying that the next pricing audit opens on the next eligible date and checks
-what the customer did with this Verdict.
+The email carries the final wording (7 Oct 2026). Subject: "Your pricing audit Verdict". It holds
+the Verdict, the reasoning, the deadline, and a line saying that the next pricing audit opens on the
+next eligible date, 90 days after this one, and picks up from this Verdict. The same wording is in the
+live n8n workflow. Change both together.
 
 ## Building the candidate
 

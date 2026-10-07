@@ -80,16 +80,13 @@ export function prepareRecap(body, from) {
   const deadline = longDate(verdict.deadline);
   const nextDate = longDate(body.next_eligible_date);
 
-  // PLACEHOLDER copy: the client supplies the final wording before launch.
   const lines = [
-    '[PLACEHOLDER COPY: final wording to come from GhostCoach]',
     name ? 'Hi ' + name + ',' : 'Hi,',
-    'Here is the Verdict from your pricing audit with Marcus.',
+    'Here is the Verdict from your pricing audit with Marcus. It is saved to your account.',
     'Verdict: ' + decision,
     'Why: ' + verdict.reasoning.trim(),
     'Act by: ' + deadline,
-    'Your next pricing audit opens on ' + nextDate + '. It will check what you did with this ' +
-      'Verdict and what has changed in your pricing since.',
+    'Your next pricing audit opens on ' + nextDate + ', 90 days after this one. It picks up from this Verdict.',
   ];
   return {
     ok: true,
@@ -97,7 +94,7 @@ export function prepareRecap(body, from) {
     email: {
       from,
       to: [body.email],
-      subject: '[PLACEHOLDER] Your pricing audit Verdict',
+      subject: 'Your pricing audit Verdict',
       html: lines.map(line => '<p>' + escape(line) + '</p>').join('\n'),
       text: lines.join('\n\n'),
     },

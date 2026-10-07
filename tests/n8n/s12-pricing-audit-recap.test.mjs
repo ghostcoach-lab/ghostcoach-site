@@ -40,7 +40,7 @@ test('a valid payload becomes one email keyed by the audit ID', () => {
   assert.equal(result.idempotency_key, auditId);
   assert.equal(result.email.from, 'Marcus <marcus@example.test>');
   assert.deepEqual(result.email.to, ['founder@example.test']);
-  assert.ok(result.email.subject.length > 0);
+  assert.equal(result.email.subject, 'Your pricing audit Verdict');
   for (const body of [result.email.html, result.email.text]) {
     assert.match(body, /Sam/);
     assert.match(body, /Raise/);
@@ -49,7 +49,9 @@ test('a valid payload becomes one email keyed by the audit ID', () => {
     assert.match(body, /1 November 2026/, 'the Verdict deadline');
     assert.match(body, /23 December 2026/, 'the next eligible date');
     assert.match(body, /next pricing audit/i, 'the forward-looking line');
-    assert.match(body, /PLACEHOLDER/, 'the draft wording is clearly marked');
+    assert.doesNotMatch(body, /PLACEHOLDER/, 'the final wording is in');
+    assert.match(body, /It is saved to your account\./);
+    assert.match(body, /90 days after this one\. It picks up from this Verdict\./);
   }
 });
 
@@ -205,6 +207,6 @@ test('the build needs a sender address and a webhook credential', () => {
 test('the report shows neither the sender address nor the credential ID', () => {
   const report = JSON.stringify(candidateReport(buildS12Candidate(options)));
   assert.doesNotMatch(report, /example\.test|credential-fixture/);
-  assert.match(report, /"placeholderCopy":true/);
+  assert.match(report, /"placeholderCopy":false/);
   assert.match(report, /"validationProblems":\[\]/);
 });
