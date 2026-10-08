@@ -4,11 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Cookie Policy — GhostCoach</title>
-<meta name="description" content="What cookies and browser storage GhostCoach uses, and why. We use only strictly-necessary cookies — no tracking, no analytics, no advertising.">
+<meta name="description" content="What cookies and browser storage GhostCoach uses, and why. Strictly necessary cookies only, unless you choose to accept optional analytics. No advertising cookies.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://getghostcoach.com/cookies/">
 <meta property="og:title" content="Cookie Policy — GhostCoach">
-<meta property="og:description" content="What cookies and browser storage GhostCoach uses, and why. We use only strictly-necessary cookies — no tracking, no analytics, no advertising.">
+<meta property="og:description" content="What cookies and browser storage GhostCoach uses, and why. Strictly necessary cookies only, unless you choose to accept optional analytics. No advertising cookies.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://getghostcoach.com/cookies/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
@@ -126,12 +126,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
   <div class="lp-hero-inner">
     <div class="lp-eyebrow">Legal</div>
     <h1 class="lp-h1">Cookie Policy</h1>
-    <div class="lp-meta"><strong>Last updated:</strong> 1 June 2026 &middot; Version 1.0</div>
+    <div class="lp-meta"><strong>Last updated:</strong> 8 October 2026 &middot; Version 1.1</div>
   </div>
 </section>
 <section class="lp-body">
   <div class="lp-inner">
-<p class='lp-p'><strong>In short:</strong> GhostCoach uses only the cookies and browser storage that are strictly necessary to sign you in, process your payments, and let the site work. We do not use analytics, advertising, or tracking cookies. Because of this, we do not need to ask for your consent to set these &mdash; but we want you to know exactly what they do.</p>
+<p class='lp-p'><strong>In short:</strong> GhostCoach always uses the cookies and browser storage that are strictly necessary to sign you in, process your payments, and let the site work. These do not need your consent. We also offer optional analytics cookies (Google Analytics, loaded through Google Tag Manager). They stay off unless you click Accept in the cookie notice. We do not use advertising cookies.</p>
 
 <p class='lp-p'>This page explains what we store in your browser and why. It sits alongside our <a href="/privacy/">Privacy Policy</a>, which covers how we handle your personal data more broadly.</p>
 
@@ -139,7 +139,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 
 <h2 class='lp-h2'>1. What cookies and similar technologies are</h2>
 <p class='lp-p'>&ldquo;Cookies&rdquo; are small text files a website stores in your browser. Websites also use related technologies &mdash; localStorage and sessionStorage &mdash; which work similarly but live in your browser's storage rather than as classic cookies. Throughout this policy, &ldquo;cookies&rdquo; refers to all of these unless we say otherwise.</p>
-<p class='lp-p'>Some are <strong>strictly necessary</strong>: the site cannot function without them. Others are <strong>optional</strong> and require your consent before they are set &mdash; for example analytics or advertising. GhostCoach currently uses only strictly necessary ones.</p>
+<p class='lp-p'>Some are <strong>strictly necessary</strong>: the site cannot function without them. Others are <strong>optional</strong> and require your consent before they are set &mdash; for example analytics or advertising. GhostCoach always uses the strictly necessary ones. It uses the optional analytics ones only if you accept them.</p>
 
 <hr class="lp-hr">
 
@@ -150,12 +150,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 <li>Carrying your information between steps of signup and onboarding.</li>
 <li>Remembering your response to this cookie notice.</li>
 </ul>
-<p class='lp-p'><strong>We do not use cookies to track your behaviour, build a profile of you, measure analytics, or serve advertising.</strong></p>
+<p class='lp-p'>If you click Accept, we also use analytics cookies to see which pages are visited and how the site is used, so we can improve it. If you click Reject, or have not chosen yet, no analytics cookies are set and Google Tag Manager is not loaded.</p>
+<p class='lp-p'><strong>We do not use cookies to build a profile of you or to serve advertising, and we do not turn on Google&rsquo;s advertising features.</strong></p>
 
 <hr class="lp-hr">
 
 <h2 class='lp-h2'>3. Cookies and storage we use</h2>
-<p class='lp-p'>Every item below is strictly necessary to provide the service you have requested. None requires consent under the ePrivacy Directive or the Dutch Telecommunications Act.</p>
+<p class='lp-p'>Every item in this first table is strictly necessary to provide the service you have requested. None requires consent under the ePrivacy Directive or the Dutch Telecommunications Act. The optional analytics cookies are listed separately below.</p>
 <div class="lp-tbl-wrap">
 <table class="lp-tbl">
 <thead>
@@ -165,10 +166,23 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 <tr><td><code>sb-&hellip;-auth-token</code></td><td>localStorage</td><td>Until logout</td><td>Strictly necessary</td><td>Keeps you signed in across pages (Supabase authentication).</td></tr>
 <tr><td><code>__stripe_mid</code></td><td>Cookie</td><td>1 year</td><td>Strictly necessary</td><td>Stripe fraud prevention. Set only on payment pages.</td></tr>
 <tr><td><code>__stripe_sid</code></td><td>Cookie</td><td>30 minutes</td><td>Strictly necessary</td><td>Stripe fraud prevention (short-lived). Payment pages only.</td></tr>
-<tr><td><code>gc_cookie_consent</code></td><td>localStorage</td><td>Until cleared</td><td>Strictly necessary</td><td>Remembers your cookie-notice choice so we don't re-ask.</td></tr>
+<tr><td><code>gc_cookie_consent</code></td><td>localStorage</td><td>12 months, then we ask again</td><td>Strictly necessary</td><td>Remembers whether you accepted or rejected optional cookies, so we don't re-ask.</td></tr>
+<tr><td><code>gc_cookie_consent_ts</code></td><td>localStorage</td><td>12 months, then we ask again</td><td>Strictly necessary</td><td>Records when you made that choice, so it can expire after 12 months.</td></tr>
 <tr><td><code>gc_signup</code></td><td>sessionStorage</td><td>Until tab closes</td><td>Strictly necessary</td><td>Carries signup form data between steps.</td></tr>
 <tr><td><code>gc_onboarding_partial</code></td><td>sessionStorage</td><td>Until tab closes</td><td>Strictly necessary</td><td>Preserves onboarding input if you navigate away.</td></tr>
 <tr><td><code>gc_api_key</code></td><td>sessionStorage</td><td>Until tab closes</td><td>Strictly necessary</td><td>Holds your Anthropic API key during a chat session (Phase 1).</td></tr>
+</tbody>
+</table>
+</div>
+<h3 class='lp-h3'>Optional analytics cookies (set only if you click Accept)</h3>
+<div class="lp-tbl-wrap">
+<table class="lp-tbl">
+<thead>
+<tr><th>Name</th><th>Type</th><th>Duration</th><th>Category</th><th>Purpose</th></tr>
+</thead>
+<tbody>
+<tr><td><code>_ga</code></td><td>Cookie</td><td>Up to 2 years</td><td>Analytics (optional)</td><td>Google Analytics. Tells visits apart so we can count visitors and see how the site is used.</td></tr>
+<tr><td><code>_ga_&hellip;</code></td><td>Cookie</td><td>Up to 2 years</td><td>Analytics (optional)</td><td>Google Analytics. Keeps track of the current visit.</td></tr>
 </tbody>
 </table>
 </div>
@@ -182,6 +196,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 <h3 class='lp-h3'>Stripe (payments)</h3>
 <p class='lp-p'>Handles card payments and fraud prevention. Sets the two strictly-necessary cookies listed above, only on payment pages. See Stripe's own cookie and privacy policies for details.</p>
 
+<h3 class='lp-h3'>Google Tag Manager and Google Analytics (optional, only if you accept)</h3>
+<p class='lp-p'>If you click Accept, your browser loads Google Tag Manager from Google, which runs Google Analytics for us. Google Analytics sets the two cookies listed above and receives information about your visit, such as the pages you view and your device and browser. Google processes this in the United States and elsewhere. We use it only to understand how the site is used. We do not turn on Google&rsquo;s advertising features and we do not share this data for advertising. If you click Reject, nothing is sent to Google. See Google&rsquo;s privacy policy for how it handles data.</p>
+
 <h3 class='lp-h3'>Google Fonts (typography)</h3>
 <p class='lp-p'>Our fonts (DM Sans and Playfair Display) are served directly from getghostcoach.com. They are not loaded from Google's servers, so no data about you is shared with Google to display them.</p>
 
@@ -190,18 +207,17 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 
 <h3 class='lp-h3'>Supabase, Anthropic, n8n, Beehiiv</h3>
 <p class='lp-p'>These power authentication, AI responses, automation, and email. They process data on our servers or via secure API calls &mdash; they do not set cookies in your browser. How they handle your personal data is described in our <a href="/privacy/">Privacy Policy</a>.</p>
-<p class='lp-p'>Beehiiv currently runs no tracking on this site. If we ever add email open/click tracking or analytics, we will update this policy and, where the law requires it, ask for your consent first.</p>
+<p class='lp-p'>Beehiiv currently runs no tracking on this site. If we ever add email open/click tracking, we will update this policy and, where the law requires it, ask for your consent first.</p>
 
 <hr class="lp-hr">
 
 <h2 class='lp-h2'>5. International data transfers</h2>
-<p class='lp-p'>Some of our providers process data in the United States. Where that involves your personal data, those transfers are governed by the safeguards described in our <a href="/privacy/">Privacy Policy</a> (such as Standard Contractual Clauses or the EU&ndash;US Data Privacy Framework). See the Privacy Policy for the full picture.</p>
+<p class='lp-p'>Some of our providers process data in the United States. Where that involves your personal data, those transfers are governed by the safeguards described in our <a href="/privacy/">Privacy Policy</a> (such as Standard Contractual Clauses or the EU&ndash;US Data Privacy Framework). This includes Google, if you accept analytics. See the Privacy Policy for the full picture.</p>
 
 <hr class="lp-hr">
 
 <h2 class='lp-h2'>6. Managing cookies</h2>
-<p class='lp-p'>Because every cookie we use is strictly necessary, there is nothing optional to switch off &mdash; disabling them would stop core features like login and payment from working. You can still control cookies through your browser settings, including blocking or deleting them, though this may break parts of the site.</p>
-<p class='lp-p'>If we add optional cookies in future (for example analytics), we will show a consent control that lets you accept or reject them, and you will be able to change your choice at any time.</p>
+<p class='lp-p'>The strictly necessary cookies cannot be switched off here, because login and payment need them. The optional analytics cookies are off until you click Accept. You can change your choice at any time with &ldquo;Cookie Preferences&rdquo; in the footer of any page. Your choice is remembered for 12 months, then we ask again. You can also block or delete cookies in your browser settings, though blocking the necessary ones may break parts of the site.</p>
 
 <hr class="lp-hr">
 
@@ -211,7 +227,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
 <hr class="lp-hr">
 
 <h2 class='lp-h2'>8. Changes to this policy</h2>
-<p class='lp-p'>We may update this policy when our technology or practices change &mdash; for example if we add analytics. We will revise the &ldquo;Last updated&rdquo; date and, for significant changes affecting optional cookies, ask for your consent where required.</p>
+<p class='lp-p'>We may update this policy when our technology or practices change &mdash; for example if we add other tools. We will revise the &ldquo;Last updated&rdquo; date and, for significant changes affecting optional cookies, ask for your consent where required.</p>
 
 <hr class="lp-hr">
 
