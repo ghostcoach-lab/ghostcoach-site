@@ -16,251 +16,7 @@
 <link rel="canonical" href="https://getghostcoach.com/guides/what-is-ai-business-coaching/">
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
 <link rel="stylesheet" href="/fonts/fonts.css">
-<style>
-:root {
-  --ink: #0F1117;
-  --ink-soft: #1A1D27;
-  --amber: #C8861E;
-  --amber-lt: #E8A832;
-  --cream: #F7F5F0;
-  --teal: #0B7A60;
-  --muted: #8B8A98;
-  --border: rgba(15,17,23,0.08);
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; }
-body { font-family: 'DM Sans', sans-serif; background: var(--cream); color: var(--ink); line-height: 1.7; -webkit-font-smoothing: antialiased; }
-nav {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 18px 32px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-.wordmark { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 700; }
-.wordmark a { color: var(--cream); text-decoration: none; }
-.position { color: var(--muted); font-size: 14px; }
-.nav-cta {
-  background: var(--amber);
-  color: var(--ink);
-  padding: 10px 20px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 14px;
-}
-.nav-cta:hover { background: var(--amber-lt); }
-.hero { padding: 80px 32px 60px; max-width: 820px; margin: 0 auto; }
-.eyebrow {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--amber);
-  margin-bottom: 20px;
-}
-.hero h1 {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(36px, 5vw, 56px);
-  line-height: 1.1;
-  font-weight: 700;
-  margin-bottom: 24px;
-}
-.hero h1 em { font-style: italic; color: var(--amber); }
-.hero-sub { font-size: 21px; color: var(--muted); line-height: 1.5; max-width: 700px; }
-.article { max-width: 760px; margin: 0 auto; padding: 0 32px 80px; }
-.article h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 32px;
-  font-weight: 700;
-  margin-top: 56px;
-  margin-bottom: 20px;
-  line-height: 1.2;
-}
-.article h3 {
-  font-size: 21px;
-  font-weight: 600;
-  margin-top: 32px;
-  margin-bottom: 14px;
-}
-.article p { margin-bottom: 18px; }
-.article a {
-  color: var(--amber);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-.article a:hover { color: var(--ink); }
-.article ul, .article ol { margin-bottom: 18px; padding-left: 24px; }
-.article li { margin-bottom: 8px; }
-.article strong { font-weight: 600; }
-.toc {
-  background: rgba(15,17,23,0.04);
-  border-left: 3px solid var(--amber);
-  padding: 24px 28px;
-  margin: 40px 0;
-  border-radius: 4px;
-}
-.toc-title {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 14px;
-}
-.toc ul { list-style: none; padding-left: 0; }
-.toc li { margin-bottom: 8px; }
-.toc a { color: var(--ink); text-decoration: none; font-size: 16px; }
-.toc a:hover { color: var(--amber); }
-.marcus-says {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 36px;
-  border-radius: 8px;
-  margin: 40px 0;
-}
-.marcus-says .ml {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--amber-lt);
-  margin-bottom: 14px;
-}
-.marcus-says .mq {
-  font-family: 'Playfair Display', serif;
-  font-style: italic;
-  font-size: 24px;
-  line-height: 1.4;
-  color: var(--cream);
-}
-.compare-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 28px 0 36px;
-  font-size: 15px;
-}
-.compare-table th, .compare-table td {
-  padding: 14px 16px;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-  vertical-align: top;
-}
-.compare-table th {
-  background: rgba(15,17,23,0.04);
-  font-weight: 600;
-  font-size: 13px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.compare-table td:first-child { font-weight: 600; width: 28%; }
-.callout {
-  background: rgba(200,134,30,0.08);
-  border-left: 3px solid var(--amber);
-  padding: 20px 24px;
-  margin: 28px 0;
-  border-radius: 4px;
-  font-size: 16px;
-}
-.cta-box {
-  background: var(--ink);
-  color: var(--cream);
-  padding: 48px 40px;
-  border-radius: 12px;
-  margin: 56px 0 32px;
-  text-align: center;
-}
-.cta-box h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--cream);
-  margin-bottom: 14px;
-}
-.cta-box p {
-  color: var(--muted);
-  font-size: 17px;
-  margin-bottom: 24px;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-}
-a.cta-btn {
-  display: inline-block;
-  background: var(--amber);
-  color: var(--ink);
-  padding: 14px 28px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 16px;
-  text-decoration: none;
-}
-a.cta-btn:hover { background: var(--amber-lt); }
-.cta-foot { font-size: 13px; color: var(--muted); margin-top: 14px; }
-.related-box { margin-top: 48px; padding-top: 36px; border-top: 1px solid var(--border); }
-.related-title {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 18px;
-}
-.related-list { list-style: none; padding-left: 0; }
-.related-list li { margin-bottom: 10px; }
-.related-list a {
-  color: var(--ink);
-  text-decoration: none;
-  font-weight: 500;
-  display: block;
-  padding: 12px 16px;
-  background: rgba(15,17,23,0.03);
-  border-radius: 6px;
-  transition: all 0.15s;
-}
-.related-list a:hover { background: rgba(200,134,30,0.1); color: var(--amber); }
-footer { background: var(--ink); color: var(--muted); padding: 48px 32px 32px; text-align: center; font-size: 14px; }
-footer a { color: var(--cream); text-decoration: none; margin: 0 12px; }
-footer a:hover { color: var(--amber); }
-.footer-brand { font-family: 'Playfair Display', serif; font-size: 22px; color: var(--cream); margin-bottom: 16px; }
-.footer-links { margin-bottom: 20px; }
-.footer-copy { font-size: 12px; color: rgba(255,255,255,0.4); }
-@media (max-width: 680px) {
-  nav { padding: 14px 20px; flex-wrap: wrap; gap: 10px; }
-  .position { display: none; }
-  .hero { padding: 60px 20px 40px; }
-  .article { padding: 0 20px 60px; }
-  .article h2 { font-size: 26px; }
-  .cta-box { padding: 36px 24px; }
-  .marcus-says { padding: 28px 24px; }
-  .marcus-says .mq { font-size: 20px; }
-  .compare-table { font-size: 14px; }
-  .compare-table th, .compare-table td { padding: 10px 12px; }
-}
 
-.answer-box{background:#FFFFFF;border:1px solid #E3DFD6;border-left:3px solid #C8861E;
-  border-radius:4px;padding:22px 26px;margin:0 0 34px;}
-.answer-label{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;
-  color:#8B8A98;margin-bottom:12px;}
-.answer-box ul{margin:0;padding-left:20px;}
-.answer-box li{margin-bottom:8px;}
-.answer-box p:last-child{margin-bottom:0;}
-.cta-inline{background:#F7F5F0;border:1px solid #E3DFD6;border-radius:4px;
-  padding:20px 24px;margin:30px 0;display:flex;gap:18px;align-items:center;
-  justify-content:space-between;flex-wrap:wrap;}
-.cta-inline p{margin:0;font-size:15.5px;flex:1 1 320px;}
-.cta-inline a{font-weight:700;color:#0F1117;white-space:nowrap;}
-.faq-item{border-top:1px solid #E3DFD6;padding:22px 0;}
-.faq-item:last-of-type{border-bottom:1px solid #E3DFD6;}
-.faq-item h3{font-size:16.5px;font-weight:700;color:#0F1117;line-height:1.4;margin:0 0 8px;}
-.faq-item p{margin-bottom:0;font-size:15.5px;}
-</style>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script type="application/ld+json">
 {
@@ -371,30 +127,114 @@ footer a:hover { color: var(--amber); }
   ]
 }
 </script>
-</head>
-<style>@media(max-width:768px){.nav-tagline{display:none}}</style>
-<body>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:#F7F5F0;color:#0F1117;line-height:1.7;}
+a{color:#C8861E;text-decoration:none;}a:hover{text-decoration:underline;}
+nav{background:#0F1117;padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;}
+.nl{display:flex;flex-direction:column;gap:2px;}
+.ng{font-family:'Playfair Display',serif;font-size:19px;color:#F7F5F0;}
+.nc{font-family:'Playfair Display',serif;font-size:19px;font-style:italic;color:#E8A832;}
+.ntag{font-size:9px;color:rgba(139,138,152,0.6);letter-spacing:.06em;}
+.nav-cta{background:#C8861E;color:#0F1117;font-size:13px;font-weight:600;padding:9px 18px;border-radius:8px;text-decoration:none;}
+.hero{background:#0F1117;padding:72px 0 56px;position:relative;overflow:hidden;}
+.hg{position:absolute;right:-10%;top:-30%;width:50%;height:160%;background:radial-gradient(ellipse,rgba(200,134,30,0.07) 0%,transparent 65%);pointer-events:none;}
+.container{max-width:780px;margin:0 auto;padding:0 32px;}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#E8A832;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.eyebrow::before{content:'';display:block;width:24px;height:2px;background:#C8861E;}
+h1{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,48px);font-weight:500;color:#F7F5F0;line-height:1.1;letter-spacing:-.3px;margin-bottom:16px;}
+h1 em{font-style:italic;color:#E8A832;}
+.hero-sub{font-size:17px;color:rgba(247,245,240,0.62);max-width:560px;line-height:1.65;}
+.article{padding:56px 0 80px;background:#F7F5F0;}
+h2{font-family:'Playfair Display',serif;font-size:25px;font-weight:500;color:#0F1117;margin:48px 0 14px;line-height:1.2;}
+h2:first-child{margin-top:0;}
+h3{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#0F1117;margin:28px 0 10px;}
+p{font-size:16px;color:#2E3140;margin-bottom:20px;line-height:1.75;}
+ul,ol{margin:0 0 20px 24px;}li{font-size:16px;color:#2E3140;margin-bottom:8px;line-height:1.65;}
+strong{font-weight:600;color:#0F1117;}
+.callout{background:#fff;border-left:3px solid #C8861E;border-radius:0 10px 10px 0;padding:18px 22px;margin:28px 0;}
+.callout p{margin:0;font-size:15px;font-style:italic;}
+.answer-box{background:#fff;border:0.5px solid rgba(15,17,23,0.12);border-top:3px solid #C8861E;border-radius:4px 4px 12px 12px;padding:22px 26px;margin:0 0 32px;}
+.answer-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#8B8A98;margin-bottom:10px;}
+.answer-box p{margin:0 0 10px;font-size:16px;}
+.answer-box p:last-child{margin-bottom:0;}
+.answer-box ul{margin:0 0 0 20px;}
+.answer-box li{font-size:15px;margin-bottom:6px;}
+.cta-inline{display:flex;align-items:center;justify-content:space-between;gap:18px;flex-wrap:wrap;background:#EDE9E1;border-left:3px solid #0B7A60;border-radius:0 12px 12px 0;padding:18px 22px;margin:30px 0;}
+.cta-inline p{margin:0;font-size:14px;color:#2E3140;max-width:440px;line-height:1.6;}
+.cta-inline a{background:#0F1117;color:#F7F5F0;font-size:13px;font-weight:600;padding:11px 20px;border-radius:9px;text-decoration:none;white-space:nowrap;}
+.cta-inline a:hover{background:#C8861E;color:#0F1117;text-decoration:none;}
+.faq-item{border-bottom:0.5px solid rgba(15,17,23,0.12);padding:18px 0;}
+.faq-item:last-child{border-bottom:none;}
+.faq-item h3{margin:0 0 8px;font-size:17px;}
+.faq-item p{margin:0;font-size:15px;}
+@media(max-width:680px){.cta-inline{flex-direction:column;align-items:flex-start;}.cta-inline a{width:100%;text-align:center;box-sizing:border-box;}}
+.marcus-says{background:#1A1D27;border-radius:14px;padding:22px 26px;margin:32px 0;}
+.ml{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#E8A832;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.ml::after{content:'';flex:1;height:0.5px;background:rgba(247,245,240,0.1);}
+.mq{font-family:'Playfair Display',serif;font-size:16px;font-style:italic;color:#F7F5F0;line-height:1.65;}
+.cta-box{background:#0F1117;border-radius:16px;padding:32px 36px;margin:44px 0;text-align:center;}
+.cta-box h3{font-family:'Playfair Display',serif;font-size:21px;color:#F7F5F0;margin:0 0 10px;font-weight:500;}
+.cta-box p{color:#8B8A98;font-size:14px;margin:0 0 22px;}
+.cta-btn{display:inline-block;background:#C8861E;color:#0F1117;font-size:14px;font-weight:600;padding:13px 28px;border-radius:10px;text-decoration:none;}
+.toc{background:#EDE9E1;border-radius:12px;padding:18px 22px;margin-bottom:36px;}
+.toc-title{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8B8A98;margin-bottom:10px;}
+.toc a{color:#0F1117;font-size:13px;display:block;padding:4px 0;border-bottom:0.5px solid rgba(15,17,23,0.1);}
+.toc a:last-child{border-bottom:none;}.toc a:hover{color:#C8861E;text-decoration:none;}
+table{width:100%;border-collapse:collapse;margin:22px 0;}
+th{background:#0F1117;color:#F7F5F0;font-size:12px;font-weight:500;padding:11px 14px;text-align:left;}
+td{border-bottom:0.5px solid rgba(15,17,23,0.1);padding:10px 14px;font-size:13px;vertical-align:top;}
+tr:nth-child(even) td{background:rgba(15,17,23,0.03);}
+.win{color:#0B7A60;font-weight:500;}.lose{color:#8B8A98;}
+.related-box{background:#EDE9E1;border-radius:12px;padding:18px 22px;margin:36px 0;}
+.related-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:#8B8A98;margin-bottom:10px;}
+.related-links{display:flex;flex-direction:column;gap:5px;}
+.related-links a{font-size:13px;color:#0F1117;padding:4px 0;border-bottom:0.5px solid rgba(15,17,23,0.1);}
+.related-links a:last-child{border-bottom:none;}.related-links a:hover{color:#C8861E;text-decoration:none;}
+footer{background:#0F1117;padding:32px 0;}
+.fi{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;}
+.fc{font-size:11px;color:#8B8A98;}
+.fl{display:flex;gap:18px;}.fl a{font-size:12px;color:#8B8A98;}.fl a:hover{color:#F7F5F0;text-decoration:none;}
+@media(max-width:768px){nav{padding:0 20px;}.container{padding:0 20px;}h1{font-size:24px;}.hero{padding:48px 0 36px;}.article{padding:36px 0 52px;}.cta-box{padding:22px 18px;}}
+.corp-footer{background:#0F1117;border-top:0.5px solid rgba(247,245,240,0.06);padding:56px 40px 36px;}.corp-footer-grid{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1.8fr 1fr 1fr 1fr 1.6fr;gap:40px;margin-bottom:44px;}.cfl-logo{display:flex;align-items:baseline;text-decoration:none;margin-bottom:12px;}.cfl-ghost{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;}.cfl-coach{font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;}.cfl-tagline{font-size:12px;color:rgba(247,245,240,0.35);line-height:1.65;max-width:200px;margin-top:4px;}.cf-col-title{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;}.cf-link{display:block;font-size:13px;color:rgba(247,245,240,0.45);text-decoration:none;margin-bottom:9px;cursor:pointer;background:none;border:none;padding:0;font-family:inherit;}.cf-link:hover{color:#F7F5F0;}.cf-nl-label{font-size:12px;color:rgba(247,245,240,0.45);margin-bottom:12px;line-height:1.6;}.cf-nl-row{display:flex;gap:6px;}.cf-nl-input{flex:1;background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:10px 12px;font-size:12px;color:#F7F5F0;outline:none;}.cf-nl-input::placeholder{color:rgba(247,245,240,0.25);}.cf-nl-btn{background:#C8861E;color:#0F1117;font-size:12px;font-weight:600;padding:10px 14px;border-radius:8px;border:none;cursor:pointer;white-space:nowrap;}.cf-nl-note{font-size:10px;color:rgba(247,245,240,0.25);margin-top:8px;line-height:1.5;}.corp-footer-bottom{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding-top:20px;border-top:0.5px solid rgba(247,245,240,0.06);}.cfb-copy{font-size:11px;color:rgba(247,245,240,0.25);}.cfb-links{display:flex;gap:20px;}.cfb-link{font-size:11px;color:rgba(247,245,240,0.25);text-decoration:none;}@media(max-width:900px){.corp-footer-grid{grid-template-columns:1fr 1fr;gap:28px;}}@media(max-width:520px){.corp-footer{padding:40px 20px 28px;}.corp-footer-grid{grid-template-columns:1fr;gap:24px;}}
 
-<nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
+
+  @media (max-width: 680px) {
+    body { font-size: 15px; }
+    .container { padding: 0 20px !important; }
+    h1 { font-size: 32px !important; line-height: 1.15 !important; }
+    h2 { font-size: 24px !important; line-height: 1.2 !important; }
+    h3 { font-size: 19px !important; }
+    nav { padding: 10px 16px !important; }
+  }
+
+  
+.related-links a span{display:block;font-size:12px;color:#8B8A98;margin-top:2px;}
+.callout-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#0B7A60;margin-bottom:6px;}
+.tag-good{color:#0B7A60;font-weight:600;font-size:12px;}.tag-warn{color:#C8861E;font-weight:600;font-size:12px;}
+.verdict{background:rgba(11,122,96,0.08);border-left:3px solid #0B7A60;border-radius:0 10px 10px 0;padding:20px 24px;margin:28px 0;}
+.verdict-title{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#0B7A60;margin-bottom:8px;}
+.verdict p:last-child{margin-bottom:0;}
+@media(max-width:680px){.article table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}}
+
+.related-links a span{display:block;font-size:12px;color:#8B8A98;margin-top:2px;}
+.callout-label{font-size:10px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#0B7A60;margin-bottom:6px;}
+.tag-good{color:#0B7A60;font-weight:600;font-size:12px;}.tag-warn{color:#C8861E;font-weight:600;font-size:12px;}
+.verdict{background:rgba(11,122,96,0.08);border-left:3px solid #0B7A60;border-radius:0 10px 10px 0;padding:20px 24px;margin:28px 0;}
+.verdict-title{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#0B7A60;margin-bottom:8px;}
+.verdict p:last-child{margin-bottom:0;}
+@media(max-width:768px){.hero{padding:78px 0 36px;}}
+@media(max-width:680px){.article table{display:block;overflow-x:auto;-webkit-overflow-scrolling:touch;}}
+</style><style>@media(max-width:768px){.nav-tagline{display:none}}</style></head>
+
+<body><nav style="position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.96);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:0.5px solid rgba(247,245,240,0.06);height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;box-sizing:border-box;">
   <a href="https://getghostcoach.com/" style="display:flex;flex-direction:column;gap:1px;text-decoration:none;color:inherit;">
     <span style="display:flex;align-items:baseline;"><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;color:#F7F5F0;line-height:1;">Ghost</span><span style="font-family:'Playfair Display',serif;font-size:18px;font-weight:500;font-style:italic;color:#E8A832;line-height:1;">Coach</span></span>
     <span class="nav-tagline" style="font-size:10px;color:rgba(247,245,240,0.35);letter-spacing:.02em;white-space:nowrap;font-family:'DM Sans',sans-serif;">AI business coaching for solo SaaS founders</span>
   </a>
   <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
-</nav>
-
-<section class="hero">
-  <div class="eyebrow">Guides · Definitions</div>
-  <h1>What is AI business coaching? <em>Three types</em>, three different jobs</h1>
-  <p class="hero-sub">AI business coaching is what happens when a large language model is wrapped in a product that holds context, applies a framework, and gives recommendations. But "AI business coaching" is not one thing. Three different categories of tool share the label, and picking the wrong one is the most common reason founders give up.</p>
-</section>
-
-<section class="article">
-
-  <div class="toc">
-    <div class="toc-title">In this guide</div>
-
-  <div class="answer-box">
+</nav><section class="hero"><div class="hg"></div><div class="container" style="position:relative;z-index:1;"><div class="eyebrow">Guides · Definitions</div><h1>What is AI business coaching? <em>Three types</em>, three different jobs</h1><p class="hero-sub">AI business coaching is what happens when a large language model is wrapped in a product that holds context, applies a framework, and gives recommendations. But "AI business coaching" is not one thing. Three different categories of tool share the label, and picking the wrong one is the most common reason founders give up.</p></div></section><section class="article"><div class="container"><div class="toc"><div class="toc-title">In this guide</div><a href="#what-it-is">What AI business coaching actually is</a><a href="#three-types">The three types of AI business coaching tools</a><a href="#where-it-wins">Where AI business coaching beats a human coach</a><a href="#where-it-falls">Where AI business coaching falls short</a><a href="#what-to-look-for">What separates good AI coaching from bad</a><a href="#how-to-choose">How to choose the right type for your stage</a></div>
+<div class="answer-box">
     <div class="answer-label">The short answer</div>
     <ul>
       <li><strong>What it is:</strong> a language model wrapped in a product that holds context about your business, applies a framework, and commits to a recommendation</li>
@@ -404,18 +244,7 @@ footer a:hover { color: var(--amber); }
     </ul>
     <p style="margin-top:12px;">Picking the wrong type is the most common reason founders abandon AI coaching.</p>
   </div>
-
-    <ul>
-      <li><a href="#what-it-is">What AI business coaching actually is</a></li>
-      <li><a href="#three-types">The three types of AI business coaching tools</a></li>
-      <li><a href="#where-it-wins">Where AI business coaching beats a human coach</a></li>
-      <li><a href="#where-it-falls">Where AI business coaching falls short</a></li>
-      <li><a href="#what-to-look-for">What separates good AI coaching from bad</a></li>
-      <li><a href="#how-to-choose">How to choose the right type for your stage</a></li>
-    </ul>
-  </div>
-
-  <h2 id="what-it-is">What AI in business coaching actually means</h2>
+<h2 id="what-it-is">What AI in business coaching actually means</h2>
 
   <p>AI business coaching is the use of large language models — usually GPT-4, Claude, or a fine-tuned variant — wrapped in a product that helps founders make business decisions. The "coaching" part is what separates these tools from generic chatbots. A coaching tool holds context about your specific business, applies a framework, and gives recommendations rather than menus of options.</p>
   <p>For a closer look at <a href="https://getghostcoach.com/ai-business-coach/">how AI business coaching works in practice</a>, including the structured-session model and what it covers, see our full hub.</p>
@@ -502,7 +331,7 @@ footer a:hover { color: var(--amber); }
 
   <p>Stage matters more than feature lists. The right AI coaching tool at $0 MRR is not the same as the right tool at $30k MRR. Pick by stage first, then by feature set.</p>
 
-  <table class="compare-table">
+  <table>
     <thead>
       <tr>
         <th>Your stage</th>
@@ -573,20 +402,13 @@ footer a:hover { color: var(--amber); }
     <h3>Try AI coaching built for your stage</h3>
     <p>GhostCoach is specialized for solopreneur subscription software, pre-launch to $30k MRR. Marcus diagnoses your bottleneck and gives you one specific recommendation per session.</p>
     <a href="/#pricing" class="cta-btn">Try GhostCoach free →</a>
-    <div class="cta-foot">14-day free trial · cancel anytime · $79/month Builder plan</div>
+    <p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · cancel anytime · $79/month Builder plan</p>
   </div>
 
   <div class="related-box">
-    <div class="related-title">Where to go from here</div>
-    <ul class="related-list">
-      <li><a href="/guides/saas-coach/">SaaS coach: coaching for subscription software founders</a></li>
-      <li><a href="/ai-business-coach/">The AI business coach hub — compare every tool type</a></li>
-      <li><a href="/ai-self-coaching/claude/">Using Claude as a business coach: prompts and setup</a></li>
-    </ul>
-  </div>
-
-</section>
-
+    <div class="related-label">Where to go from here</div>
+    <div class="related-links"><a href="/guides/saas-coach/">SaaS coach: coaching for subscription software founders</a><a href="/ai-business-coach/">The AI business coach hub — compare every tool type</a><a href="/ai-self-coaching/claude/">Using Claude as a business coach: prompts and setup</a></div>
+  </div></div></section>
 <footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
   <div style="max-width:1080px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr 1.4fr;gap:36px;" class="gc-footer-grid">
     <div>
@@ -603,30 +425,30 @@ footer a:hover { color: var(--amber); }
     </div>
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Product</div>
-      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How it works</a>
-      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">The Framework</a>
-      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Pricing</a>
-      <a href="https://getghostcoach.com/#faq" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">FAQ</a>
-      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Start trial</a>
+      <a href="https://getghostcoach.com/how-it-works/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">How it works</a>
+      <a href="https://getghostcoach.com/#ghost-os" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">The Framework</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Pricing</a>
+      <a href="https://getghostcoach.com/#faq" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">FAQ</a>
+      <a href="https://getghostcoach.com/#pricing" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Start trial</a>
     </div>
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Guides</div>
-      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to price a SaaS</a>
-      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">How to reduce churn</a>
-      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Break the MRR plateau</a>
-      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Build an acquisition system</a>
-      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">After vibe coding</a>
-      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Claude as a business coach</a>
+      <a href="https://getghostcoach.com/guides/how-to-price-saas-product/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">How to price a SaaS</a>
+      <a href="https://getghostcoach.com/guides/how-to-reduce-saas-churn/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">How to reduce churn</a>
+      <a href="https://getghostcoach.com/guides/mrr-plateau-how-to-grow-saas/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Break the MRR plateau</a>
+      <a href="https://getghostcoach.com/guides/saas-acquisition-system/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Build an acquisition system</a>
+      <a href="https://getghostcoach.com/vibe/after-vibe-coding-what-next/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">After vibe coding</a>
+      <a href="https://getghostcoach.com/ai-self-coaching/claude/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Claude as a business coach</a>
       <a href="https://getghostcoach.com/playbooks/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">All playbooks →</a><a href="https://getghostcoach.com/frameworks/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">All frameworks →</a><a href="https://getghostcoach.com/guides/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">All guides →</a>
       <a href="https://getghostcoach.com/ai-business-coach/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">AI business coach hub →</a>
       <a href="https://getghostcoach.com/ai-self-coaching/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">AI self-coaching hub →</a>
     </div>
     <div>
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Company</div>
-      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">About</a>
-      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Contact</a>
-      <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Privacy Policy</a>
-      <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Terms of Use</a>
+      <a href="https://getghostcoach.com/about/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">About</a>
+      <a href="https://getghostcoach.com/contact/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Contact</a>
+      <a href="https://getghostcoach.com/privacy/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Privacy Policy</a>
+      <a href="https://getghostcoach.com/terms/" target="_blank" rel="noopener noreferrer" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;">Terms of Use</a>
       <a href="https://getghostcoach.com/cookies/" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Policy</a>
       <a href="#" onclick="GCCookies.open();return false;" style="display:block;font-size:13px;color:rgba(247,245,240,0.5);text-decoration:none;margin-bottom:9px;transition:color .2s;cursor:pointer;" onmouseover="this.style.color='#F7F5F0'" onmouseout="this.style.color='rgba(247,245,240,0.5)'">Cookie Preferences</a>
     </div>
@@ -634,8 +456,8 @@ footer a:hover { color: var(--amber); }
       <div style="font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:rgba(247,245,240,0.4);margin-bottom:14px;">Newsletter</div>
       <p style="font-size:12px;color:rgba(247,245,240,0.5);line-height:1.6;margin:0 0 12px 0;">Weekly insights for solo SaaS founders. Free, no fluff.</p>
       <form id="gc-newsletter-form" data-source="footer_signup" style="display:flex;flex-direction:column;gap:7px;">
-        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;transition:border-color .2s;box-sizing:border-box;" onfocus="this.style.borderColor='rgba(200,134,30,0.5)'" onblur="this.style.borderColor='rgba(247,245,240,0.12)'" id="gc-newsletter-email">
-        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;transition:background .2s;" onmouseover="this.style.background='#E8A832'" onmouseout="this.style.background='#C8861E'" id="gc-newsletter-btn">Subscribe →</button>
+        <input type="email" placeholder="your@email.com" required style="background:rgba(247,245,240,0.06);border:0.5px solid rgba(247,245,240,0.12);border-radius:8px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:13px;color:#F7F5F0;outline:none;box-sizing:border-box;" id="gc-newsletter-email">
+        <button type="submit" style="background:#C8861E;color:#0F1117;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;padding:9px;border-radius:8px;border:none;cursor:pointer;" id="gc-newsletter-btn">Subscribe →</button>
       </form>
       <div class="gc-nl-ok" id="gc-newsletter-msg" style="font-size:12px;color:#0DD4A8;margin-top:8px;display:none;">You're in — see you Monday.</div>
     </div>

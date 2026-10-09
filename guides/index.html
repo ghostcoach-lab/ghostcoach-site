@@ -508,10 +508,10 @@ footer{
 </script>
 
 <style>
-.hub-hero{background:var(--ink);padding:128px 0 72px;position:relative;overflow:hidden;}
+.hub-hero{background:var(--ink);padding:72px 0 56px;position:relative;overflow:hidden;}.hub-hero::before{content:"";position:absolute;right:-10%;top:-30%;width:50%;height:160%;background:radial-gradient(ellipse,rgba(200,134,30,0.07) 0%,transparent 65%);pointer-events:none;}
 .hub-hero .container{position:relative;z-index:1;}
-.hub-eyebrow{font-size:12px;font-weight:500;color:var(--amber-lt);letter-spacing:.04em;text-transform:uppercase;margin-bottom:18px;}
-.hub-h1{font-family:'Playfair Display',serif;font-size:46px;font-weight:500;line-height:1.1;color:#F7F5F0;margin-bottom:20px;max-width:760px;}
+.hub-eyebrow{font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#E8A832;margin-bottom:14px;display:flex;align-items:center;gap:8px;}.hub-eyebrow::before{content:"";display:block;width:24px;height:2px;background:#C8861E;}
+.hub-h1{font-family:'Playfair Display',serif;font-size:clamp(26px,5vw,48px);font-weight:500;line-height:1.1;letter-spacing:-.3px;color:#F7F5F0;margin-bottom:16px;max-width:760px;}
 .hub-h1 em{font-style:italic;color:var(--amber-lt);}
 .hub-intro{font-size:17px;line-height:1.6;color:rgba(247,245,240,0.7);max-width:620px;}
 .hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:64px 0 24px;}
@@ -519,7 +519,7 @@ footer{
 .hub-card:hover{border-color:var(--amber);transform:translateY(-2px);box-shadow:0 6px 20px rgba(15,17,23,0.06);}
 .hub-card-title{font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:var(--ink);line-height:1.35;margin-bottom:7px;}
 .hub-card-desc{font-size:13.5px;line-height:1.55;color:var(--muted,#8B8A98);}
-@media(max-width:680px){.hub-h1{font-size:34px;}.hub-grid{grid-template-columns:1fr;padding:44px 0 16px;}.hub-hero{padding:104px 0 56px;}}
+@media(max-width:680px){.hub-h1{font-size:32px;}.hub-grid{grid-template-columns:1fr;padding:44px 0 16px;}.hub-hero{padding:78px 0 36px;}}
 </style>
 <script type="application/ld+json">
 {
