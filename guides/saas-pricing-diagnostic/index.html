@@ -25,11 +25,12 @@
   a:hover { color: var(--amber-lt); text-decoration: underline; }
 
   /* ─── Hero (dark) ───────────────────────────────────────────── */
-  .hero { background: var(--ink); padding: 110px 0 64px; position: relative; overflow: hidden; }
+  .hero { background: var(--ink); padding: 72px 0 56px; position: relative; overflow: hidden; }
   .hero-glow { position: absolute; right: -10%; top: -30%; width: 50%; height: 160%; background: radial-gradient(ellipse, rgba(200,134,30,0.07) 0%, transparent 65%); pointer-events: none; }
   .container { max-width: 780px; margin: 0 auto; padding: 0 32px; position: relative; z-index: 1; }
-  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--amber-lt); margin-bottom: 16px; display: block; }
-  h1 { font-family: 'Playfair Display', serif; font-size: clamp(30px, 5vw, 50px); font-weight: 500; color: var(--cream); line-height: 1.1; letter-spacing: -.3px; margin-bottom: 16px; }
+  .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--amber-lt); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .eyebrow::before { content: ''; display: block; width: 24px; height: 2px; background: #C8861E; }
+  h1 { font-family: 'Playfair Display', serif; font-size: clamp(26px, 5vw, 48px); font-weight: 500; color: var(--cream); line-height: 1.1; letter-spacing: -.3px; margin-bottom: 16px; }
   h1 em { font-style: italic; color: var(--amber-lt); }
   .hero-sub { font-size: 17px; color: rgba(247,245,240,0.65); max-width: 580px; line-height: 1.65; }
 
@@ -153,7 +154,7 @@
 
   /* Mobile */
   @media (max-width: 680px) {
-    .hero { padding: 90px 0 48px; }
+    .hero { padding: 78px 0 36px; }
     .container { padding: 0 20px; }
     .tool-card { padding: 32px 24px; border-radius: 14px; }
     .result { padding: 32px 24px; }
