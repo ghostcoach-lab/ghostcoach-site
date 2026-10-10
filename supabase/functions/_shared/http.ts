@@ -14,6 +14,7 @@ export const REASON_STATUS = {
   session_conflict: 409,
   audit_too_long: 413,
   extraction_incomplete: 422,
+  rate_limited: 429,
   ai_unavailable: 503,
   internal_error: 500,
 } as const;

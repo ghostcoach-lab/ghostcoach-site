@@ -20,6 +20,9 @@ export interface AuditCompleteConfig {
   maxTranscriptChars: number;
   recap: RecapTarget | null;
   recapTimeoutMs: number;
+  // Allowed calls per customer and per session in the last 24 hours (the completion limiter).
+  userLimit: number;
+  sessionLimit: number;
 }
 
 // The transcript cap sits above the audit chat's, which excludes Marcus's closing Verdict.
@@ -32,6 +35,8 @@ export const AUDIT_COMPLETE_DEFAULTS: AuditCompleteConfig = {
   recap: null,
   // Above S12's own 8-second wait for Resend, so a slow send is not cut off after it was accepted.
   recapTimeoutMs: 15000,
+  userLimit: 100,
+  sessionLimit: 60,
 };
 
 export function readAuditCompleteConfig(env: ReadEnv): AuditCompleteConfig {
@@ -48,6 +53,8 @@ export function readAuditCompleteConfig(env: ReadEnv): AuditCompleteConfig {
     ),
     recap: recapTarget(env),
     recapTimeoutMs: positiveIntegerSetting(env, "S12_RECAP_TIMEOUT_MS", defaults.recapTimeoutMs),
+    userLimit: positiveIntegerSetting(env, "AUDIT_COMPLETE_USER_LIMIT", defaults.userLimit),
+    sessionLimit: positiveIntegerSetting(env, "AUDIT_COMPLETE_SESSION_LIMIT", defaults.sessionLimit),
   };
 }
 
