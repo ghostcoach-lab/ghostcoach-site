@@ -707,8 +707,8 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': GC.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${GC.SUPABASE_ANON_KEY}`
+          'apikey': GC.SUPABASE_ANON,
+          'Authorization': `Bearer ${GC.SUPABASE_ANON}`
         },
         body: JSON.stringify({ stage: activePath, answers })
       });
