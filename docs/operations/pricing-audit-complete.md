@@ -76,6 +76,8 @@ Counting rule:
 - Calls rejected before the limiter never count: method, authentication, configuration, payload
   validation, a replay of a completed audit, `session_conflict`, `plan_lapsed` and `gated`.
 - Every allowed call counts, including one whose extraction then fails.
+- A duplicate sent while the first call is still running passes the replay check, because the audit is
+  not saved yet. It is counted, and the atomic save then answers it `already_completed`.
 - A refused call (`rate_limited`) is not recorded, so it does not extend the block.
 - A limiter error returns `internal_error`, is logged, and skips extraction.
 

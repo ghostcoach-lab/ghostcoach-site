@@ -714,9 +714,16 @@ test("rate limit: calls rejected before the limiter never reach it", async () =>
     ["session conflict", { lookupSession: async () => ({ ...newSession, status: "session_conflict" }) }, valid(), 409],
     ["plan lapsed", { readEligibilityRecord: async () => ({ ...welcomeRecord, plan: "free" }) }, valid(), 403],
     ["gated", { readEligibilityRecord: async () => gatedRecord }, valid(), 403],
+    ["audit too long", { loadConfig: () => ({ ...AUDIT_COMPLETE_DEFAULTS, maxTranscriptChars: 1 }) }, valid(), 413],
   ];
   for (const [name, overrides, body, status] of cases) {
     const { handler } = setup({ ...neverLimited, ...overrides });
     assert.equal((await handler(post(body))).status, status, name);
   }
+});
+
+test("rate limit: a method other than POST never reaches the limiter", async () => {
+  const { handler } = setup(neverLimited);
+  const get = new Request("http://localhost/functions/v1/pricing-audit-complete", { method: "GET" });
+  assert.equal((await handler(get)).status, 405);
 });
