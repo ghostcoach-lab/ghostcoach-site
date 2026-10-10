@@ -54,6 +54,20 @@ export const PLAN = [
   'after: the same counts and hashes again; a difference in the QA account\'s rows or the run\'s rows fails the run, and a whole-table count change is only reported (live traffic moves it)',
 ];
 
+// --limit: proves the completion limiter against production with seeded counter rows, so the live
+// limits stay as they are and no AI call, audit or email is involved. Runbook:
+// docs/operations/completion-limit-rollout.md.
+export const LIMIT_PLAN = [
+  'before: read-only preflight (limiter present, QA account has no counted calls), then row counts and hashes of the QA account\'s rows and the run\'s session IDs, and whole-table row counts',
+  'entitlement: temporary database-only operator/active, guarded by the values saved in the preflight',
+  'seed: 60 counter rows for the QA account on one session',
+  'session limit: pricing-audit-complete with that session; expect 429 rate_limited with limit session',
+  'seed: 40 more counter rows on other sessions, so the QA account has 100',
+  'user limit: pricing-audit-complete with a new session; expect 429 rate_limited with limit user',
+  'cleanup: delete by the exact row IDs and the run\'s session IDs, restore the saved entitlement if the grant may have committed and the account still holds it, sign the QA session out',
+  'after: the same counts and hashes again; a difference in the QA account\'s rows fails the run',
+];
+
 class QaFailure extends Error {}
 const check = (condition, message) => { if (!condition) throw new QaFailure(message); };
 
@@ -106,8 +120,40 @@ const lit = v => (v === null || v === undefined ? 'null'
   : typeof v === 'boolean' ? String(v)
   : `'${String(v).replaceAll("'", "''")}'`);
 const uuidList = ids => ids.map(id => { check(UUID.test(id), 'not a UUID'); return lit(id); }).join(', ');
+const idList = ids => ids.map(id => { check(Number.isSafeInteger(id), 'not an integer ID'); return String(id); }).join(', ');
+const COUNTED_CALLS = 'pricing_audit_completion_calls';
 
 const sql = {
+  limitPreflight: user => `-- qa:limit-preflight
+select
+  (exists (select 1 from information_schema.tables where table_schema = 'public' and table_name = ${lit(COUNTED_CALLS)})
+   and exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+               where n.nspname = 'public' and p.proname = 'pricing_audit_take_completion_call')) as limiter,
+  (select count(*) from public.${COUNTED_CALLS} c where c.user_id = u.id)::int as calls,
+  u.plan::text as plan, u.status::text as status, u.welcome_audit_used,
+  u.last_audit_completed_at::text as last_audit_completed_at
+from public.users u
+where u.id = ${lit(user)};`,
+
+  // Seeded counter rows for the QA account, one per session ID the run minted.
+  seed: (user, sessionIds) => `-- qa:seed
+insert into public.${COUNTED_CALLS} (user_id, session_id)
+values ${sessionIds.map(id => `(${lit(user)}, ${lit(id)})`).join(', ')}
+returning id;`,
+
+  // The QA account's counter rows tied to the run's session IDs: the seeded rows, plus any row the
+  // limiter itself recorded for one of the run's calls.
+  limitRows: (user, sessionIds) => `-- qa:limit-rows
+select json_build_object(
+  'calls', coalesce((select json_agg(json_build_object('id', c.id, 'user_id', c.user_id, 'session_id', c.session_id) order by c.id)
+    from public.${COUNTED_CALLS} c
+    where c.user_id = ${lit(user)} and c.session_id in (${uuidList(sessionIds)})), '[]'::json),
+  'user', (select json_build_object(
+      'plan', u.plan, 'status', u.status, 'welcome_audit_used', u.welcome_audit_used,
+      'last_audit_completed_at', u.last_audit_completed_at::text)
+    from public.users u where u.id = ${lit(user)})
+) as run;`,
+
   preflight: user => `-- qa:preflight
 select
   exists (select 1 from information_schema.columns
@@ -123,7 +169,7 @@ where u.id = ${lit(user)};`,
   // Row counts and md5 hashes of ordered row text, for the QA account's rows and the run's session
   // IDs only: live chat inserts pending sessions rows at any time. Whole tables get a count and
   // no hash. The users row leaves out updated_at, which a trigger moves on grant and restore.
-  state: (user, runIds) => {
+  state: (user, runIds, withCalls = false) => {
     const hashed = (name, from, order, row = 't::text') =>
       `select ${lit(name)} as name, count(*)::int as rows, md5(coalesce(string_agg(${row}, '|' order by ${order}), '')) as hash from ${from}`;
     const counted = table => `select ${lit(`${table} (all rows)`)} as name, count(*)::int as rows, null::text as hash from public.${table}`;
@@ -139,7 +185,10 @@ ${[
     hashed('subscriptions (QA account)', `public.subscriptions t where ${ownedByQa}`, 't.id'),
     hashed('digests (QA account)', `public.digests t where ${ownedByQa}`, 't.id'),
     hashed('auth sessions (QA account)', `auth.sessions t where ${ownedByQa}`, 't.id', 't.id::text'),
-    ...['users', 'profiles', 'sessions', 'pricing_audits', 'subscriptions', 'digests'].map(counted),
+    ...(withCalls ? [hashed('completion calls (QA account and run)',
+      `public.${COUNTED_CALLS} t where ${ownedByQa} or t.session_id in (${runList})`, 't.id')] : []),
+    ...['users', 'profiles', 'sessions', 'pricing_audits', 'subscriptions', 'digests',
+      ...(withCalls ? [COUNTED_CALLS] : [])].map(counted),
   ].join('\nunion all\n')}
 order by name;`;
   },
@@ -190,12 +239,15 @@ select json_build_object(
 
   // One statement, so it commits or rolls back as a whole. Each step must touch exactly the
   // rows it names, or the whole cleanup is rolled back and the run fails.
-  cleanup: (user, { auditIds, sessionIds, restore }) => {
+  cleanup: (user, { auditIds, sessionIds, callIds = [], restore }) => {
     const steps = [];
     const expect = (label, n) => `  get diagnostics v_rows = row_count;
   if v_rows <> ${n} then
     raise exception 'qa cleanup: % % rows, expected ${n}', ${lit(label)}, v_rows;
   end if;`;
+    if (callIds.length) steps.push(`  delete from public.${COUNTED_CALLS}
+   where user_id = ${lit(user)} and id in (${idList(callIds)});
+${expect(COUNTED_CALLS, callIds.length)}`);
     if (auditIds.length) steps.push(`  delete from public.pricing_audits
    where user_id = ${lit(user)} and id in (${uuidList(auditIds)});
 ${expect('pricing_audits', auditIds.length)}`);
@@ -290,7 +342,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   const { problems: configProblems, config } = readConfig(env);
   if (argv.includes('--dry-run')) {
     log('Dry run: nothing is sent. A confirmed run would do these steps:');
-    PLAN.forEach((step, i) => log(`${i + 1}. ${step}`));
+    (argv.includes('--limit') ? LIMIT_PLAN : PLAN).forEach((step, i) => log(`${i + 1}. ${step}`));
     log(configProblems.length ? `Configuration not ready: ${configProblems.join('; ')}.`
       : `Target: project ${config.projectRef}, QA account ${config.userId}.`);
     log('To run: --execute --confirm-project=<project ref> --confirm-user=<QA account ID>');
@@ -305,9 +357,13 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
 
   const prod = production(config, fetch);
   const user = config.userId;
+  const limitMode = argv.includes('--limit');
   const sessionId = randomUUID();
   const gatedSessionId = randomUUID();
-  const runIds = [sessionId, gatedSessionId];
+  // The limit run mints its session IDs up front: 60 seeded on one session, 40 more on others, and
+  // a new session for the user-limit call. Every row the run could write is tied to one of them.
+  const seeded = { limited: randomUUID(), others: Array.from({ length: 40 }, () => randomUUID()), fresh: randomUUID() };
+  const runIds = limitMode ? [seeded.limited, ...seeded.others, seeded.fresh] : [sessionId, gatedSessionId];
   let before;
   let saved;
   let token;
@@ -315,9 +371,11 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   // not sent, refused (its guard proves it did not commit), unknown (no answer) or granted.
   let grant = 'not sent';
   let step = 'before';
-  const readRun = async () => (await prod.query(sql.runRows(user, runIds)))[0].run;
+  const readRun = limitMode
+    ? async () => ({ sessions: [], audits: [], ...(await prod.query(sql.limitRows(user, runIds)))[0].run })
+    : async () => (await prod.query(sql.runRows(user, runIds)))[0].run;
 
-  try {
+  const auditSteps = async () => {
     const [pre] = await prod.query(sql.preflight(user));
     check(pre, 'the QA account has no users row');
     check(pre.migrated === true && pre.completion_rpc === 1, 'the Milestone 2 migration is not applied');
@@ -415,6 +473,61 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     const late = (await prod.s12Runs()).filter(e => !s12Before.has(e.id));
     check(late.length === 1, `no S12 run after the replay or the gated attempt (saw ${late.length - 1})`);
     emit({ step, ok: true });
+  };
+
+  // A body that passes validation and holds no Verdict, so even an unexpectedly allowed call could
+  // only end in extraction_incomplete, never in a completed audit.
+  const limitBody = id => ({ session_id: id, audit_intake: AUDIT_INTAKE,
+    messages: [{ role: 'assistant', content: 'QA limit check: this conversation holds no Verdict.' }] });
+  const seedRows = async sessionIds => {
+    const rows = await prod.query(sql.seed(user, sessionIds));
+    check(rows.length === sessionIds.length, `seeded ${rows.length} rows, expected ${sessionIds.length}`);
+    return rows.map(r => r.id);
+  };
+  const expectRefused = async (label, id, limit) => {
+    const r = await prod.complete(token, limitBody(id));
+    check(r.status === 429 && r.data?.reason === 'rate_limited' && r.data?.limit === limit,
+      `${label}: HTTP ${r.status} ${r.data?.reason ?? ''} ${r.data?.limit ?? ''}`.trim());
+  };
+
+  const limitSteps = async () => {
+    const [pre] = await prod.query(sql.limitPreflight(user));
+    check(pre, 'the QA account has no users row');
+    check(pre.limiter === true, 'the completion limiter is not applied');
+    check(pre.calls === 0, 'the QA account already has counted calls; clean them up before the run');
+    saved = { plan: pre.plan, status: pre.status, welcome_audit_used: pre.welcome_audit_used,
+      last_audit_completed_at: pre.last_audit_completed_at };
+    before = await prod.query(sql.state(user, runIds, true));
+    emit({ step, ok: true, session_ids: runIds, state: before });
+
+    step = 'sign in';
+    token = await prod.signIn();
+    emit({ step, ok: true });
+
+    step = 'entitlement';
+    grant = 'unknown';
+    try {
+      await prod.query(sql.grant(user, saved));
+    } catch (error) {
+      if (error.message.includes(GRANT_REFUSED)) grant = 'refused';
+      throw error;
+    }
+    grant = 'granted';
+    emit({ step, ok: true, granted: `${GRANTED.plan}/${GRANTED.status}` });
+
+    step = 'session limit';
+    const first = await seedRows(Array(60).fill(seeded.limited));
+    await expectRefused(step, seeded.limited, 'session');
+    emit({ step, ok: true, seeded: first.length });
+
+    step = 'user limit';
+    const second = await seedRows(seeded.others);
+    await expectRefused(step, seeded.fresh, 'user');
+    emit({ step, ok: true, seeded: second.length });
+  };
+
+  try {
+    await (limitMode ? limitSteps() : auditSteps());
   } catch (error) {
     failure = error;
     emit({ step, ok: false, error: error instanceof QaFailure ? error.message : `${error.name}: ${error.message}` });
@@ -424,7 +537,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   let after;
   if (before) {
     try {
-      after = await prod.query(sql.state(user, runIds));
+      after = await prod.query(sql.state(user, runIds, limitMode));
     } catch (error) {
       emit({ step: 'after', ok: false, error: error.message });
     }
@@ -453,17 +566,21 @@ async function cleanUp({ prod, user, runIds, saved, grant, token, readRun, emit 
       const run = await readRun();
       const auditIds = run.audits.filter(a => runIds.includes(a.session_id) && a.user_id === user).map(a => a.id);
       const sessionIds = run.sessions.filter(s => s.user_id === user && s.is_pricing_audit).map(s => s.id);
+      // Counter rows tied to the run's session IDs: the seeded ones, and any the limiter recorded.
+      const callIds = (run.calls ?? []).filter(c => c.user_id === user).map(c => c.id);
       const mayHaveGranted = grant === 'granted' || grant === 'unknown';
       const restore = mayHaveGranted && holdsGrant(run.user) && !sameEntitlement(run.user, saved) ? saved : null;
-      if (auditIds.length || sessionIds.length || restore) {
-        await prod.query(sql.cleanup(user, { auditIds, sessionIds, restore }));
+      if (auditIds.length || sessionIds.length || callIds.length || restore) {
+        await prod.query(sql.cleanup(user, { auditIds, sessionIds, callIds, restore }));
       }
       const left = await readRun();
-      check(left.sessions.length === 0 && left.audits.length === 0, 'rows remain after cleanup');
+      check(left.sessions.length === 0 && left.audits.length === 0 && (left.calls ?? []).length === 0,
+        'rows remain after cleanup');
       if (restore) check(sameEntitlement(left.user, saved), 'the entitlement was not restored');
       else if (mayHaveGranted) check(sameRunFields(left.user, saved),
         'a plan or status change from outside the run blocked the restore; set welcome_audit_used and last_audit_completed_at back by hand');
-      emit({ step: 'cleanup', ok: true, deleted_audits: auditIds, deleted_sessions: sessionIds, restored: !!restore });
+      emit({ step: 'cleanup', ok: true, deleted_audits: auditIds, deleted_sessions: sessionIds,
+        ...(callIds.length ? { deleted_calls: callIds } : {}), restored: !!restore });
     } catch (error) {
       ok = false;
       emit({ step: 'cleanup', ok: false, error: error.message,
