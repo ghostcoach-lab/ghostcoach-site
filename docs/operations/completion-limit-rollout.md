@@ -104,7 +104,9 @@ verified:** with the limiter missing, every call returns `internal_error`, for r
 **Pre-check**
 
 - Step 2 is verified. The Deno check passes on this commit.
-- Record the function's current version from `functions list`, for the rollback.
+- Record the function's current version from `functions list`, for the rollback. Also record the
+  commit SHA of `main` just before #51 merged (`git log --first-parent main`, the commit before the
+  merge). Supabase cannot restore an old function version, so the rollback redeploys from that commit.
 - No `AUDIT_COMPLETE_USER_LIMIT` or `AUDIT_COMPLETE_SESSION_LIMIT` secret is set, so the defaults
   (100 and 60) apply.
 
@@ -122,7 +124,7 @@ npx -y supabase@2.117.0 functions deploy pricing-audit-complete --project-ref <p
 
 **Rollback**
 
-Redeploy the previous version from the commit it was built from. Do not delete the function:
+Check out the commit SHA recorded in the pre-check and redeploy from it. Do not delete the function:
 customers can reach it. The table and function from step 2 can stay; the old code ignores them.
 
 ## 4. Live QA
