@@ -35,6 +35,7 @@ function fakeProduction(faults = {}) {
     user: { plan: 'builder', status: 'pending', welcome_audit_used: false, last_audit_completed_at: null },
     sessions: [{ id: 'aaaaaaaa-0000-4000-8000-000000000001', user_id: USER, session_number: 3, is_pricing_audit: false }],
     audits: [],
+    completionCalls: [],
     authSessions: ['browser-session'],
     executions: [{ id: '100', status: 'success' }],
   };
@@ -42,6 +43,9 @@ function fakeProduction(faults = {}) {
   const calls = [];
   const sql = [];
   const chatSessions = [];
+  // What the deployed limiter answered, in order: 'session', 'user' or 'allowed'.
+  const limiterLog = [];
+  let nextCallId = 1;
 
   // Hashes cover the QA account's rows and the rows of the session IDs that each table's part of
   // the query names. The whole-table rows carry a count and no hash.
@@ -52,7 +56,14 @@ function fakeProduction(faults = {}) {
     const auditRunIds = runIdsIn('pricing_audits (QA account and run)');
     const sessions = state.sessions.filter(s => s.user_id === USER || sessionRunIds.includes(s.id));
     const audits = state.audits.filter(a => a.user_id === USER || auditRunIds.includes(a.session_id));
+    const callRunIds = runIdsIn('completion calls (QA account and run)');
+    const calls = state.completionCalls.filter(c => c.user_id === USER || callRunIds.includes(c.session_id));
+    const callRows = query.includes('completion calls (QA account and run)') ? [
+      { name: 'completion calls (QA account and run)', rows: calls.length, hash: hashOf(calls) },
+      { name: 'pricing_audit_completion_calls (all rows)', rows: state.completionCalls.length, hash: null },
+    ] : [];
     return [
+      ...callRows,
       { name: 'auth sessions (QA account)', rows: state.authSessions.length, hash: hashOf(state.authSessions) },
       { name: 'pricing_audits (QA account and run)', rows: audits.length, hash: hashOf(audits) },
       { name: 'sessions (QA account and run)', rows: sessions.length, hash: hashOf(sessions) },
@@ -92,8 +103,11 @@ function fakeProduction(faults = {}) {
   function cleanup(query) {
     const auditDelete = query.match(/delete from public\.pricing_audits[^;]*;/i)?.[0] ?? '';
     const sessionDelete = query.match(/delete from public\.sessions[^;]*;/i)?.[0] ?? '';
+    const callDelete = query.match(/delete from public\.pricing_audit_completion_calls[^;]*;/i)?.[0] ?? '';
     const restore = query.match(/update public\.users\s+set([^;]*);/i)?.[1];
     if (restore && !entitled()) return json(400, { message: 'qa cleanup: users 0 rows, expected 1' });
+    const callIds = (callDelete.match(/id in \(([^)]*)\)/)?.[1] ?? '').split(',').filter(Boolean).map(Number);
+    state.completionCalls = state.completionCalls.filter(c => !(c.user_id === USER && callIds.includes(c.id)));
     const auditIds = uuids(auditDelete);
     const sessionIds = uuids(sessionDelete);
     state.audits = state.audits.filter(a => !(a.user_id === USER && auditIds.includes(a.id)));
@@ -131,6 +145,24 @@ function fakeProduction(faults = {}) {
       return json(201, []);
     }
     if (tag === 'run-rows') return json(201, runRows(query));
+    if (tag === 'limit-preflight') {
+      return json(201, [{ limiter: !faults.limiterMissing, calls: state.completionCalls.filter(c => c.user_id === USER).length, ...state.user }]);
+    }
+    if (tag === 'seed') {
+      const inserted = [...query.matchAll(/\('([^']+)', '([^']+)'\)/g)].map(([, user_id, session_id]) => {
+        const row = { id: nextCallId++, user_id, session_id };
+        state.completionCalls.push(row);
+        return { id: row.id };
+      });
+      return json(201, inserted);
+    }
+    if (tag === 'limit-rows') {
+      const runIds = uuids(query).filter(id => id !== USER);
+      return json(201, [{ run: {
+        calls: state.completionCalls.filter(c => c.user_id === USER && runIds.includes(c.session_id)),
+        user: { ...state.user },
+      } }]);
+    }
     if (tag === 'cleanup') {
       // The QA account's own chat page inserts a pending session that is not part of the run.
       if (faults.qaAccountActivity)
@@ -154,6 +186,18 @@ function fakeProduction(faults = {}) {
     if (!entitled()) return json(403, { reason: 'plan_lapsed' });
     if (gatedDate()) return json(403, { reason: 'gated', next_eligible_date: gatedDate() });
     if (faults.complete) return json(faults.complete.status, { reason: faults.complete.reason });
+    if (faults.limiterDeployed) {
+      // The deployed limiter: 100 calls per customer and 60 per session, user checked first.
+      // A refused call is not recorded; an allowed one is, and (with no Verdict) ends in a 422.
+      const mine = state.completionCalls.filter(c => c.user_id === USER);
+      const limits = { user: 100, session: 60, ...faults.limits };
+      const answer = faults.limiterAlwaysSaysUser || mine.length >= limits.user ? 'user'
+        : mine.filter(c => c.session_id === body.session_id).length >= limits.session ? 'session' : 'allowed';
+      limiterLog.push(answer);
+      if (answer !== 'allowed') return json(429, { reason: 'rate_limited', limit: answer });
+      state.completionCalls.push({ id: nextCallId++, user_id: USER, session_id: body.session_id });
+      return json(422, { reason: 'extraction_incomplete' });
+    }
     const completedAt = '2026-09-25T10:00:00.000+00:00';
     const audit = {
       id: AUDIT_1, user_id: USER, session_id: body.session_id, completed_at: completedAt,
@@ -214,7 +258,7 @@ function fakeProduction(faults = {}) {
     }
     throw new Error('unexpected request: ' + method + ' ' + url.href);
   };
-  return { state, initial, calls, sql, fetch };
+  return { state, initial, calls, sql, limiterLog, fetch };
 }
 
 const noSleep = async () => {};
@@ -282,6 +326,139 @@ test('a dry run prints the plan and sends no request', async () => {
   assert.deepEqual(net.calls, []);
   for (const step of ['before', 'entitlement', 'opener', 'complete', 'replay', 'gated', 'cleanup', 'after'])
     assert.match(out.text(), new RegExp(step, 'i'), 'plan names the ' + step + ' step');
+});
+
+test('a limit dry run prints the limit plan, not the audit plan, and sends no request', async () => {
+  const out = logger();
+  const net = recordingFetch();
+  const code = await runLiveQa({ argv: ['--limit', '--dry-run'], env: {}, fetch: net.fetch, log: out.log });
+  assert.equal(code, 0);
+  assert.deepEqual(net.calls, []);
+  for (const step of ['before', 'entitlement', 'seed', 'session limit', 'user limit', 'cleanup', 'after'])
+    assert.match(out.text(), new RegExp(step, 'i'), 'plan names the ' + step + ' step');
+  for (const step of ['opener', 'replay', 'gated'])
+    assert.doesNotMatch(out.text(), new RegExp(step, 'i'), 'the limit run has no ' + step + ' step');
+});
+
+test('a limit run refuses, sending nothing, without matching confirmation flags', async () => {
+  const refusals = [
+    { argv: ['--limit'] },
+    { argv: ['--limit', '--execute'] },
+    { argv: ['--limit', '--execute', `--confirm-project=${REF}`] },
+    { argv: ['--limit', '--execute', '--confirm-project=otherprojectrefxxxxx', `--confirm-user=${USER}`] },
+    { argv: ['--limit', '--execute', `--confirm-project=${REF}`, '--confirm-user=99999999-2222-4333-8444-555555555555'] },
+    { argv: ['--limit', ...CONFIRMED], env: qaEnv({ GC_QA_SUPABASE_ACCESS_TOKEN: '' }) },
+  ];
+  for (const { argv, env = qaEnv() } of refusals) {
+    const out = logger();
+    const net = recordingFetch();
+    const code = await runLiveQa({ argv, env, fetch: net.fetch, log: out.log });
+    assert.equal(code, 2, 'refused: ' + argv.join(' '));
+    assert.deepEqual(net.calls, []);
+    for (const secret of SECRETS) assert.ok(!out.text().includes(secret), 'no secret printed');
+  }
+});
+
+async function executeLimit(production, env = qaEnv()) {
+  const out = logger();
+  const code = await runLiveQa({ argv: ['--limit', ...CONFIRMED], env, fetch: production.fetch, log: out.log, sleep: noSleep });
+  return { code, out };
+}
+
+test('a limit run proves both 429s with seeded rows, makes no AI call, and leaves production as it found it', async () => {
+  const production = fakeProduction({ limiterDeployed: true });
+  const { code, out } = await executeLimit(production);
+  assert.equal(code, 0, out.text());
+  assert.match(out.text(), /"result":"passed"/);
+  assert.deepEqual(production.state, production.initial);
+  assert.deepEqual(production.limiterLog, ['session', 'user']);
+
+  const functions = production.calls.filter(c => c.url.includes('/functions/v1/'));
+  assert.equal(functions.filter(c => c.url.endsWith('marcus-audit-chat')).length, 0, 'no audit chat, so no AI call');
+  const complete = functions.filter(c => c.url.endsWith('pricing-audit-complete'));
+  assert.equal(complete.length, 2);
+  assert.equal(complete[0].body.messages.length, 1, 'a valid completion body with no Verdict');
+  assert.equal(production.calls.filter(c => c.url.includes('n8n.example.test/api/v1/executions')).length, 0, 'no S12 run');
+
+  const [first, second] = production.sql.filter(q => q.tag === 'seed').map(q => q.query);
+  const sessionsIn = query => uuids(query).filter(id => id !== USER);
+  assert.equal([...first.matchAll(/\('/g)].length, 60);
+  assert.equal(sessionsIn(first).length, 1, '60 rows on one session');
+  assert.equal([...second.matchAll(/\('/g)].length, 40);
+  assert.equal(sessionsIn(second).length, 40, '40 rows on other sessions');
+  assert.equal(complete[0].body.session_id, sessionsIn(first)[0]);
+  assert.ok(!sessionsIn(first).concat(sessionsIn(second)).includes(complete[1].body.session_id), 'the user-limit call uses a new session');
+
+  const cleanup = production.sql.filter(q => q.tag === 'cleanup');
+  assert.equal(cleanup.length, 1);
+  const deleted = cleanup[0].query.match(/id in \(([\d, ]+)\)/)[1].split(', ').map(Number);
+  assert.deepEqual(deleted, Array.from({ length: 100 }, (_, i) => i + 1), 'cleanup names the 100 seeded rows by ID');
+  assert.equal(production.sql.filter(q => q.tag === 'state').length, 2, 'before and after');
+  for (const secret of [...SECRETS, 'user-jwt', 'qa@example.test']) assert.ok(!out.text().includes(secret));
+});
+
+test('a limit run fails on a wrong answer from the function, and still deletes the seeded rows', async () => {
+  const wrongAnswers = [
+    ['an unexpected status', { complete: { status: 503, reason: 'ai_unavailable' } }, /"step":"session limit","ok":false.*503/],
+    ['the wrong limit', { limiterDeployed: true, limiterAlwaysSaysUser: true }, /"step":"session limit","ok":false.*rate_limited user/],
+  ];
+  for (const [label, faults, message] of wrongAnswers) {
+    const production = fakeProduction(faults);
+    const { code, out } = await executeLimit(production);
+    assert.equal(code, 1, label);
+    assert.match(out.text(), message, label);
+    assert.match(out.text(), /"step":"cleanup","ok":true/, label);
+    assert.match(out.text(), /"result":"failed","failed_step":"session limit"/, label);
+    assert.deepEqual(production.state, production.initial, label + ': nothing left behind');
+  }
+});
+
+test('a call the limiter allows fails the run, and the row it recorded is found by session ID and deleted', async () => {
+  // Production's limits were raised above the seeded counts, so the call is counted and runs extraction.
+  const production = fakeProduction({ limiterDeployed: true, limits: { user: 500, session: 500 } });
+  const { code, out } = await executeLimit(production);
+  assert.equal(code, 1);
+  assert.deepEqual(production.limiterLog, ['allowed']);
+  assert.match(out.text(), /"step":"session limit","ok":false.*422 extraction_incomplete/);
+  assert.match(out.text(), /"result":"failed","failed_step":"session limit"/);
+  assert.match(out.text(), /"step":"cleanup","ok":true/);
+  const cleanup = production.sql.find(q => q.tag === 'cleanup');
+  const deleted = cleanup.query.match(/id in \(([\d, ]+)\)/)[1].split(', ').map(Number);
+  assert.equal(deleted.length, 61, '60 seeded rows and the one the limiter recorded');
+  assert.deepEqual(production.state, production.initial, 'nothing left behind');
+});
+
+test('a limit run stops at the preflight, before sign-in or any write, when it cannot start cleanly', async () => {
+  const notReady = [
+    ['the limiter is not applied', fakeProduction({ limiterMissing: true }), /the completion limiter is not applied/],
+    ['the QA account already has counted calls', (() => {
+      const production = fakeProduction({ limiterDeployed: true });
+      production.state.completionCalls.push({ id: 900, user_id: USER, session_id: OTHER_SESSION });
+      return production;
+    })(), /already has counted calls/],
+  ];
+  for (const [label, production, message] of notReady) {
+    const before = structuredClone(production.state);
+    const { code, out } = await executeLimit(production);
+    assert.equal(code, 1, label);
+    assert.match(out.text(), message, label);
+    assert.deepEqual(production.sql.map(q => q.tag), ['limit-preflight'], label);
+    assert.ok(!production.calls.some(c => c.url.includes('/auth/v1/') || c.url.includes('/functions/v1/')), label);
+    assert.deepEqual(production.state, before, label + ': nothing changed');
+  }
+});
+
+test('a failed limit cleanup fails the run, names the leftover rows, and prints the session IDs to find them by', async () => {
+  const production = fakeProduction({ limiterDeployed: true, sqlFails: 'cleanup' });
+  const { code, out } = await executeLimit(production);
+  assert.equal(code, 1);
+  assert.match(out.text(), /"step":"cleanup","ok":false.*by hand/);
+  assert.match(out.text(), /FAILED: production differs/);
+  assert.match(out.text(), /completion calls \(QA account and run\): rows 0 -> 100, hash changed/);
+  assert.match(out.text(), /pricing_audit_completion_calls \(all rows\): rows 0 -> 100/);
+  assert.equal(production.state.completionCalls.length, 100, 'the seeded rows are still there');
+  const seededSession = uuids(production.sql.find(q => q.tag === 'seed').query).find(id => id !== USER);
+  assert.ok(out.lines.find(l => l.includes('"step":"before"')).includes(seededSession), 'the before step prints the run\'s session IDs');
 });
 
 test('a confirmed run completes one audit, proves replay and Cooldown, and leaves production as it found it', async () => {
