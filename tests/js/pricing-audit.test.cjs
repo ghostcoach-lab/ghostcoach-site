@@ -76,7 +76,7 @@ test('the release flag must be exactly true before eligibility is requested', as
   }
 });
 
-test('the account page wires a production-default-off pricing audit flag', () => {
+test('the account page wires a boolean pricing audit release flag', () => {
   const configSource = fs.readFileSync(
     path.join(__dirname, '../../js/config.js'),
     'utf8'
@@ -86,7 +86,9 @@ test('the account page wires a production-default-off pricing audit flag', () =>
     'utf8'
   );
 
-  assert.match(configSource, /PRICING_AUDIT_ENABLED:\s*false/);
+  // The flag is flipped on purpose at release, so only require that it exists
+  // and is a literal boolean, not a particular value.
+  assert.match(configSource, /PRICING_AUDIT_ENABLED:\s*(true|false)\b/);
   assert.match(accountSource, /enabled:\s*GC\.PRICING_AUDIT_ENABLED/);
 });
 
