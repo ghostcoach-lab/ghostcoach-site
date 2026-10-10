@@ -1,3 +1,4 @@
+import { latestAudit, type LatestAuditRow, renderAuditBlock } from "./audit-block.ts";
 import { renderMarcusChatPrompt } from "./prompt.ts";
 
 export interface AuthenticatedUser {
@@ -38,6 +39,7 @@ export interface RecentSessionRow {
 export interface MarcusChatDependencies {
   authenticate(request: Request): Promise<AuthenticatedUser | null>;
   readRecentSessions(userId: string): Promise<RecentSessionRow[]>;
+  readAudits(userId: string): Promise<LatestAuditRow[]>;
   loadPromptTemplate(): string | undefined;
   createMessage(params: {
     model: string;
@@ -46,6 +48,7 @@ export interface MarcusChatDependencies {
     messages: MarcusMessage[];
   }): Promise<ModelResponse>;
   hashPrompt(prompt: string): Promise<string>;
+  now(): Date;
   log(...args: unknown[]): void;
 }
 
@@ -103,6 +106,16 @@ export function createMarcusChatHandler(
         return json({ error: message }, 500);
       }
       const recentSessions = await dependencies.readRecentSessions(user.userId);
+      // A failed audit read never blocks coaching: log it and carry on without the block.
+      let auditBlock = "";
+      try {
+        auditBlock = renderAuditBlock(
+          latestAudit(await dependencies.readAudits(user.userId)),
+          dependencies.now(),
+        );
+      } catch (error) {
+        dependencies.log("marcus-chat: audit", error instanceof Error ? error.message : String(error));
+      }
       const system = renderMarcusChatPrompt(template, {
         first_name: body.profile?.firstname ?? "the founder",
         product: body.profile?.product ?? "unknown",
@@ -110,12 +123,12 @@ export function createMarcusChatHandler(
         goal_90_day: body.profile?.goal_90_day ?? "not set yet",
         goal_progress: body.profile?.goal_progress ?? 0,
         session_history: renderSessionHistory(recentSessions),
-        audit_block: "",
+        audit_block: auditBlock,
       });
       const promptHash = await dependencies.hashPrompt(system);
       dependencies.log("marcus-chat: prompt", {
         sha256: promptHash,
-        audit_block: false,
+        audit_block: auditBlock !== "",
       });
       const messages = body.messages.length === 0
         ? [{ role: "user" as const, content: MARCUS_OPENING_TURN }]
