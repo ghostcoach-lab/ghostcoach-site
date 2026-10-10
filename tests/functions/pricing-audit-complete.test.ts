@@ -66,10 +66,10 @@ const recipient = { email: "founder@example.test", firstName: "Sam" };
 
 function setup(overrides: Record<string, unknown> = {}, reply: unknown = extraction) {
   const calls: {
-    params: any[]; rpc: any[]; logs: unknown[][]; lookups: unknown[][];
+    params: any[]; rpc: any[]; limiter: any[][]; logs: unknown[][]; lookups: unknown[][];
     recaps: { target: unknown; payload: unknown }[]; recorded: unknown[][];
   } = {
-    params: [], rpc: [], logs: [], lookups: [], recaps: [], recorded: [],
+    params: [], rpc: [], limiter: [], logs: [], lookups: [], recaps: [], recorded: [],
   };
   const handler = createPricingAuditCompleteHandler({
     authenticate: async () => ({ userId: "user-1" }),
@@ -78,6 +78,10 @@ function setup(overrides: Record<string, unknown> = {}, reply: unknown = extract
       return newSession;
     },
     readEligibilityRecord: async () => welcomeRecord,
+    takeCompletionCall: async (...args: unknown[]) => {
+      calls.limiter.push(args);
+      return "allowed";
+    },
     createMessage: async (params: unknown) => {
       calls.params.push(params);
       return jsonReply(reply);
@@ -645,4 +649,81 @@ test("recap: a first name over 100 characters is sent as an empty name, so the r
   assert.equal((await handler(post(valid()))).status, 200);
   assert.equal((calls.recaps[0].payload as { first_name: string }).first_name, "");
   assert.equal(calls.recorded.length, 1);
+});
+
+test("rate limit: the limiter gets the caller, the session and the configured limits", async () => {
+  const { handler, calls } = setup({ loadConfig: () => ({ ...AUDIT_COMPLETE_DEFAULTS, userLimit: 7, sessionLimit: 3 }) });
+  assert.equal((await handler(post(valid()))).status, 200);
+  assert.deepEqual(calls.limiter, [["user-1", sessionId, { userLimit: 7, sessionLimit: 3 }]]);
+});
+
+test("rate limit: the default limits are 100 per customer and 60 per session", async () => {
+  const { handler, calls } = setup();
+  await handler(post(valid()));
+  assert.deepEqual(calls.limiter[0][2], { userLimit: 100, sessionLimit: 60 });
+});
+
+for (const limit of ["user", "session"]) {
+  test(`rate limit: over the ${limit} limit returns 429 with no extraction or record`, async () => {
+    const { handler, calls } = setup({ takeCompletionCall: async () => limit });
+    const response = await handler(post(valid()));
+    assert.equal(response.status, 429);
+    assert.deepEqual(await response.json(), { reason: "rate_limited", limit });
+    assert.equal(response.headers.get("access-control-allow-origin"), "*");
+    assert.equal(calls.params.length, 0);
+    assert.equal(calls.rpc.length, 0);
+  });
+}
+
+test("rate limit: an allowed call that fails extraction has still been counted", async () => {
+  const { handler, calls } = setup({}, { verdict_found: false });
+  await expectReason(await handler(post(valid())), 422, "extraction_incomplete");
+  assert.equal(calls.limiter.length, 1);
+});
+
+test("rate limit: a limiter error is an internal error, logged, with no extraction", async () => {
+  const { handler, calls } = setup({
+    takeCompletionCall: async () => {
+      throw new Error("db down");
+    },
+  });
+  await expectReason(await handler(post(valid())), 500, "internal_error");
+  assert.equal(calls.params.length, 0);
+  assert.equal(calls.logs.length, 1);
+});
+
+test("rate limit: an unexpected limiter result is an internal error with no extraction", async () => {
+  const { handler, calls } = setup({ takeCompletionCall: async () => "maybe" });
+  await expectReason(await handler(post(valid())), 500, "internal_error");
+  assert.equal(calls.params.length, 0);
+});
+
+const neverLimited = {
+  takeCompletionCall: async () => {
+    throw new Error("the limiter must not be called");
+  },
+};
+
+test("rate limit: calls rejected before the limiter never reach it", async () => {
+  const gatedRecord = { ...welcomeRecord, welcome_audit_used: true, last_audit_completed_at: "2026-09-20T00:00:00Z" };
+  const cases: [string, Record<string, unknown>, unknown, number][] = [
+    ["unauthorized", { authenticate: async () => null }, valid(), 401],
+    ["invalid request", {}, "{not json", 400],
+    ["validation", {}, { ...valid(), session_id: "nope" }, 400],
+    ["replay", { lookupSession: async () => completedRow }, valid(), 200],
+    ["session conflict", { lookupSession: async () => ({ ...newSession, status: "session_conflict" }) }, valid(), 409],
+    ["plan lapsed", { readEligibilityRecord: async () => ({ ...welcomeRecord, plan: "free" }) }, valid(), 403],
+    ["gated", { readEligibilityRecord: async () => gatedRecord }, valid(), 403],
+    ["audit too long", { loadConfig: () => ({ ...AUDIT_COMPLETE_DEFAULTS, maxTranscriptChars: 1 }) }, valid(), 413],
+  ];
+  for (const [name, overrides, body, status] of cases) {
+    const { handler } = setup({ ...neverLimited, ...overrides });
+    assert.equal((await handler(post(body))).status, status, name);
+  }
+});
+
+test("rate limit: a method other than POST never reaches the limiter", async () => {
+  const { handler } = setup(neverLimited);
+  const get = new Request("http://localhost/functions/v1/pricing-audit-complete", { method: "GET" });
+  assert.equal((await handler(get)).status, 405);
 });

@@ -31,6 +31,17 @@ export default {
         if (error) throw error;
         return data;
       },
+      // Only the service role can execute the limiter.
+      takeCompletionCall: async (userId, sessionId, { userLimit, sessionLimit }) => {
+        const { data, error } = await context.supabaseAdmin.rpc("pricing_audit_take_completion_call", {
+          p_user_id: userId,
+          p_session_id: sessionId,
+          p_user_limit: userLimit,
+          p_session_limit: sessionLimit,
+        });
+        if (error) throw error;
+        return data;
+      },
       createMessage: (params, timeoutMs) => anthropic.messages.create(params, { timeout: timeoutMs }),
       // Only the service role can execute the Completion RPC.
       completeAudit: async ({ userId, sessionId, transcript, auditIntake, verdict, baseline }) => {

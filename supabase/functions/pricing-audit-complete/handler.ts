@@ -72,10 +72,18 @@ export interface RecapPayload {
 // dropped and the email greets without it.
 const MAX_FIRST_NAME_CHARS = 100;
 
+// Which limit a call is over, or "allowed" once the call has been recorded. Both exceeded is "user".
+export type CompletionCallResult = "allowed" | "user" | "session";
+
 export interface AuditCompleteDependencies {
   authenticate(request: Request): Promise<AuthenticatedUser | null>;
   lookupSession(userId: string, sessionId: string): Promise<CompletionRow>;
   readEligibilityRecord(userId: string): Promise<EligibilityRecord | null>;
+  takeCompletionCall(
+    userId: string,
+    sessionId: string,
+    limits: { userLimit: number; sessionLimit: number },
+  ): Promise<CompletionCallResult>;
   createMessage(params: Anthropic.MessageCreateParamsNonStreaming, timeoutMs: number): Promise<Anthropic.Message>;
   completeAudit(input: CompletionInput): Promise<CompletionRow>;
   readRecipient(userId: string): Promise<Recipient>;
@@ -209,6 +217,25 @@ export function createPricingAuditCompleteHandler(
     } catch (error) {
       logError("pricing-audit-complete: pre-checks", error);
       return refuse("internal_error");
+    }
+
+    // Every call that reaches here counts, whether or not extraction later succeeds.
+    let taken: CompletionCallResult;
+    try {
+      taken = await dependencies.takeCompletionCall(user.userId, sessionId, {
+        userLimit: config.userLimit,
+        sessionLimit: config.sessionLimit,
+      });
+    } catch (error) {
+      logError("pricing-audit-complete: limiter", error);
+      return refuse("internal_error");
+    }
+    if (taken !== "allowed") {
+      if (taken !== "user" && taken !== "session") {
+        logError("pricing-audit-complete: limiter", "unexpected limiter result");
+        return refuse("internal_error");
+      }
+      return refuse("rate_limited", { limit: taken });
     }
 
     const transcript = formatTranscript(messages);

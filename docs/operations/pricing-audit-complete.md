@@ -15,12 +15,14 @@ to send the recap email (#13, see [pricing-audit-recap.md](pricing-audit-recap.m
    - the ID belongs to another customer's session or to a coaching session: `session_conflict`.
 4. Entitlement and Cooldown pre-check, with the shared eligibility decision, so a refused customer
    costs no AI call.
-5. Extraction, retried once if the result is invalid. "No Verdict" is not retried, because the
+5. The completion limiter (see [Rate limit](#rate-limit)): over a limit, `429 rate_limited` and no
+   AI call.
+6. Extraction, retried once if the result is invalid. "No Verdict" is not retried, because the
    page offers completion before Marcus gives his Verdict, so an early attempt costs one call.
-6. `complete_pricing_audit`, which repeats steps 3 and 4 under the customer's row lock. Its answer
+7. `complete_pricing_audit`, which repeats steps 3 and 4 under the customer's row lock. Its answer
    is authoritative: a replay or a concurrent duplicate gets `already_completed`, and a plan that
    lapsed mid-audit gets `plan_lapsed`. Only `completed` writes anything.
-7. Only after `completed`: the recap. The function reads the customer's email and first name from
+8. Only after `completed`: the recap. The function reads the customer's email and first name from
    their own `users` and `profiles` rows and posts them to S12. It sets `recap_sent_at` with the
    service role only when S12 answers 2xx. A failure or timeout is logged and the customer still
    gets `200 completed`.
@@ -59,8 +61,25 @@ the function logs only.
 | `session_conflict` | 409 | The session ID belongs to another customer's session or to a coaching session |
 | `audit_too_long` | 413 | The transcript is over the cap |
 | `extraction_incomplete` | 422 | No Verdict (after one attempt), or the Verdict or Baseline still fails a rule below after two attempts (including the RPC's own deadline re-check). Nothing is written. |
+| `rate_limited` | 429 | Over the customer or session limit; the body adds `"limit": "user"` or `"session"` (both exceeded reports `user`) |
 | `ai_unavailable` | 503 | An extraction call failed, timed out, was refused or returned no text. Not retried here. |
-| `internal_error` | 500 | Invalid configuration, a failed read, or anything unexpected from the RPCs |
+| `internal_error` | 500 | Invalid configuration, a failed read, a limiter error, or anything unexpected from the RPCs |
+
+## Rate limit
+
+`pricing_audit_take_completion_call` (migration `20261010120000_pricing_audit_completion_limit.sql`)
+counts calls in the last 24 hours per customer and per session, atomically, and records the call
+when it allows it. Only `service_role` can execute it.
+
+Counting rule:
+
+- Calls rejected before the limiter never count: method, authentication, configuration, payload
+  validation, a replay of a completed audit, `session_conflict`, `plan_lapsed` and `gated`.
+- Every allowed call counts, including one whose extraction then fails.
+- A duplicate sent while the first call is still running passes the replay check, because the audit is
+  not saved yet. It is counted, and the atomic save then answers it `already_completed`.
+- A refused call (`rate_limited`) is not recorded, so it does not extend the block.
+- A limiter error returns `internal_error`, is logged, and skips extraction.
 
 ## Extraction
 
@@ -129,6 +148,8 @@ customer's turns `Founder`: `Marcus: …` and `Founder: …` turns separated by 
 | `AUDIT_COMPLETE_MAX_TOKENS` | `16000` | Covers thinking and the JSON result. |
 | `AUDIT_COMPLETE_TIMEOUT_MS` | `60000` | Per attempt. The SDK retries once. |
 | `AUDIT_COMPLETE_MAX_TRANSCRIPT_CHARS` | `140000` | Above the chat cap, since it includes Marcus's closing Verdict. |
+| `AUDIT_COMPLETE_USER_LIMIT` | `100` | Allowed calls per customer per 24 hours. |
+| `AUDIT_COMPLETE_SESSION_LIMIT` | `60` | Allowed calls per session per 24 hours. |
 | `S12_RECAP_URL` | none | The S12 webhook URL, `https` only. Set it together with the secret. |
 | `S12_RECAP_SECRET` | none | S12's own server-only secret, sent as `Authorization: Bearer …`. |
 | `S12_RECAP_TIMEOUT_MS` | `15000` | How long a Completion waits for S12. Keep it above S12's 8-second wait for Resend. |
@@ -138,6 +159,25 @@ If only one is set, or the URL isn't `https`, the configuration is invalid.
 
 An invalid value makes every call return `internal_error`. The log names the setting but not its
 value.
+
+## Live QA for the limit
+
+Run only with approval, using a QA account with temporary DB-only entitlement (restored afterwards).
+
+Do not change `AUDIT_COMPLETE_USER_LIMIT` or `AUDIT_COMPLETE_SESSION_LIMIT` on the live function for
+this. Customers can reach the audit (`GC.PRICING_AUDIT_ENABLED` is `true`), and lowering the limits
+would return `429` to them. Seed counter rows for the QA account instead, so the real limits (100 and
+60) stay in place:
+
+1. Record the row count of `pricing_audit_completion_calls`. Insert 100 rows for the QA account with
+   distinct random session IDs, and record the returned row IDs.
+2. Call with a new session ID. Expect `429` with `"limit":"user"`, no AI call and no new row.
+3. Delete those rows by ID. Insert 60 rows for the QA account with one session ID, and record their IDs.
+4. Call with that session ID. Expect `429` with `"limit":"session"` and no new row.
+5. Delete exactly the inserted rows by ID, and confirm the table is back to its recorded count.
+
+The allowed path (a call under the limits is counted and runs extraction) is covered by the unit tests
+and the runtime test. A live allowed call would run a real extraction and could complete an audit.
 
 ## Tests
 

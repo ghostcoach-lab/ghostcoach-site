@@ -12,6 +12,8 @@ test("defaults apply when nothing is configured", () => {
   assert.deepEqual(readAuditCompleteConfig(env({})), AUDIT_COMPLETE_DEFAULTS);
   assert.equal(AUDIT_COMPLETE_DEFAULTS.model, "claude-opus-5-5");
   assert.equal(AUDIT_COMPLETE_DEFAULTS.effort, "low");
+  assert.equal(AUDIT_COMPLETE_DEFAULTS.userLimit, 100);
+  assert.equal(AUDIT_COMPLETE_DEFAULTS.sessionLimit, 60);
 });
 
 test("every setting can be overridden", () => {
@@ -24,6 +26,8 @@ test("every setting can be overridden", () => {
     S12_RECAP_URL: "https://recap.example.test/webhook/recap",
     S12_RECAP_SECRET: "recap-test-secret",
     S12_RECAP_TIMEOUT_MS: "5000",
+    AUDIT_COMPLETE_USER_LIMIT: "10",
+    AUDIT_COMPLETE_SESSION_LIMIT: "5",
   })), {
     model: "claude-opus-5",
     effort: "medium",
@@ -32,6 +36,8 @@ test("every setting can be overridden", () => {
     maxTranscriptChars: 200000,
     recap: { url: "https://recap.example.test/webhook/recap", secret: "recap-test-secret" },
     recapTimeoutMs: 5000,
+    userLimit: 10,
+    sessionLimit: 5,
   });
 });
 
@@ -42,6 +48,8 @@ test("invalid values are rejected without echoing them", () => {
     ["AUDIT_COMPLETE_MAX_TOKENS", "lots"],
     ["AUDIT_COMPLETE_MODEL", " "],
     ["S12_RECAP_TIMEOUT_MS", "-1"],
+    ["AUDIT_COMPLETE_USER_LIMIT", "0"],
+    ["AUDIT_COMPLETE_SESSION_LIMIT", "many"],
   ]) {
     assert.throws(
       () => readAuditCompleteConfig(env({ [name]: value })),
