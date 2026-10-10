@@ -3,7 +3,7 @@
 
 const GC = {
   SUPABASE_URL:    'https://irmkcmcgfstdieujrrlg.supabase.co',
-  SUPABASE_ANON:   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlybWtjbWNnZnN0ZGlldWpycmxnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg0MDk4MTgsImV4cCI6MjA5Mzk4NTgxOH0.PYqgyRbsh9HYIJmMoG6iRqnz8dzg8Jl3rcjhCXi6_lg',
+  SUPABASE_ANON:   'sb_publishable_52IwMKzLA69enbkwK6mCRg_eKpb--5n',
 
   // n8n webhook base — no trailing slash
   N8N_BASE: 'https://ghostcoach.app.n8n.cloud/webhook',
