@@ -160,16 +160,22 @@ value.
 
 ## Live QA for the limit
 
-Run only with approval, using a QA account with temporary DB-only entitlement (restored afterwards):
+Run only with approval, using a QA account with temporary DB-only entitlement (restored afterwards).
 
-1. Set `AUDIT_COMPLETE_USER_LIMIT=2` and `AUDIT_COMPLETE_SESSION_LIMIT=1` for the function.
-2. Call with a conversation that has no Verdict. Expect `422 extraction_incomplete` (counted).
-3. Call again with the same session ID: expect `429` with `"limit":"session"`.
-4. Call with a new session ID (the customer's second counted call): expect `422`. Call with another
-   new session ID (a third): expect `429` with `"limit":"user"`.
-5. Confirm the QA customer has exactly two `pricing_audit_completion_calls` rows, then delete
-   exactly those rows by ID.
-6. Remove the two settings and confirm the defaults apply.
+Do not change `AUDIT_COMPLETE_USER_LIMIT` or `AUDIT_COMPLETE_SESSION_LIMIT` on the live function for
+this. Customers can reach the audit (`GC.PRICING_AUDIT_ENABLED` is `true`), and lowering the limits
+would return `429` to them. Seed counter rows for the QA account instead, so the real limits (100 and
+60) stay in place:
+
+1. Record the row count of `pricing_audit_completion_calls`. Insert 100 rows for the QA account with
+   distinct random session IDs, and record the returned row IDs.
+2. Call with a new session ID. Expect `429` with `"limit":"user"`, no AI call and no new row.
+3. Delete those rows by ID. Insert 60 rows for the QA account with one session ID, and record their IDs.
+4. Call with that session ID. Expect `429` with `"limit":"session"` and no new row.
+5. Delete exactly the inserted rows by ID, and confirm the table is back to its recorded count.
+
+The allowed path (a call under the limits is counted and runs extraction) is covered by the unit tests
+and the runtime test. A live allowed call would run a real extraction and could complete an audit.
 
 ## Tests
 
