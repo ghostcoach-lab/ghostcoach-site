@@ -166,5 +166,5 @@ test("two audits reach the prompt as the newest one", async () => {
 });
 
 test("a stored number is shown exactly as stored", () => {
-  assert.ok(renderAuditBlock({ ...audit, verdict_number: " $49/month " }, today).includes("Number:  $49/month  \n"));
+  assert.ok(renderAuditBlock({ ...audit, verdict_number: " $49/month " }, today).includes("Number:  $49/month \n"));
 });
