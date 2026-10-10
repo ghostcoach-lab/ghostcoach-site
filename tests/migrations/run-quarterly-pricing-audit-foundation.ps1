@@ -126,6 +126,25 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw "Availability-email migration contract test failed with exit code $LASTEXITCODE."
   }
+
+  docker exec `
+    --env PGPASSWORD=postgres `
+    $containerName `
+    createdb --username postgres completion_limit_contract
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not create the completion-limit test database (exit code $LASTEXITCODE)."
+  }
+
+  docker exec `
+    --env PGPASSWORD=postgres `
+    $containerName `
+    psql --set ON_ERROR_STOP=1 --username postgres --dbname completion_limit_contract `
+    --file /workspace/tests/migrations/pricing-audit-completion-limit.sql
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Completion-limit migration contract test failed with exit code $LASTEXITCODE."
+  }
 }
 finally {
   # Cleanup judges the exit code: stderr alone must not fail a run whose checks passed.
