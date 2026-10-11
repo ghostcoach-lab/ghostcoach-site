@@ -19,8 +19,9 @@ export function latestAudit(rows: LatestAuditRow[]): LatestAuditRow | null {
 export function renderAuditBlock(audit: LatestAuditRow | null, now: Date): string {
   if (!audit) return "";
   const completed = new Date(audit.completed_at).toISOString().slice(0, 10);
-  // Shown as stored; only a null or blank number reads "no number".
-  const number = audit.verdict_number?.trim() ? audit.verdict_number : "no number";
+  // Kept on one line: line breaks and repeated whitespace collapse to one space. Only a null or blank
+  // number reads "no number".
+  const number = audit.verdict_number?.replace(/\s+/g, " ").trim() || "no number";
   let actBy = "no act-by date";
   if (audit.verdict_deadline) {
     const today = now.toISOString().slice(0, 10);

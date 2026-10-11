@@ -165,6 +165,9 @@ test("two audits reach the prompt as the newest one", async () => {
   assert.equal((calls.model[0].system as string).includes("Verdict: hold"), false);
 });
 
-test("a stored number is shown exactly as stored", () => {
-  assert.ok(renderAuditBlock({ ...audit, verdict_number: " $49/month " }, today).includes("Number:  $49/month \n"));
+test("a stored number stays on one line: line breaks and repeated whitespace collapse, edges trim", () => {
+  const number = (verdict_number: string) => renderAuditBlock({ ...audit, verdict_number }, today);
+  assert.ok(number(" $49/month ").includes("\nNumber: $49/month\nAct by:"), "edges");
+  assert.ok(number("$49\n/month   or\t$59").includes("\nNumber: $49 /month or $59\nAct by:"), "inner");
+  assert.ok(number("\r\n$49/month\r\n").includes("\nNumber: $49/month\nAct by:"), "CRLF");
 });
