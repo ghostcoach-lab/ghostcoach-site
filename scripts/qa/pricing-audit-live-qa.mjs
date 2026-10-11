@@ -143,12 +143,19 @@ values ${sessionIds.map(id => `(${lit(user)}, ${lit(id)})`).join(', ')}
 returning id;`,
 
   // The QA account's counter rows tied to the run's session IDs: the seeded rows, plus any row the
-  // limiter itself recorded for one of the run's calls.
+  // limiter itself recorded for one of the run's calls. Also any sessions or audit rows under those
+  // IDs, which exist only if an allowed call unexpectedly completed an audit.
   limitRows: (user, sessionIds) => `-- qa:limit-rows
 select json_build_object(
   'calls', coalesce((select json_agg(json_build_object('id', c.id, 'user_id', c.user_id, 'session_id', c.session_id) order by c.id)
     from public.${COUNTED_CALLS} c
     where c.user_id = ${lit(user)} and c.session_id in (${uuidList(sessionIds)})), '[]'::json),
+  'sessions', coalesce((select json_agg(json_build_object(
+      'id', s.id, 'user_id', s.user_id, 'is_pricing_audit', s.is_pricing_audit) order by s.id)
+    from public.sessions s where s.id in (${uuidList(sessionIds)})), '[]'::json),
+  'audits', coalesce((select json_agg(json_build_object(
+      'id', a.id, 'user_id', a.user_id, 'session_id', a.session_id) order by a.id)
+    from public.pricing_audits a where a.session_id in (${uuidList(sessionIds)})), '[]'::json),
   'user', (select json_build_object(
       'plan', u.plan, 'status', u.status, 'welcome_audit_used', u.welcome_audit_used,
       'last_audit_completed_at', u.last_audit_completed_at::text)
@@ -375,7 +382,7 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   let grant = 'not sent';
   let step = 'before';
   const readRun = limitMode
-    ? async () => ({ sessions: [], audits: [], ...(await prod.query(sql.limitRows(user, runIds)))[0].run })
+    ? async () => (await prod.query(sql.limitRows(user, runIds)))[0].run
     : async () => (await prod.query(sql.runRows(user, runIds)))[0].run;
 
   const auditSteps = async () => {

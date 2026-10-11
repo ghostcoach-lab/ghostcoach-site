@@ -160,6 +160,10 @@ function fakeProduction(faults = {}) {
       const runIds = uuids(query).filter(id => id !== USER);
       return json(201, [{ run: {
         calls: state.completionCalls.filter(c => c.user_id === USER && runIds.includes(c.session_id)),
+        sessions: state.sessions.filter(s => runIds.includes(s.id))
+          .map(s => ({ id: s.id, user_id: s.user_id, is_pricing_audit: s.is_pricing_audit })),
+        audits: state.audits.filter(a => runIds.includes(a.session_id))
+          .map(a => ({ id: a.id, user_id: a.user_id, session_id: a.session_id })),
         user: { ...state.user },
       } }]);
     }
@@ -198,7 +202,8 @@ function fakeProduction(faults = {}) {
       limiterLog.push(answer);
       if (answer !== 'allowed') return json(429, { reason: 'rate_limited', limit: answer });
       state.completionCalls.push({ id: nextCallId++, user_id: USER, session_id: body.session_id });
-      return json(422, { reason: 'extraction_incomplete' });
+      // Extraction found a Verdict after all, so the call goes on to persist a full audit below.
+      if (!faults.allowedCallCompletes) return json(422, { reason: 'extraction_incomplete' });
     }
     const completedAt = '2026-09-25T10:00:00.000+00:00';
     const audit = {
@@ -431,6 +436,18 @@ test('a call the limiter allows fails the run, and the row it recorded is found 
   const deleted = cleanup.query.match(/id in \(([\d, ]+)\)/)[1].split(', ').map(Number);
   assert.equal(deleted.length, 62, 'the under-limit row, 60 seeded rows and the session-limit call the limiter recorded');
   assert.deepEqual(production.state, production.initial, 'nothing left behind');
+});
+
+test('an audit the under-limit call writes after all fails the run, and is found by its session ID and deleted', async () => {
+  const production = fakeProduction({ limiterDeployed: true, allowedCallCompletes: true });
+  const { code, out } = await executeLimit(production);
+  assert.equal(code, 1);
+  assert.match(out.text(), /"step":"under limit","ok":false.*HTTP 200/);
+  assert.match(out.text(), /"result":"failed","failed_step":"under limit"/);
+  const allowedSession = production.calls.find(c => c.url.endsWith('pricing-audit-complete')).body.session_id;
+  assert.match(out.text(), new RegExp(`"step":"cleanup","ok":true,"deleted_audits":\\["${AUDIT_1}"\\],"deleted_sessions":\\["${allowedSession}"\\],"deleted_calls":\\[1\\],"restored":true`));
+  for (const table of ['user', 'sessions', 'audits', 'completionCalls'])
+    assert.deepEqual(production.state[table], production.initial[table], table + ': nothing left behind');
 });
 
 test('a limit run stops at the preflight, before sign-in or any write, when it cannot start cleanly', async () => {
