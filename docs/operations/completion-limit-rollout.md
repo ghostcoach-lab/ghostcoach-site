@@ -3,7 +3,7 @@
 > **DRAFT for review (ticket #45).** Nothing here has been run. It follows
 > [pricing-audit-m2-rollout.md](pricing-audit-m2-rollout.md) and changes production in three steps.
 > Updated 2026-10-11 with the client's conditions: an under-limit call in the live QA, a notice
-> before the QA, and steps 2 to 4 held until the key rotation is finished.
+> before the QA, and steps 2 to 4 held until the client says the production window is clear.
 
 Takes the completion limit live: the #43 migration (`20261010120000_pricing_audit_completion_limit.sql`)
 and the #44 function change (`pricing-audit-complete` calls the limiter and returns
@@ -19,9 +19,9 @@ and the #44 function change (`pricing-audit-complete` calls the limiter and retu
 - **One approval per step.** Each step changes production. Get an approval that names that step.
   An approval for one step does not cover the next. The client approves each step separately too:
   the backup and restore test, the migration, the function deploy, and the live QA.
-- **Key rotation first.** The client is rotating keys. Steps 2, 3 and 4 wait until the client says
-  the rotation window is closed and stable. Run step 1 after that as well, because step 2 needs a
-  backup that restored in the last hour.
+- **The client opens the window.** Steps 2, 3 and 4 wait until the client says the production
+  window is clear. Run step 1 after that as well, because step 2 needs a backup that restored in
+  the last hour.
 - **Stop on a failed check.** Roll back that step and do not continue.
 - **Customers can reach the audit.** `GC.PRICING_AUDIT_ENABLED` is `true` on `origin/main` (confirm
   on the live site first). Unlike the Milestone 2 rollout, a step can affect real customers, so
@@ -177,29 +177,24 @@ Send this to the client privately, by email and not in GitHub, and wait for the 
   query, just before sending). The run sets `plan` to `operator`, `status` to `active`,
   `welcome_audit_used` to `false` and `last_audit_completed_at` to `null`, and restores all four.
   It also adds and deletes rows in `pricing_audit_completion_calls`, tied to the run's sessions.
+- **The worst case.** If extraction unexpectedly finds a Verdict, the under-limit call also writes
+  one sessions row and one `pricing_audits` row for the QA account, sets its Cooldown fields, and
+  S12 sends one recap email to the QA account's address. The run then fails, deletes both rows by
+  exact ID and restores the four `users` fields. The email cannot be recalled.
 - **No Stripe records.** Confirm that the account has no Stripe customer and no subscription. Check
   the `users` row and, read-only, the Stripe dashboard. Make no Stripe change.
-- **The time window.** Avoid 07:00 `Europe/Amsterdam` on every day: S13 runs daily at that time, and
-  the temporarily entitled QA account could get an audit-availability email. The client also asked
-  to avoid Monday 07:00 specifically.
-
-### Keys after the rotation
-
-The script reads the **legacy** `anon` and `service_role` keys from `GC_QA_KEYS` and refuses to run
-without them. After the client's key rotation:
-
-- Ask the client which keys changed: the legacy JWT secret, the legacy keys, or only the site's
-  switch to a publishable key.
-- Load `GC_QA_KEYS` again from the Management API, so it holds the current keys.
-- If the legacy keys are disabled, stop: the script needs a change before this step can run.
+- **The time window.** Name the window and state that it avoids Monday 07:00 `Europe/Amsterdam`.
+  Avoid 07:00 on every other day too: S13 runs daily at that time, and the temporarily entitled QA
+  account could get an audit-availability email.
 
 **Pre-check**
 
-- Steps 2 and 3 are verified. The client has said the key rotation is finished, has approved
+- Steps 2 and 3 are verified. The client has said the production window is clear, has approved
   step 4, and the notice above was sent.
 - The configuration is the same as for the M2 live QA run
-  ([step 7](pricing-audit-m2-rollout.md#7-live-qa-run)): the `GC_QA_*` variables, loaded from the
-  private folder, with `GC_QA_KEYS` loaded again after the rotation. `GC_QA_N8N_*` and
+  ([step 7](pricing-audit-m2-rollout.md#7-live-qa-run)): the `GC_QA_*` variables, loaded again from
+  the private folder just before the run, so they hold the current keys. The script refuses to
+  start, and sends nothing, when a key it needs is missing. `GC_QA_N8N_*` and
   `GC_QA_S12_WORKFLOW_ID` are read but unused by this run.
 - The dry run prints the plan and the target and sends no request:
 

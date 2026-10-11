@@ -56,7 +56,7 @@ export const PLAN = [
 
 // --limit: proves the completion limiter against production with seeded counter rows, so the live
 // limits stay as they are. One allowed call runs extraction on a body with no Verdict; no audit
-// chat, audit or email is involved. Runbook: docs/operations/completion-limit-rollout.md.
+// chat runs, and no audit or email is expected. Runbook: docs/operations/completion-limit-rollout.md.
 export const LIMIT_PLAN = [
   'before: read-only preflight (limiter present, QA account has no counted calls), then row counts and hashes of the QA account\'s rows and the run\'s session IDs, and whole-table row counts',
   'entitlement: temporary database-only operator/active, guarded by the values saved in the preflight',
@@ -371,9 +371,9 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   // The limit run mints its session IDs up front: one for the allowed call, 60 seeded on one
   // session, 39 more on others, and a new session for the user-limit call. Every row the run could
   // write is tied to one of them.
-  const seeded = { allowed: randomUUID(), limited: randomUUID(),
+  const limitRun = { allowed: randomUUID(), limited: randomUUID(),
     others: Array.from({ length: 39 }, () => randomUUID()), fresh: randomUUID() };
-  const runIds = limitMode ? [seeded.allowed, seeded.limited, ...seeded.others, seeded.fresh] : [sessionId, gatedSessionId];
+  const runIds = limitMode ? [limitRun.allowed, limitRun.limited, ...limitRun.others, limitRun.fresh] : [sessionId, gatedSessionId];
   let before;
   let saved;
   let token;
@@ -526,21 +526,21 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     emit({ step, ok: true, granted: `${GRANTED.plan}/${GRANTED.status}` });
 
     step = 'under limit';
-    const allowed = await prod.complete(token, limitBody(seeded.allowed));
+    const allowed = await prod.complete(token, limitBody(limitRun.allowed));
     check(allowed.status === 422 && allowed.data?.reason === 'extraction_incomplete',
       `${step}: HTTP ${allowed.status} ${allowed.data?.reason ?? ''}`.trim());
-    const recorded = (await readRun()).calls.filter(c => c.session_id === seeded.allowed).length;
+    const recorded = (await readRun()).calls.filter(c => c.session_id === limitRun.allowed).length;
     check(recorded === 1, `${step}: ${recorded} counter rows recorded, expected 1`);
     emit({ step, ok: true, status: allowed.status, reason: allowed.data.reason, recorded });
 
     step = 'session limit';
-    const first = await seedRows(Array(60).fill(seeded.limited));
-    await expectRefused(step, seeded.limited, 'session');
+    const first = await seedRows(Array(60).fill(limitRun.limited));
+    await expectRefused(step, limitRun.limited, 'session');
     emit({ step, ok: true, seeded: first.length });
 
     step = 'user limit';
-    const second = await seedRows(seeded.others);
-    await expectRefused(step, seeded.fresh, 'user');
+    const second = await seedRows(limitRun.others);
+    await expectRefused(step, limitRun.fresh, 'user');
     emit({ step, ok: true, seeded: second.length });
   };
 
