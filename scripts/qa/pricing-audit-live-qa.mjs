@@ -55,14 +55,15 @@ export const PLAN = [
 ];
 
 // --limit: proves the completion limiter against production with seeded counter rows, so the live
-// limits stay as they are and no AI call, audit or email is involved. Runbook:
-// docs/operations/completion-limit-rollout.md.
+// limits stay as they are. One allowed call runs extraction on a body with no Verdict; no audit
+// chat, audit or email is involved. Runbook: docs/operations/completion-limit-rollout.md.
 export const LIMIT_PLAN = [
   'before: read-only preflight (limiter present, QA account has no counted calls), then row counts and hashes of the QA account\'s rows and the run\'s session IDs, and whole-table row counts',
   'entitlement: temporary database-only operator/active, guarded by the values saved in the preflight',
-  'seed: 60 counter rows for the QA account on one session',
+  'under limit: pricing-audit-complete with a new session and no Verdict; expect 422 extraction_incomplete and exactly one counter row recorded for that session',
+  'seed: 60 counter rows for the QA account on another session',
   'session limit: pricing-audit-complete with that session; expect 429 rate_limited with limit session',
-  'seed: 40 more counter rows on other sessions, so the QA account has 100',
+  'seed: 39 more counter rows on other sessions, so the QA account has exactly 100',
   'user limit: pricing-audit-complete with a new session; expect 429 rate_limited with limit user',
   'cleanup: delete by the exact row IDs and the run\'s session IDs, restore the saved entitlement if the grant may have committed and the account still holds it, sign the QA session out',
   'after: the same counts and hashes again; a difference in the QA account\'s rows fails the run',
@@ -360,10 +361,12 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
   const limitMode = argv.includes('--limit');
   const sessionId = randomUUID();
   const gatedSessionId = randomUUID();
-  // The limit run mints its session IDs up front: 60 seeded on one session, 40 more on others, and
-  // a new session for the user-limit call. Every row the run could write is tied to one of them.
-  const seeded = { limited: randomUUID(), others: Array.from({ length: 40 }, () => randomUUID()), fresh: randomUUID() };
-  const runIds = limitMode ? [seeded.limited, ...seeded.others, seeded.fresh] : [sessionId, gatedSessionId];
+  // The limit run mints its session IDs up front: one for the allowed call, 60 seeded on one
+  // session, 39 more on others, and a new session for the user-limit call. Every row the run could
+  // write is tied to one of them.
+  const seeded = { allowed: randomUUID(), limited: randomUUID(),
+    others: Array.from({ length: 39 }, () => randomUUID()), fresh: randomUUID() };
+  const runIds = limitMode ? [seeded.allowed, seeded.limited, ...seeded.others, seeded.fresh] : [sessionId, gatedSessionId];
   let before;
   let saved;
   let token;
@@ -514,6 +517,14 @@ export async function runLiveQa({ argv, env, fetch, log, sleep = ms => new Promi
     }
     grant = 'granted';
     emit({ step, ok: true, granted: `${GRANTED.plan}/${GRANTED.status}` });
+
+    step = 'under limit';
+    const allowed = await prod.complete(token, limitBody(seeded.allowed));
+    check(allowed.status === 422 && allowed.data?.reason === 'extraction_incomplete',
+      `${step}: HTTP ${allowed.status} ${allowed.data?.reason ?? ''}`.trim());
+    const recorded = (await readRun()).calls.filter(c => c.session_id === seeded.allowed).length;
+    check(recorded === 1, `${step}: ${recorded} counter rows recorded, expected 1`);
+    emit({ step, ok: true, status: allowed.status, reason: allowed.data.reason, recorded });
 
     step = 'session limit';
     const first = await seedRows(Array(60).fill(seeded.limited));
