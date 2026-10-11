@@ -387,6 +387,9 @@ verify_jwt = true
 [functions.marcus-audit-chat]
 verify_jwt = true
 
+[functions.marcus-chat]
+verify_jwt = false
+
 [functions.pricing-audit-complete]
 verify_jwt = true
 
