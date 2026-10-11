@@ -14,6 +14,8 @@ function setup(overrides: Record<string, unknown> = {}) {
   const handler = createMarcusChatHandler({
     authenticate: async () => ({ userId: "user-1" }),
     readRecentSessions: async () => [],
+    readAudits: async () => [],
+    now: () => new Date("2026-10-10T09:00:00.000Z"),
     loadPromptTemplate: () => DUMMY_TEMPLATE,
     createMessage: async (params: unknown) => {
       calls.model.push(params);

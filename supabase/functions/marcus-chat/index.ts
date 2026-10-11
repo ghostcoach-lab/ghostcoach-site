@@ -39,6 +39,15 @@ Deno.serve(createMarcusChatEntryHandler({
         }
         return data;
       },
+      // Only these four columns: the Verdict reasoning and Baseline are never read.
+      readAudits: async (userId) => {
+        const { data, error } = await supabase
+          .from("pricing_audits")
+          .select("verdict_action, verdict_number, completed_at, verdict_deadline")
+          .eq("user_id", userId);
+        if (error) throw error;
+        return data;
+      },
       loadPromptTemplate: () => config.promptTemplate,
       createMessage: async (params) => {
         const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -56,6 +65,7 @@ Deno.serve(createMarcusChatEntryHandler({
         return await response.json();
       },
       hashPrompt: sha256,
+      now: () => new Date(),
       log: (label, detail) => console.log(label, detail),
     });
   },
