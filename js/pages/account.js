@@ -547,10 +547,10 @@
     deleteConfirm.disabled = true;
     deleteConfirm.textContent = 'Deleting…';
     try {
-      const res = await fetch(`${GC.N8N_BASE}/gc-s6-plan`, {
+      const res = await fetch(`${GC.N8N_BASE}/gc-s6-plan-change`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-gc-secret': GC.WEBHOOK_SECRET },
-        body: JSON.stringify({ type: 'delete', user_id: userId, email })
+        body: JSON.stringify({ type: 'gdpr_delete', user_id: userId, email })
       });
       if (!res.ok) throw new Error('Request failed');
       // Show the "deleted" confirmation, then sign out
