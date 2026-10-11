@@ -161,6 +161,9 @@ call under the limits, then seeds counter rows for the QA account to reach each 
 
 The under-limit call costs up to two extraction calls to the AI provider. No audit chat runs.
 
+The QA sign-in updates `auth.users`, so the `gc_s1_new_signup` trigger calls S1, which can send a
+real signup email to the QA account, as in the Milestone 2 live QA.
+
 If extraction finds a Verdict after all, the call persists a full audit for the QA account, and S12
 sends its recap email to the QA account. The run then fails at the under-limit step. Cleanup deletes
 the audit and the session by exact ID and restores the entitlement, including the Cooldown fields.
@@ -177,6 +180,7 @@ Send this to the client privately, by email and not in GitHub, and wait for the 
   query, just before sending). The run sets `plan` to `operator`, `status` to `active`,
   `welcome_audit_used` to `false` and `last_audit_completed_at` to `null`, and restores all four.
   It also adds and deletes rows in `pricing_audit_completion_calls`, tied to the run's sessions.
+- **The sign-in email.** The QA sign-in fires S1, which can send one signup email to the QA account.
 - **The worst case.** If extraction unexpectedly finds a Verdict, the under-limit call also writes
   one sessions row and one `pricing_audits` row for the QA account, sets its Cooldown fields, and
   S12 sends one recap email to the QA account's address. The run then fails, deletes both rows by
