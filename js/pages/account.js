@@ -550,7 +550,7 @@
       const res = await fetch(`${GC.N8N_BASE}/gc-s6-plan-change`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-gc-secret': GC.WEBHOOK_SECRET },
-        body: JSON.stringify({ action: 'gdpr_delete', user_id: userId, email })
+        body: JSON.stringify({ action: 'gdpr_delete', user_id: userId, email, stripe_subscription_id: subscription.stripe_sub_id || null }) })
       });
       if (!res.ok) throw new Error('Request failed');
       // Show the "deleted" confirmation, then sign out
