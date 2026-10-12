@@ -24,9 +24,15 @@ test("the default secret key is the Supabase key", () => {
 });
 
 test("the default key is used even when other secret keys are listed first", () => {
-  const keys = JSON.stringify({ another_key: "dummy-other-secret", default: DUMMY_SECRET });
+  const keys = JSON.stringify({ dummy_other: "dummy-other-secret", default: DUMMY_SECRET });
   const config = readMarcusChatConfig(baseEnv({ SUPABASE_SECRET_KEYS: keys }));
   assert.equal(config.supabaseSecretKey, DUMMY_SECRET);
+});
+
+test("the default key is trimmed, like the other required settings", () => {
+  const keys = JSON.stringify({ default: ` ${DUMMY_SECRET}
+` });
+  assert.equal(readMarcusChatConfig(baseEnv({ SUPABASE_SECRET_KEYS: keys })).supabaseSecretKey, DUMMY_SECRET);
 });
 
 test("the legacy service-role key is never a fallback", () => {
@@ -53,7 +59,7 @@ for (const [label, raw, message] of [
   ["a JSON array", `["${DUMMY_SECRET}"]`, "SUPABASE_SECRET_KEYS must be a JSON object"],
   ["a JSON string", `"${DUMMY_SECRET}"`, "SUPABASE_SECRET_KEYS must be a JSON object"],
   ["JSON null", "null", "SUPABASE_SECRET_KEYS must be a JSON object"],
-  ["without a default key", `{"another_key": "${DUMMY_SECRET}"}`, "SUPABASE_SECRET_KEYS has no default key"],
+  ["without a default key", `{"dummy_other": "${DUMMY_SECRET}"}`, "SUPABASE_SECRET_KEYS has no default key"],
   ["with a blank default key", `{"default": "  "}`, "SUPABASE_SECRET_KEYS default key must be a non-blank string"],
   ["with a numeric default key", `{"default": 123456}`, "SUPABASE_SECRET_KEYS default key must be a non-blank string"],
 ] as const) {
@@ -89,6 +95,7 @@ test("malformed secret keys return 500 and keep the key out of the response and 
   const body = await response.text();
 
   assert.equal(response.status, 500);
+  assert.deepEqual(JSON.parse(body), { error: "Configuration error" });
   assert.equal(logs[0], "marcus-chat: setup");
   assert.ok(logs.join("\n").includes("SUPABASE_SECRET_KEYS is not valid JSON"));
   assert.equal(body.includes(DUMMY_SECRET), false);

@@ -11,7 +11,7 @@ export interface MarcusChatConfig {
 // No fallback to the legacy service-role key. Errors name the problem, never the value.
 const SECRET_KEY_NAME = "default";
 
-function secretKey(env: ReadEnv): string {
+function defaultSecretKeySetting(env: ReadEnv): string {
   let keys: unknown;
   try {
     keys = JSON.parse(requiredSetting(env, "SUPABASE_SECRET_KEYS"));
@@ -29,7 +29,7 @@ function secretKey(env: ReadEnv): string {
   if (typeof key !== "string" || !key.trim()) {
     throw new Error(`SUPABASE_SECRET_KEYS ${SECRET_KEY_NAME} key must be a non-blank string`);
   }
-  return key;
+  return key.trim();
 }
 
 function requiredSetting(env: ReadEnv, name: string): string {
@@ -43,6 +43,6 @@ export function readMarcusChatConfig(env: ReadEnv): MarcusChatConfig {
     anthropicKey: requiredSetting(env, "ANTHROPIC_API_KEY"),
     promptTemplate: env("MARCUS_CHAT_PROMPT_TEMPLATE") ?? "",
     supabaseUrl: requiredSetting(env, "SUPABASE_URL"),
-    supabaseSecretKey: secretKey(env),
+    supabaseSecretKey: defaultSecretKeySetting(env),
   };
 }

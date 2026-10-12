@@ -46,10 +46,15 @@ Logs).
 
 - #49, #52 and the secret-key PR are merged to `main`, and the reviewed commit is checked out.
   Record its SHA.
-- **The key rotation is settled.** The live `marcus-chat` is the key-path version, which reads the
-  new secret key and still falls back to the legacy service-role key. It has run for about a week,
-  every cold start has logged `marcus-chat: key path` with `secret_keys`, and none has logged
-  `legacy_service_role`. The versioned function has no fallback, so this deploy removes it.
+- **The key rotation is settled.** The live `marcus-chat` is the key-path version: it reads the new
+  secret key and still falls back to the legacy service-role key. This deploy removes the fallback.
+  Check each of these:
+  - The client has said the rotation window is closed and the legacy keys are disabled.
+  - The key-path version has run for about a week.
+  - Every cold start since then has logged `marcus-chat: key path` with `secret_keys`, and none has
+    logged `legacy_service_role`.
+  - The key-path version's hash and its CLI version number (from `functions list` right after it
+    was deployed) are in the local notes. Steps 0 and 2 check against them.
 - The CI is Netlify only. Run the tests locally on this exact commit:
 
   ```powershell
@@ -78,6 +83,8 @@ No production change. Everything here stays in the private folder.
   `{{session_history}}`. Record its SHA-256.
 - **Offline parity.** A private script, kept outside the repo, renders the prompt for each request
   shape twice: with the deployed code's logic, and with the repo's renderer and the secret content.
+  The key-path version changed only the key, not the prompt logic, so its prompt matches deployment
+  20's.
   Shapes: no goal, no past sessions, three past sessions with long summaries, quotes and unusual
   characters in the name, and `$&` / `{{product}}` in a field. All with no Pricing audit.
 
@@ -148,7 +155,9 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
 **Verification**
 
 - `functions list` shows a new version, active, JWT verification still off.
-- A `POST` with no `Authorization` header gets `401 {"error":"Unauthorised"}`.
+- A `POST` with no `Authorization` header gets `401 {"error":"Unauthorised"}`. A
+  `500 {"error":"Configuration error"}` instead means setup failed before the token check: read
+  the `marcus-chat: setup` log line and roll back.
 - The function logs show no `marcus-chat: configuration` line. That line means the secret is
   missing or blank, and every session would get `500`: roll back at once.
 - No `marcus-chat: setup` line naming `SUPABASE_SECRET_KEYS`. That means the secret key is missing
