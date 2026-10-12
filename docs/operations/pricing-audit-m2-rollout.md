@@ -386,7 +386,7 @@ The run costs a few Anthropic calls and sends one recap email to the QA account'
 
 | Variable | Value |
 | --- | --- |
-| `GC_QA_KEYS` | The JSON list of API keys used by earlier QA runs (legacy `anon` and `service_role`) |
+| `GC_QA_KEYS` | The project's JSON list of API keys (`supabase projects api-keys -o json`). The script uses only the publishable and secret keys named `default`. The legacy `anon` and `service_role` keys are never used. |
 | `GC_QA_SUPABASE_URL` | `https://<project ref>.supabase.co` |
 | `GC_QA_SUPABASE_ACCESS_TOKEN` | A Supabase personal access token, for the Management API SQL endpoint. Create it for this run and revoke it after. |
 | `GC_QA_USER_ID` | The QA account's user ID |
