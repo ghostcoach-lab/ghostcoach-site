@@ -6,7 +6,8 @@
 `marcus-chat` serves every normal Marcus session. The deployed version builds its prompt from text
 in its own code. The versioned one reads the same wording from the `MARCUS_CHAT_PROMPT_TEMPLATE`
 secret, and adds a short data block with the customer's latest Pricing audit. Behaviour is in the
-spec on #38.
+spec on #38. It also reads the Supabase secret key only from `SUPABASE_SECRET_KEYS` (`default`),
+without the legacy fallback.
 
 0. [Private preparation](#0-private-preparation) (no production change)
 1. [The client sets the secret](#1-the-client-sets-the-secret)
@@ -43,7 +44,12 @@ Logs).
 
 ## Before you start
 
-- #49 and #52 are merged to `main`, and the reviewed commit is checked out. Record its SHA.
+- #49, #52 and the secret-key PR are merged to `main`, and the reviewed commit is checked out.
+  Record its SHA.
+- **The key rotation is settled.** The live `marcus-chat` is the key-path version, which reads the
+  new secret key and still falls back to the legacy service-role key. It has run for about a week,
+  every cold start has logged `marcus-chat: key path` with `secret_keys`, and none has logged
+  `legacy_service_role`. The versioned function has no fallback, so this deploy removes it.
 - The CI is Netlify only. Run the tests locally on this exact commit:
 
   ```powershell
@@ -60,8 +66,9 @@ No production change. Everything here stays in the private folder.
 
 **Pre-check**
 
-- The rollback copy of the deployed source (deployment 20) is in the private folder, and its SHA-256
-  matches the hash in the local notes.
+- The rollback copy of the deployed source (the key-path version, which replaced deployment 20
+  during the key rotation) is in the private folder, and its SHA-256 matches the hash in the local
+  notes.
 
 **Change**
 
@@ -115,10 +122,13 @@ npx -y supabase@2.117.0 functions list --project-ref <project ref>
 npx -y supabase@2.117.0 functions download marcus-chat --project-ref <project ref>
 ```
 
-- `functions list` shows `marcus-chat` still at deployment 20, with JWT verification off.
+- `functions list` shows `marcus-chat` still at the CLI version recorded when the key-path version
+  went live, with JWT verification off. Use the CLI's version number: the dashboard counts
+  deployments separately and shows a different number for the same source.
 - The downloaded `index.ts` has the same SHA-256 as the rollback copy. If either check differs, stop:
   someone changed the live function, and a fresh rollback copy and parity run are needed.
-- The function logs show successful calls, so the function's keys are valid. (Opening the chat page
+- The function logs show successful calls, so the function's keys are valid, and every
+  `marcus-chat: key path` line since the key-path deploy says `secret_keys`. (Opening the chat page
   to check would insert a pending `sessions` row, so read the logs instead.)
 - Record the time, the version and the hash in the dated QA document.
 
@@ -141,6 +151,8 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
 - A `POST` with no `Authorization` header gets `401 {"error":"Unauthorised"}`.
 - The function logs show no `marcus-chat: configuration` line. That line means the secret is
   missing or blank, and every session would get `500`: roll back at once.
+- No `marcus-chat: setup` line naming `SUPABASE_SECRET_KEYS`. That means the secret key is missing
+  or malformed, and every session gets `500`: roll back at once.
 - For 15 minutes, watch the logs for `500`s and `marcus-chat: audit` errors. Each normal call logs
   one `marcus-chat: prompt` line with a hash and an `audit_block` flag, and never the prompt text.
 - `marcus-audit-chat`, `pricing-audit-complete` and `pricing-audit-eligibility` have the same
@@ -157,6 +169,9 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
 
 Then confirm that `functions list` shows the new version, and that a fresh download hashes to the
 rollback copy. The secret can stay.
+
+The rollback copy reads the new secret key, so it works with the legacy keys disabled. If it logs
+`legacy_service_role` after the rollback, the new key is not reaching it: stop and tell the client.
 
 ## 4. Live QA
 
