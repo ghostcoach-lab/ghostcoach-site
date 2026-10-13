@@ -7,8 +7,8 @@
 in its own code. The versioned one reads the same wording from the `MARCUS_CHAT_PROMPT_TEMPLATE`
 secret, and adds a short data block with the customer's latest Pricing audit. Behaviour is in the
 spec on #38. It also reads the Supabase secret key only from `SUPABASE_SECRET_KEYS`
-(`edgefunctions`), without the legacy fallback, and pins supabase-js to an exact version
-(`2.117.2`).
+(`edgefunctions`), without the legacy fallback, and pins supabase-js (the npm package, not the
+CLI) to `2.117.2`.
 
 0. [Private preparation](#0-private-preparation) (no production change)
 1. [The client sets the secret](#1-the-client-sets-the-secret)
@@ -47,13 +47,16 @@ Logs).
 
 - #49, #52 and the secret-key PR are merged to `main`, and the reviewed commit is checked out.
   Record its SHA.
-- **The key rotation is settled.** The live `marcus-chat` is the key-path version: it reads the new
-  secret key and still falls back to the legacy service-role key. This deploy removes the fallback.
-  Check each of these:
+- **The key rotation is settled.** The live `marcus-chat` is the key-path version: it reads the
+  `edgefunctions` secret key, the same one this version reads, and still falls back to the legacy
+  service-role key. This deploy removes the fallback. Check each of these:
+  - The project's API Keys page lists a secret key named `edgefunctions` (read the name only, never
+    the value). Without it, this version fails every session with `500`.
   - The client has said the rotation window is closed and the legacy keys are disabled.
   - The key-path version has run for about a week.
   - Every cold start since then has logged `marcus-chat: key path` with `secret_keys`, and none has
-    logged `legacy_service_role`.
+    logged `legacy_service_role`. Because the key-path version reads `edgefunctions`, these lines
+    prove the live runtime supplies that key.
   - The key-path version's hash and its CLI version number (from `functions list` right after it
     was deployed) are in the local notes. Steps 0 and 2 check against them.
 - The CI is Netlify only. Run the tests locally on this exact commit:
@@ -161,8 +164,9 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
   the `marcus-chat: setup` log line and roll back.
 - The function logs show no `marcus-chat: configuration` line. That line means the secret is
   missing or blank, and every session would get `500`: roll back at once.
-- No `marcus-chat: setup` line naming `SUPABASE_SECRET_KEYS`. That means the secret key is missing
-  or malformed, and every session gets `500`: roll back at once.
+- No `marcus-chat: setup` line naming `SUPABASE_SECRET_KEYS` (for example `SUPABASE_SECRET_KEYS has
+  no edgefunctions key`). That means the secret key is missing or malformed, and every session gets
+  `500`: roll back at once.
 - For 15 minutes, watch the logs for `500`s and `marcus-chat: audit` errors. Each normal call logs
   one `marcus-chat: prompt` line with a hash and an `audit_block` flag, and never the prompt text.
 - `marcus-audit-chat`, `pricing-audit-complete` and `pricing-audit-eligibility` have the same
@@ -180,7 +184,7 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
 Then confirm that `functions list` shows the new version, and that a fresh download hashes to the
 rollback copy. The secret can stay.
 
-The rollback copy reads the new secret key, so it works with the legacy keys disabled. If it logs
+The rollback copy reads the `edgefunctions` secret key, so it works with the legacy keys disabled. If it logs
 `legacy_service_role` after the rollback, the new key is not reaching it: stop and tell the client.
 
 ## 4. Live QA

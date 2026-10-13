@@ -11,7 +11,7 @@ export interface MarcusChatConfig {
 // No fallback to the legacy service-role key. Errors name the problem, never the value.
 const SECRET_KEY_NAME = "edgefunctions";
 
-function defaultSecretKeySetting(env: ReadEnv): string {
+function secretKeySetting(env: ReadEnv): string {
   let keys: unknown;
   try {
     keys = JSON.parse(requiredSetting(env, "SUPABASE_SECRET_KEYS"));
@@ -43,6 +43,6 @@ export function readMarcusChatConfig(env: ReadEnv): MarcusChatConfig {
     anthropicKey: requiredSetting(env, "ANTHROPIC_API_KEY"),
     promptTemplate: env("MARCUS_CHAT_PROMPT_TEMPLATE") ?? "",
     supabaseUrl: requiredSetting(env, "SUPABASE_URL"),
-    supabaseSecretKey: defaultSecretKeySetting(env),
+    supabaseSecretKey: secretKeySetting(env),
   };
 }

@@ -24,7 +24,11 @@ test("the edgefunctions secret key is the Supabase key", () => {
 });
 
 test("the edgefunctions key is used even when default and other secret keys are listed first", () => {
-  const keys = JSON.stringify({ default: "dummy-default-secret", dummy_other: "dummy-other-secret", edgefunctions: DUMMY_SECRET });
+  const keys = JSON.stringify({
+    default: "dummy-default-secret",
+    dummy_other: "dummy-other-secret",
+    edgefunctions: DUMMY_SECRET,
+  });
   const config = readMarcusChatConfig(baseEnv({ SUPABASE_SECRET_KEYS: keys }));
   assert.equal(config.supabaseSecretKey, DUMMY_SECRET);
 });
