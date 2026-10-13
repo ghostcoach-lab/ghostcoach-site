@@ -6,8 +6,9 @@
 `marcus-chat` serves every normal Marcus session. The deployed version builds its prompt from text
 in its own code. The versioned one reads the same wording from the `MARCUS_CHAT_PROMPT_TEMPLATE`
 secret, and adds a short data block with the customer's latest Pricing audit. Behaviour is in the
-spec on #38. It also reads the Supabase secret key only from `SUPABASE_SECRET_KEYS` (`default`),
-without the legacy fallback.
+spec on #38. It also reads the Supabase secret key only from `SUPABASE_SECRET_KEYS`
+(`edgefunctions`), without the legacy fallback, and pins supabase-js to an exact version
+(`2.117.2`).
 
 0. [Private preparation](#0-private-preparation) (no production change)
 1. [The client sets the secret](#1-the-client-sets-the-secret)

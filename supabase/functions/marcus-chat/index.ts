@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 import { readMarcusChatConfig } from "./config.ts";
 import { createMarcusChatEntryHandler } from "./entry.ts";
