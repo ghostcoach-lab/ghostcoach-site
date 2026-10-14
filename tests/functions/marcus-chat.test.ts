@@ -60,19 +60,22 @@ test("entry preflight bypasses configuration and client construction", async () 
   assert.equal(response.headers.get("access-control-allow-headers"), "authorization, content-type");
 });
 
-test("entry setup failures return JSON 500 with the deployed CORS headers", async () => {
+test("entry setup failures return a generic JSON 500 and log the detail", async () => {
   const logs: unknown[][] = [];
+  const setupError = new Error("SUPABASE_URL is missing or blank");
   const entry = createMarcusChatEntryHandler({
     createHandler: () => {
-      throw new Error("SUPABASE_URL is missing or blank");
+      throw setupError;
     },
     logError: (...args: unknown[]) => logs.push(args),
   });
 
   const response = await entry(post({ messages: [], profile: {}, session_id: "session-1" }));
 
+  // Setup runs before authentication, so the body must not describe the configuration.
   assert.equal(response.status, 500);
-  assert.deepEqual(await response.json(), { error: "SUPABASE_URL is missing or blank" });
+  assert.deepEqual(await response.json(), { error: "Configuration error" });
+  assert.deepEqual(logs, [["marcus-chat: setup", setupError]]);
   assert.equal(response.headers.get("access-control-allow-origin"), "*");
   assert.equal(response.headers.get("access-control-allow-headers"), "authorization, content-type");
   assert.equal(response.headers.get("content-type"), "application/json");
