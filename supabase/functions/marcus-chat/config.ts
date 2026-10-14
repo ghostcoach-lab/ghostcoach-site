@@ -9,7 +9,7 @@ export interface MarcusChatConfig {
 
 // The runtime injects the project's secret keys as one JSON object keyed by name.
 // No fallback to the legacy service-role key. Errors name the problem, never the value.
-const SECRET_KEY_NAME = "edgefunctions";
+const SECRET_KEY_NAME = "marcus_chat_prod";
 
 function secretKeySetting(env: ReadEnv): string {
   let keys: unknown;
