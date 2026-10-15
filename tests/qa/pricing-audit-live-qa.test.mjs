@@ -297,7 +297,7 @@ function recordingFetch() {
 }
 
 // The default publishable and secret keys, the access token, the n8n key, then keys the run must
-// never use: the legacy pair and a second secret key.
+// never use: the legacy pair and marcus-chat's own secret key.
 const SECRETS = ['sb_publishable_xyz', 'sb_secret_default_xyz', 'pat-xyz', 'n8n-key-xyz',
   'legacy-anon-xyz', 'legacy-service-xyz', 'sb_secret_other_xyz'];
 const [PUBLISHABLE, SECRET] = SECRETS;
@@ -312,7 +312,7 @@ function qaEnv(overrides = {}) {
     GC_QA_KEYS: JSON.stringify([
       ...LEGACY_KEYS,
       { name: 'default', type: 'publishable', api_key: PUBLISHABLE },
-      { name: 'edgefunctions', type: 'secret', api_key: SECRETS[6] },
+      { name: 'marcus_chat_prod', type: 'secret', api_key: SECRETS[6] },
       { name: 'default', type: 'secret', api_key: SECRET },
     ]),
     GC_QA_SUPABASE_URL: `https://${REF}.supabase.co`,
@@ -340,7 +340,7 @@ test('the run refuses, sending nothing, without matching confirmation flags', as
     { argv: CONFIRMED, env: qaEnv({ GC_QA_KEYS: JSON.stringify(LEGACY_KEYS) }) },
     { argv: CONFIRMED, env: qaEnv({ GC_QA_KEYS: JSON.stringify([
       { name: 'default', type: 'publishable', api_key: PUBLISHABLE },
-      { name: 'edgefunctions', type: 'secret', api_key: SECRETS[6] },
+      { name: 'marcus_chat_prod', type: 'secret', api_key: SECRETS[6] },
     ]) }) },
   ];
   for (const { argv, env = qaEnv() } of refusals) {
