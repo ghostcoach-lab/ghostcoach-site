@@ -52,6 +52,9 @@
   // message, counting the opener as turn 1 — so the first check runs after
   // Marcus's third reply to the founder (4th Marcus message overall).
   const COMPLETION_CHECK_FROM_TURN = 4;
+  // The check that saves the Verdict can take close to a minute; ordinary
+  // no-Verdict checks answer in 2–4 s. Show the notice only if a check runs long.
+  const VERDICT_NOTICE_DELAY_MS = 8000;
   function marcusTurnCount() {
     return transcript.filter(m => m.role === 'assistant').length;
   }
@@ -415,9 +418,22 @@
     // Quietly check whether that reply was the Verdict (see file header) —
     // but only once the audit is far enough along for a Verdict to be
     // plausible. Each check is a full claude-opus-5-5 extraction call.
+    const willCheck = marcusTurnCount() >= COMPLETION_CHECK_FROM_TURN;
+    let verdictNotice = null;
+    const noticeTimer = willCheck
+      ? setTimeout(() => {
+          verdictNotice = appendThinking();
+          verdictNotice.textContent = 'Marcus is writing your Verdict…';
+        }, VERDICT_NOTICE_DELAY_MS)
+      : null;
+    const clearNotice = () => {
+      if (noticeTimer) clearTimeout(noticeTimer);
+      if (verdictNotice) { verdictNotice.remove(); verdictNotice = null; }
+    };
     try {
-      if (marcusTurnCount() >= COMPLETION_CHECK_FROM_TURN) {
+      if (willCheck) {
         const result = await tryComplete(transcript);
+        clearNotice();
         if (result.completed) {
           renderVerdict(result.verdict);
           lockConversation();
@@ -429,6 +445,7 @@
         }
       }
     } finally {
+      clearNotice();
       isSending = false;
       if (!isDone) { sendBtn.disabled = false; inputEl.focus(); }
     }
