@@ -16,19 +16,31 @@
   </url>
   <url>
     <loc>https://getghostcoach.com/vibe/get-customers/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://getghostcoach.com/vibe/monetization-strategy/</loc>
+    <lastmod>2026-10-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://getghostcoach.com/vibe/micro-saas-business-model/</loc>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://getghostcoach.com/vibe/make-money/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://getghostcoach.com/vibe/saas-pricing/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -140,7 +152,7 @@
   </url>
   <url>
     <loc>https://getghostcoach.com/vibe/</loc>
-    <lastmod>2026-05-13</lastmod>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -273,7 +285,7 @@
   </url>
   <url>
     <loc>https://getghostcoach.com/vibe/micro-saas/</loc>
-    <lastmod>2026-06-24</lastmod>
+    <lastmod>2026-10-21</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
