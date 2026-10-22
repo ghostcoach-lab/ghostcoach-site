@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Your Vibe-Coded App Is Broken: A Diagnostic | GhostCoach</title>
-<meta name="description" content="Your vibe-coded app is broken and you can't fix it? A calm diagnostic to decide what to repair, what to ignore, and when to rebuild. Start free.">
+<title>Vibe-Coded App Broken? How to Fix and Ship It | GhostCoach</title>
+<meta name="description" content="Your vibe-coded app breaks in production - here's how to stabilize it and turn it into a real product. Start free.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://getghostcoach.com/vibe/vibe-coded-app-broken/">
-<meta property="og:title" content="Your Vibe-Coded App Is Broken: A Diagnostic | GhostCoach">
-<meta property="og:description" content="A calm diagnostic for when your vibe-coded app breaks: what to fix, what to ignore, and when to rebuild.">
+<meta property="og:title" content="Vibe-Coded App Broken? How to Fix and Ship It | GhostCoach">
+<meta property="og:description" content="Your vibe-coded app breaks in production - here's how to stabilize it and turn it into a real product.">
 <link rel="canonical" href="https://getghostcoach.com/vibe/vibe-coded-app-broken/">
 <link rel="stylesheet" href="/fonts/fonts.css">
 <style>
@@ -81,15 +81,18 @@
   /* v21 fix: override .article a specificity so cta-btn text is visible */
   a.cta-btn { color: var(--ink) !important; }
 
+  @media (max-width: 680px) { .article table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; } }
+  .answer-block { background: white; border: 1px solid var(--border); border-left: 4px solid var(--teal); border-radius: 6px; padding: 1.25rem 1.5rem; margin-bottom: 2.5rem; font-size: 1.05rem; font-weight: 500; }
   </style>
 <link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png"><link rel="icon" type="image/png" sizes="96x96" href="/favicon-96.png"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="apple-touch-icon" sizes="180x180" href="/favicon-180.png">
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Your Vibe-Coded App Is Broken: A Diagnostic",
+  "headline": "Vibe-Coded App Broken? How to Fix and Ship It",
   "author": { "@type": "Organization", "name": "GhostCoach" },
   "publisher": { "@type": "Organization", "name": "GhostCoach" },
+  "dateModified": "2026-10-22",
   "mainEntityOfPage": "https://getghostcoach.com/vibe/vibe-coded-app-broken/"
 }
 </script>
@@ -107,17 +110,21 @@
 
 <section class="hero">
   <div class="eyebrow">Vibe Coding &middot; Diagnostic</div>
-  <h1>Your Vibe-Coded App<br><em>Is Broken. Now What?</em></h1>
-  <p class="hero-sub">The build got you 80% of the way. Then it broke and you couldn't fix it. Here's how to decide what to repair, what to ignore, and when to walk away.</p>
+  <h1>Your vibe-coded app is <em>broken</em> - now what?</h1>
+  <p class="hero-sub">The build got you most of the way. Then it broke and you couldn't fix it. Here's how to decide what to repair, what to ignore, and when to walk away.</p>
 </section>
 
 <section class="article">
+
+  <div class="answer-block">
+    To fix a vibe-coded app, sort every problem into critical, core-value, or cosmetic, fix only what blocks users or revenue, and rebuild only if people already pay for the app. Stabilizing the app is step one. The next step is pricing and customers.
+  </div>
 
   <div class="toc">
     <div class="toc-title">On this page</div>
     <ol>
       <li><a href="#the-wall">The wall every vibe coder hits</a></li>
-      <li><a href="#diagnose">Diagnose the break before you touch it</a></li>
+      <li><a href="#diagnose">How to fix a vibe-coded app: diagnose the break first</a></li>
       <li><a href="#triage">Severity triage: critical vs cosmetic</a></li>
       <li><a href="#cost-benefit">The fix-it cost-benefit template</a></li>
       <li><a href="#rebuild">When to rebuild instead of repair</a></li>
@@ -125,11 +132,11 @@
     </ol>
   </div>
 
-  <p>A vibe-coded app is one you built fast with a tool like Cursor, Bolt, or Lovable &mdash; describing what you wanted and letting AI generate it. It works right up until it doesn't, and then you're staring at an error you didn't write and can't read.</p>
-  <p>This is the most common wall in vibe coding. It's not a sign you failed. It's a sign you've reached the edge of what "build it fast" gets you. What matters now is the decision, not the panic.</p>
+  <p>A vibe-coded app is one you built fast with a tool like Cursor, Bolt, or Lovable &mdash; describing what you wanted and letting AI generate it. It works right up until it doesn't, and then you're staring at an error you didn't write and can't read. This page shows how to fix a vibe-coded app without burning a weekend.</p>
+  <p>This is a common wall in vibe coding. It's not a sign you failed. It's a sign you've reached the edge of what "build it fast" gets you. What matters now is the decision, not the panic.</p>
 
   <h2 id="the-wall">The Wall Every Vibe Coder Hits</h2>
-  <p>The pattern is predictable. The app works in the demo. You get users. Then a change breaks something, the AI's fix breaks something else, and each attempt digs the hole deeper. You've spent a weekend re-breaking the same feature.</p>
+  <p>A vibe coded app broken in production follows a predictable pattern. The app works in the demo. You get users. Then a change breaks something, the AI's fix breaks something else, and each attempt digs the hole deeper. You've spent a weekend re-breaking the same feature.</p>
   <p>The instinct is to keep prompting until it's fixed. Sometimes that works. Often it burns days on a problem that a five-minute decision should have settled: is this worth fixing at all, right now?</p>
 
   <div class="marcus-says">
@@ -137,8 +144,8 @@
     <div class="mq">"I recommend you stop fixing and start triaging. Not every broken thing is worth your time, and the ones that are rarely get fixed by the tenth panicked prompt. Decide severity first, cost second, then act."</div>
   </div>
 
-  <h2 id="diagnose">Diagnose the Break Before You Touch It</h2>
-  <p>Before you write another prompt, name what kind of break this is. Three questions settle it.</p>
+  <h2 id="diagnose">How to Fix a Vibe-Coded App: Diagnose the Break First</h2>
+  <p>Vibe coding bugs are not equal, so before you write another prompt, name what kind of break this is. Three questions settle it.</p>
   <ol>
     <li><strong>Who hits it?</strong> Every user, or an edge case one person found? A bug on the signup flow is not the same as a bug in a setting nobody uses.</li>
     <li><strong>Does it block money?</strong> Can people still sign up, pay, and get the core value? If yes, the break is annoying, not fatal.</li>
@@ -196,8 +203,9 @@
 
   <h2 id="business">The Break That Isn't Technical</h2>
   <p>Here's the uncomfortable part. For a lot of founders who land on this page, the app isn't the thing that's actually broken. The business layer is. The product runs fine &mdash; there's just no pricing, no positioning, and no way to get customers.</p>
-  <p>A working app with two paying users doesn't have a bug. It has a monetisation gap. Fixing the code won't fix that, and you can lose months polishing an app that a pricing change would have moved further in a week.</p>
-  <p>If your app runs but the revenue doesn't, the fix is elsewhere: see <a href="/vibe/make-money/">how to make money from your vibe-coded app</a> and, once it's earning, <a href="/vibe/get-customers/">how to get customers for a vibe-coded app</a>.</p>
+  <p>A working app with two paying users doesn't have a bug. It has a monetization gap. Fixing the code won't fix that, and you can lose months polishing an app that a pricing change would have moved further in a week.</p>
+  <p>If your app runs but the revenue doesn't, the fix is elsewhere: see <a href="/vibe/make-money/">how to make money from vibe coding</a> and, once it's earning, <a href="/vibe/get-customers/">how to get customers for a vibe-coded app</a>.</p>
+  <p>Stabilizing the app is step one. Step two is the business layer: choose who pays and what they pay for with our <a href="/vibe/monetization-strategy/">vibe coding monetization strategy</a> guide.</p>
 
   <div class="marcus-says">
     <div class="ml">Marcus · GhostCoach's AI coach</div>
@@ -215,7 +223,7 @@
     <div class="related-title">Related guides</div>
     <div class="related-grid">
       <a href="/vibe/after-vibe-coding-what-next/" class="related-link">After Vibe Coding, What Next?<span>The post-ship roadmap</span></a>
-      <a href="/vibe/make-money/" class="related-link">Make Money From Your Vibe-Coded App<span>Fix the monetisation gap</span></a>
+      <a href="/vibe/make-money/" class="related-link">Make Money From Vibe Coding<span>Fix the monetization gap</span></a>
       <a href="/vibe/get-customers/" class="related-link">Get Customers for a Vibe-Coded App<span>Acquisition that repeats</span></a>
       <a href="/vibe/saas/" class="related-link">Turn Your Vibe-Coded App Into a SaaS<span>The business layer, step by step</span></a>
     </div>
