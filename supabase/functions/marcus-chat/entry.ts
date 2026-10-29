@@ -13,8 +13,9 @@ export function createMarcusChatEntryHandler(
     try {
       return await dependencies.createHandler()(request);
     } catch (error) {
+      // Setup runs before authentication: the detail goes to the log, never the response.
       dependencies.logError("marcus-chat: setup", error);
-      return internalError(error);
+      return internalError("Configuration error");
     }
   };
 }

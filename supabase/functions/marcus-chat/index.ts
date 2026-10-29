@@ -1,4 +1,4 @@
-import { createClient } from "npm:@supabase/supabase-js@2";
+import { createClient } from "npm:@supabase/supabase-js@2.117.2";
 
 import { readMarcusChatConfig } from "./config.ts";
 import { createMarcusChatEntryHandler } from "./entry.ts";
@@ -14,7 +14,7 @@ function sha256(value: string): Promise<string> {
 Deno.serve(createMarcusChatEntryHandler({
   createHandler: () => {
     const config = readMarcusChatConfig((name) => Deno.env.get(name));
-    const supabase = createClient(config.supabaseUrl, config.supabaseServiceRoleKey);
+    const supabase = createClient(config.supabaseUrl, config.supabaseSecretKey);
     return createMarcusChatHandler({
       authenticate: async (incomingRequest) => {
         const authHeader = incomingRequest.headers.get("Authorization") ?? "";

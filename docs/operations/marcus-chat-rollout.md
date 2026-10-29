@@ -6,7 +6,9 @@
 `marcus-chat` serves every normal Marcus session. The deployed version builds its prompt from text
 in its own code. The versioned one reads the same wording from the `MARCUS_CHAT_PROMPT_TEMPLATE`
 secret, and adds a short data block with the customer's latest Pricing audit. Behaviour is in the
-spec on #38.
+spec on #38. It also reads the Supabase secret key only from `SUPABASE_SECRET_KEYS`
+(`marcus_chat_prod`), without the legacy fallback, and pins supabase-js (the npm package, not the
+CLI) to `2.117.2`.
 
 0. [Private preparation](#0-private-preparation) (no production change)
 1. [The client sets the secret](#1-the-client-sets-the-secret)
@@ -43,7 +45,20 @@ Logs).
 
 ## Before you start
 
-- #49 and #52 are merged to `main`, and the reviewed commit is checked out. Record its SHA.
+- #49, #52 and the secret-key PR are merged to `main`, and the reviewed commit is checked out.
+  Record its SHA.
+- **The key rotation is settled.** The live `marcus-chat` is the key-path version: it reads the
+  `marcus_chat_prod` secret key, the same one this version reads, and still falls back to the legacy
+  service-role key. This deploy removes the fallback. Check each of these:
+  - The project's API Keys page lists a secret key named `marcus_chat_prod` (read the name only, never
+    the value). Without it, this version fails every session with `500`.
+  - The client has said the rotation window is closed and the legacy keys are disabled.
+  - The key-path version has run for about a week.
+  - Every cold start since then has logged `marcus-chat: key path` with `secret_keys`, and none has
+    logged `legacy_service_role`. Because the key-path version reads `marcus_chat_prod`, these lines
+    prove the live runtime supplies that key.
+  - The key-path version's hash and its CLI version number (from `functions list` right after it
+    was deployed) are in the local notes. Steps 0 and 2 check against them.
 - The CI is Netlify only. Run the tests locally on this exact commit:
 
   ```powershell
@@ -60,8 +75,9 @@ No production change. Everything here stays in the private folder.
 
 **Pre-check**
 
-- The rollback copy of the deployed source (deployment 20) is in the private folder, and its SHA-256
-  matches the hash in the local notes.
+- The rollback copy of the deployed source (the key-path version, which replaced deployment 20
+  during the key rotation) is in the private folder, and its SHA-256 matches the hash in the local
+  notes.
 
 **Change**
 
@@ -71,6 +87,8 @@ No production change. Everything here stays in the private folder.
   `{{session_history}}`. Record its SHA-256.
 - **Offline parity.** A private script, kept outside the repo, renders the prompt for each request
   shape twice: with the deployed code's logic, and with the repo's renderer and the secret content.
+  The key-path version changed only the key, not the prompt logic, so its prompt matches deployment
+  20's.
   Shapes: no goal, no past sessions, three past sessions with long summaries, quotes and unusual
   characters in the name, and `$&` / `{{product}}` in a field. All with no Pricing audit.
 
@@ -115,10 +133,13 @@ npx -y supabase@2.117.0 functions list --project-ref <project ref>
 npx -y supabase@2.117.0 functions download marcus-chat --project-ref <project ref>
 ```
 
-- `functions list` shows `marcus-chat` still at deployment 20, with JWT verification off.
+- `functions list` shows `marcus-chat` still at the CLI version recorded when the key-path version
+  went live, with JWT verification off. Use the CLI's version number: the dashboard counts
+  deployments separately and shows a different number for the same source.
 - The downloaded `index.ts` has the same SHA-256 as the rollback copy. If either check differs, stop:
   someone changed the live function, and a fresh rollback copy and parity run are needed.
-- The function logs show successful calls, so the function's keys are valid. (Opening the chat page
+- The function logs show successful calls, so the function's keys are valid, and every
+  `marcus-chat: key path` line since the key-path deploy says `secret_keys`. (Opening the chat page
   to check would insert a pending `sessions` row, so read the logs instead.)
 - Record the time, the version and the hash in the dated QA document.
 
@@ -138,9 +159,14 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
 **Verification**
 
 - `functions list` shows a new version, active, JWT verification still off.
-- A `POST` with no `Authorization` header gets `401 {"error":"Unauthorised"}`.
+- A `POST` with no `Authorization` header gets `401 {"error":"Unauthorised"}`. A
+  `500 {"error":"Configuration error"}` instead means setup failed before the token check: read
+  the `marcus-chat: setup` log line and roll back.
 - The function logs show no `marcus-chat: configuration` line. That line means the secret is
   missing or blank, and every session would get `500`: roll back at once.
+- No `marcus-chat: setup` line naming `SUPABASE_SECRET_KEYS` (for example `SUPABASE_SECRET_KEYS has
+  no marcus_chat_prod key`). That means the secret key is missing or malformed, and every session gets
+  `500`: roll back at once.
 - For 15 minutes, watch the logs for `500`s and `marcus-chat: audit` errors. Each normal call logs
   one `marcus-chat: prompt` line with a hash and an `audit_block` flag, and never the prompt text.
 - `marcus-audit-chat`, `pricing-audit-complete` and `pricing-audit-eligibility` have the same
@@ -157,6 +183,10 @@ npx -y supabase@2.117.0 functions deploy marcus-chat --project-ref <project ref>
 
 Then confirm that `functions list` shows the new version, and that a fresh download hashes to the
 rollback copy. The secret can stay.
+
+The rollback copy reads the `marcus_chat_prod` secret key, so it works with the legacy keys
+disabled. If it logs `legacy_service_role` after the rollback, the new key is not reaching it: stop
+and tell the client.
 
 ## 4. Live QA
 
