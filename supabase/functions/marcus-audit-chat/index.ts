@@ -49,7 +49,7 @@ export default {
         const { data, error } = await context.supabase
           .from("profiles")
           // A literal, so supabase-js can type the row: keep it equal to BUSINESS_PROFILE_FIELDS.
-          .select("product, stage, bottleneck, goal_90_day")
+          .select("product, stage, bottleneck, replaces, goal_90_day")
           .eq("user_id", userId)
           .maybeSingle();
         if (error) throw error;
