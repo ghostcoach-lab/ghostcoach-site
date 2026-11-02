@@ -23,7 +23,7 @@
     },
     {
       "parameters": {
-        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/users?plan=eq.operator&status=eq.active&select=id,email&apikey=fixture-api-key` }}",
+        "url": "={{ `${$vars.SUPABASE_URL}/rest/v1/users?plan=in.(operator,lifetime)&status=eq.active&select=id,email,plan&apikey=fixture-api-key` }}",
         "options": {},
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
@@ -49,7 +49,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all();"
+        "jsCode": "const users = $input.all().map(item => item.json).filter(u => u && u.id && u.email);\nif (users.length === 0) {\n  console.log('S4: no active Operator users found — digest skipped');\n  return [];\n}\nconsole.log(`S4: processing ${users.length} Operator user(s)`);\nreturn users.map(u => ({ json: { user_id: u.id, email: u.email, plan: u.plan } }));"
       },
       "id": "00000000-0000-4000-8000-000000000003",
       "name": "Prepare User List",

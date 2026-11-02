@@ -16,9 +16,9 @@ const EMAIL = 'Build Digest Email';
 const SEND = 'Send Digest via Resend';
 const API_KEY = /&apikey=([^`&$]+)(?=`)/;
 // The users query as published, with the live apikey value replaced by KEY.
-const USERS_URL = '={{ `${$vars.SUPABASE_URL}/rest/v1/users?plan=eq.operator&status=eq.active&select=id,email&apikey=KEY` }}';
+const USERS_URL = '={{ `${$vars.SUPABASE_URL}/rest/v1/users?plan=in.(operator,lifetime)&status=eq.active&select=id,email,plan&apikey=KEY` }}';
 const ELIGIBILITY_FIELDS = ['plan', 'status', 'trial_end', 'welcome_audit_used', 'last_audit_completed_at'];
-const withEligibilityFields = url => url.replace('&select=id,email&', `&select=id,email,${ELIGIBILITY_FIELDS.join(',')}&`);
+const withEligibilityFields = url => url.replace('&select=id,email,plan&', `&select=id,email,${ELIGIBILITY_FIELDS.join(',')}&`);
 const withoutKey = url => (url ?? '').replace(API_KEY, '&apikey=KEY');
 const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 
