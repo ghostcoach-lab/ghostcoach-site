@@ -210,3 +210,26 @@ test('the report shows neither the sender address nor the credential ID', () => 
   assert.match(report, /"placeholderCopy":false/);
   assert.match(report, /"validationProblems":\[\]/);
 });
+
+test('the HTML email is branded, safe and carries the same wording as the text', () => {
+  const result = runValidation({
+    ...payload,
+    verdict: { ...payload.verdict, action: 'hold', number: null, reasoning: 'First point.\n\nSecond <b>point</b>.' },
+  });
+  assert.equal(result.ok, true);
+  const html = result.email.html;
+  assert.match(html, /^<!DOCTYPE html>/);
+  assert.match(html, /Ghost<span[^>]*>Coach<\/span>/, 'the wordmark');
+  assert.match(html, /Hold/);
+  assert.doesNotMatch(html, /null|undefined/, 'no leaked placeholders');
+  assert.doesNotMatch(html, /<script|<img|<link|https?:\/\/fonts/i, 'no scripts, images or external fonts');
+  assert.match(html, /First point\./);
+  assert.match(html, /Second &lt;b&gt;point&lt;\/b&gt;\./, 'reasoning is escaped');
+  assert.equal((html.match(/First point\./g) ?? []).length, 1);
+  // Colours stay inside the brand set.
+  const colours = new Set((html.match(/#[0-9A-Fa-f]{6}\b/g) ?? []).map(c => c.toUpperCase()));
+  for (const c of colours)
+    assert.ok(['#0F1117', '#C8861E', '#E8A832', '#F7F5F0', '#E2DFD8', '#FFFFFF'].includes(c), 'off-brand colour ' + c);
+  // The text part is unchanged by the HTML work.
+  assert.match(result.email.text, /^Hi Sam,\n\nHere is the Verdict from your pricing audit with Marcus\. It is saved to your account\.\n\nVerdict: Hold\n\nWhy: First point\./);
+});

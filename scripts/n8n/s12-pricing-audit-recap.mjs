@@ -88,6 +88,53 @@ export function prepareRecap(body, from) {
     'Act by: ' + deadline,
     'Your next pricing audit opens on ' + nextDate + ', 90 days after this one. It picks up from this Verdict.',
   ];
+  // Branded HTML for the email. Email clients ignore web fonts and most CSS, so this is one table
+  // layout with inline styles, system fonts as fallback and brand colours only. The wording comes
+  // from `lines`, so the HTML and the plain text cannot drift apart. Every customer value goes
+  // through escape(). It must stay inside prepareRecap: the n8n Code node embeds this function.
+  const renderHtml = () => {
+    const ink = '#0F1117', amber = '#C8861E', amberLight = '#E8A832', cream = '#F7F5F0', border = '#E2DFD8';
+    const serif = "Georgia, 'Times New Roman', serif";
+    const sans = "'DM Sans', Arial, Helvetica, sans-serif";
+    const label = t => '<div style="font-family:' + sans + ';font-size:12px;font-weight:700;' +
+      'letter-spacing:1.5px;text-transform:uppercase;color:' + ink + ';padding:0 0 6px 0;">' + t + '</div>';
+    const para = (t, extra) => '<p style="margin:0 0 16px 0;font-family:' + sans + ';font-size:16px;' +
+      'line-height:1.6;color:' + ink + ';' + (extra || '') + '">' + t + '</p>';
+    const why = verdict.reasoning.trim().split(/\n{2,}/)
+      .map(p => para(escape(p).replace(/\n/g, '<br>'))).join('');
+    return [
+      '<!DOCTYPE html>',
+      '<html lang="en"><head><meta charset="utf-8">',
+      '<meta name="viewport" content="width=device-width, initial-scale=1">',
+      '<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">',
+      '<title>Your pricing audit Verdict</title></head>',
+      '<body style="margin:0;padding:0;background:' + cream + ';">',
+      '<div style="display:none;max-height:0;overflow:hidden;opacity:0;color:' + cream +
+        ';font-size:1px;line-height:1px;">' + escape('Verdict: ' + decision + '. Act by ' + deadline + '.') + '</div>',
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:' +
+        cream + ';"><tr><td align="center" style="padding:24px 12px;">',
+      '<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">',
+      '<tr><td style="background:' + ink + ';padding:22px 32px;border-radius:8px 8px 0 0;font-family:' + serif +
+        ';font-size:24px;color:' + cream + ';">Ghost<span style="font-style:italic;color:' + amberLight + ';">Coach</span></td></tr>',
+      '<tr><td style="background:#FFFFFF;padding:32px;border:1px solid ' + border +
+        ';border-top:0;border-radius:0 0 8px 8px;">',
+      para(escape(lines[0])),
+      para(escape(lines[1])),
+      '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px 0;' +
+        'background:' + cream + ';border-left:4px solid ' + amber + ';"><tr><td style="padding:18px 22px;">' +
+        label('Verdict') + '<div style="font-family:' + serif + ';font-size:28px;line-height:1.25;color:' + ink + ';">' +
+        escape(decision) + '</div></td></tr></table>',
+      label('Why'),
+      why,
+      label('Act by'),
+      para('<strong>' + escape(deadline) + '</strong>', 'margin-bottom:24px;'),
+      '<div style="border-top:1px solid ' + border + ';padding-top:20px;">' + para(escape(lines[5]), 'margin:0;font-size:15px;') + '</div>',
+      '</td></tr>',
+      '<tr><td align="center" style="padding:18px 12px 0 12px;font-family:' + sans + ';font-size:12px;color:' + ink +
+        ';">GhostCoach &middot; getghostcoach.com</td></tr>',
+      '</table></td></tr></table></body></html>',
+    ].join('\n');
+  };
   return {
     ok: true,
     idempotency_key: body.audit_id,
@@ -95,7 +142,7 @@ export function prepareRecap(body, from) {
       from,
       to: [body.email],
       subject: 'Your pricing audit Verdict',
-      html: lines.map(line => '<p>' + escape(line) + '</p>').join('\n'),
+      html: renderHtml(),
       text: lines.join('\n\n'),
     },
   };
