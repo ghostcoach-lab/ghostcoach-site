@@ -51,7 +51,7 @@ test('nextAuditLine: no line when not Entitled, on a failed call or on an unexpe
 test('the users query also selects the eligibility fields, and nothing else changes in it', () => {
   const before = node(s4, USERS).parameters.url;
   const after = node(addNextAuditLineToS4(s4), USERS).parameters.url;
-  assert.equal(after, before.replace('&select=id,email&',
+  assert.equal(after, before.replace('&select=id,email,plan&',
     '&select=id,email,plan,status,trial_end,welcome_audit_used,last_audit_completed_at&'));
 });
 
@@ -167,7 +167,7 @@ test('input that does not match the expected S4 shape is refused', () => {
   const variants = {
     'S4 without the #9 filters': () => fixture('s4-published.json'),
     'users query changed': wf => { node(wf, USERS).parameters.url = node(wf, USERS).parameters.url.replace('status=eq.active', 'status=eq.trialing'); },
-    'users query already widened': wf => { node(wf, USERS).parameters.url = node(wf, USERS).parameters.url.replace('select=id,email', 'select=id,email,plan'); },
+    'users query already widened': wf => { node(wf, USERS).parameters.url = node(wf, USERS).parameters.url.replace('select=id,email,plan', 'select=id,email,plan,status'); },
     'users query credential missing': wf => { delete node(wf, USERS).credentials; },
     'trigger renamed': wf => { node(wf, TRIGGER).name = 'Cron'; },
     'Build Digest Email missing': wf => { wf.nodes = wf.nodes.filter(n => n.name !== 'Build Digest Email'); },
