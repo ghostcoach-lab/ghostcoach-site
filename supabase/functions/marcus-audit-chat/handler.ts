@@ -14,7 +14,7 @@ export interface AuthenticatedUser {
 }
 
 // The profiles columns given to Marcus. index.ts selects exactly these.
-const BUSINESS_PROFILE_FIELDS = ["product", "stage", "bottleneck", "goal_90_day"] as const;
+const BUSINESS_PROFILE_FIELDS = ["product", "stage", "bottleneck", "replaces", "goal_90_day"] as const;
 // Profile fields are user-editable, so each is cut to this length before it reaches Marcus.
 export const BUSINESS_PROFILE_FIELD_MAX_CHARS = 1000;
 type BusinessProfileField = typeof BUSINESS_PROFILE_FIELDS[number];

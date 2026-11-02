@@ -185,7 +185,7 @@ test("is_welcome_audit follows the user record, as at Completion, not the Prior 
 });
 
 test("the business profile appears in the data block, read for the caller", async () => {
-  const profile = { product: "Invoicing app", stage: "Growing", bottleneck: "Churn", goal_90_day: "Hit 10k MRR" };
+  const profile = { product: "Invoicing app", stage: "Growing", bottleneck: "Churn", replaces: "Spreadsheets", goal_90_day: "Hit 10k MRR" };
   const { handler, calls } = setup({
     readBusinessProfile: async (userId: string) => {
       calls.profiles.push(userId);
@@ -207,13 +207,21 @@ test("each business profile field is cut to the cap, and blank fields become nul
   const cap = BUSINESS_PROFILE_FIELD_MAX_CHARS;
   const { handler, calls } = setup({
     readBusinessProfile: async () => ({
-      product: "p".repeat(cap + 50), stage: "s".repeat(cap), bottleneck: "  ", goal_90_day: null,
+      product: "p".repeat(cap + 50), stage: "s".repeat(cap), bottleneck: "  ", replaces: "r".repeat(cap + 50), goal_90_day: null,
     }),
   });
   await handler(post(valid()));
   assert.deepEqual(auditData(calls.params[0]).business_profile, {
-    product: "p".repeat(cap), stage: "s".repeat(cap), bottleneck: null, goal_90_day: null,
+    product: "p".repeat(cap), stage: "s".repeat(cap), bottleneck: null, replaces: "r".repeat(cap), goal_90_day: null,
   });
+});
+
+test("a blank replaces answer becomes null", async () => {
+  const { handler, calls } = setup({
+    readBusinessProfile: async () => ({ product: "x", stage: "y", bottleneck: "z", replaces: "  ", goal_90_day: "w" }),
+  });
+  await handler(post(valid()));
+  assert.equal(auditData(calls.params[0]).business_profile.replaces, null);
 });
 
 test("the prompt block is identical for every caller; only the data block differs", async () => {
@@ -222,7 +230,7 @@ test("the prompt block is identical for every caller; only the data block differ
     authenticate: async () => ({ userId: "user-2" }),
     readEligibilityRecord: async () => returningRecord,
     readPriorAudits: async () => [priorRow("2026-05-01T09:00:00.000Z", "2026-06-30")],
-    readBusinessProfile: async () => ({ product: "x", stage: "y", bottleneck: "z", goal_90_day: "w" }),
+    readBusinessProfile: async () => ({ product: "x", stage: "y", bottleneck: "z", replaces: "  ", goal_90_day: "w" }),
   });
   await first.handler(post(valid()));
   await second.handler(post(valid([{ role: "assistant", content: "Hi" }, { role: "user", content: "Hello" }])));
