@@ -14,8 +14,8 @@
 // page doing this ("the page offers completion before Marcus gives his
 // Verdict, so an early attempt costs one call"). This keeps the UI free
 // of a manual "I'm done" button. Each check is a claude-opus-5-5
-// extraction call, so checks are skipped for the first 3 Marcus turns
-// (opener included) and run from turn 4 onward — see
+// extraction call, so checks are skipped for the first 2 Marcus turns
+// (opener included) and run from turn 3 onward — see
 // COMPLETION_CHECK_FROM_TURN.
 
 (async () => {
@@ -47,11 +47,15 @@
   let isDone      = false;
   let isSending   = false;
 
-  // Completion-check gating (web architect, 5 Oct): skip the check for the
-  // first 3 Marcus turns, start from turn 4. A "turn" here is a Marcus
-  // message, counting the opener as turn 1 — so the first check runs after
-  // Marcus's third reply to the founder (4th Marcus message overall).
-  const COMPLETION_CHECK_FROM_TURN = 4;
+  // Completion-check gating: skip the check for the first 2 Marcus turns,
+  // start from turn 3. A "turn" here is a Marcus message, counting the opener
+  // as turn 1 — so the first check runs after Marcus's second reply to the
+  // founder (3rd Marcus message overall). This was 4 until 3 Nov: the audit
+  // prompt skips questions the intake and profile already answer, so the
+  // shortest audit is opener + one question + Verdict (turn 3). With a
+  // threshold of 4 that Verdict was never checked, so it was not saved, no
+  // recap email was sent and the conversation never locked.
+  const COMPLETION_CHECK_FROM_TURN = 3;
   // The check that saves the Verdict can take close to a minute; ordinary
   // no-Verdict checks answer in 2–4 s. Show the notice only if a check runs long.
   const VERDICT_NOTICE_DELAY_MS = 8000;
