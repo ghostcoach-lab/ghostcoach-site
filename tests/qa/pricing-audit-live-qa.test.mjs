@@ -248,6 +248,17 @@ function fakeProduction(faults = {}) {
       if (url.pathname === '/api/v1/executions') return json(200, { data: [...state.executions].reverse() });
     }
     const path = url.pathname;
+    // New API keys go on the apikey header only; Authorization carries a user JWT or nothing.
+    if (path.startsWith('/auth/v1/admin/')) {
+      assert.equal(headers.apikey, SECRET);
+      assert.equal(headers.Authorization, undefined);
+    } else if (path === '/auth/v1/verify') {
+      assert.equal(headers.apikey, PUBLISHABLE);
+      assert.equal(headers.Authorization, undefined);
+    } else if (path === '/auth/v1/logout' || path.startsWith('/functions/v1/')) {
+      assert.equal(headers.apikey, PUBLISHABLE);
+      assert.equal(headers.Authorization, 'Bearer user-jwt');
+    }
     if (path === `/auth/v1/admin/users/${USER}`) return json(200, { id: USER, email: 'qa@example.test' });
     if (path === '/auth/v1/admin/generate_link') return json(200, { hashed_token: 'h', verification_type: 'magiclink' });
     if (path === '/auth/v1/verify') {
@@ -285,13 +296,24 @@ function recordingFetch() {
   return { calls, fetch };
 }
 
-const SECRETS = ['anon-key-xyz', 'service-key-xyz', 'pat-xyz', 'n8n-key-xyz'];
+// The default publishable and secret keys, the access token, the n8n key, then keys the run must
+// never use: the legacy pair and marcus-chat's own secret key.
+const SECRETS = ['sb_publishable_xyz', 'sb_secret_default_xyz', 'pat-xyz', 'n8n-key-xyz',
+  'legacy-anon-xyz', 'legacy-service-xyz', 'sb_secret_other_xyz'];
+const [PUBLISHABLE, SECRET] = SECRETS;
+const LEGACY_KEYS = [
+  { name: 'anon', type: 'legacy', api_key: SECRETS[4] },
+  { name: 'service_role', type: 'legacy', api_key: SECRETS[5] },
+];
 
 function qaEnv(overrides = {}) {
   return {
+    // The Management API's api-keys list, as `supabase projects api-keys -o json` prints it.
     GC_QA_KEYS: JSON.stringify([
-      { name: 'anon', type: 'legacy', api_key: SECRETS[0] },
-      { name: 'service_role', type: 'legacy', api_key: SECRETS[1] },
+      ...LEGACY_KEYS,
+      { name: 'default', type: 'publishable', api_key: PUBLISHABLE },
+      { name: 'marcus_chat_prod', type: 'secret', api_key: SECRETS[6] },
+      { name: 'default', type: 'secret', api_key: SECRET },
     ]),
     GC_QA_SUPABASE_URL: `https://${REF}.supabase.co`,
     GC_QA_SUPABASE_ACCESS_TOKEN: SECRETS[2],
@@ -314,6 +336,12 @@ test('the run refuses, sending nothing, without matching confirmation flags', as
     { argv: ['--execute', `--confirm-project=${REF}`, '--confirm-user=99999999-2222-4333-8444-555555555555'] },
     { argv: CONFIRMED, env: qaEnv({ GC_QA_SUPABASE_ACCESS_TOKEN: '' }) },
     { argv: CONFIRMED, env: qaEnv({ GC_QA_KEYS: '[]' }) },
+    // The legacy keys are disabled after the key rotation: they are never a fallback.
+    { argv: CONFIRMED, env: qaEnv({ GC_QA_KEYS: JSON.stringify(LEGACY_KEYS) }) },
+    { argv: CONFIRMED, env: qaEnv({ GC_QA_KEYS: JSON.stringify([
+      { name: 'default', type: 'publishable', api_key: PUBLISHABLE },
+      { name: 'marcus_chat_prod', type: 'secret', api_key: SECRETS[6] },
+    ]) }) },
   ];
   for (const { argv, env = qaEnv() } of refusals) {
     const out = logger();

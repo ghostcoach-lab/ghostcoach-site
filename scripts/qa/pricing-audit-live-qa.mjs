@@ -78,16 +78,20 @@ function readConfig(env) {
   const value = name => (typeof env[name] === 'string' ? env[name].trim() : '');
   for (const name of Object.values(ENV)) if (!value(name)) problems.push(`${name} is not set`);
 
-  let anonKey;
-  let serviceKey;
+  // The Management API's api-keys list. Only the keys named "default" are used; the legacy keys are
+  // disabled after the key rotation and are never a fallback.
+  let publishableKey;
+  let secretKey;
   if (value(ENV.keys)) {
     try {
       const keys = JSON.parse(value(ENV.keys));
-      const legacy = name => keys.find(k => k?.name === name && k?.type === 'legacy')?.api_key;
-      anonKey = legacy('anon');
-      serviceKey = legacy('service_role');
+      const byType = type => keys.find(k => k?.name === 'default' && k?.type === type)?.api_key;
+      publishableKey = byType('publishable');
+      secretKey = byType('secret');
     } catch { /* reported below */ }
-    if (!anonKey || !serviceKey) problems.push(`${ENV.keys} must hold the legacy anon and service_role keys`);
+    if (!publishableKey || !secretKey) {
+      problems.push(`${ENV.keys} must hold the default publishable and default secret keys`);
+    }
   }
   const supabaseUrl = value(ENV.supabaseUrl).replace(/\/$/, '');
   const projectRef = supabaseUrl.match(PROJECT_URL)?.[1];
@@ -99,7 +103,7 @@ function readConfig(env) {
 
   return {
     problems,
-    config: { anonKey, serviceKey, supabaseUrl, projectRef, userId, n8nUrl,
+    config: { publishableKey, secretKey, supabaseUrl, projectRef, userId, n8nUrl,
       accessToken: value(ENV.accessToken), n8nKey: value(ENV.n8nKey), s12WorkflowId: value(ENV.s12WorkflowId) },
   };
 }
@@ -302,16 +306,21 @@ function production(config, fetch) {
     return r.data;
   }
 
+  // Publishable and secret keys are not JWTs: they go on the apikey header only. Authorization
+  // carries the QA account's session JWT, or is left out.
   const supabase = (path, key, token, options = {}) =>
-    call(config.supabaseUrl + path, { ...options, headers: { apikey: key, Authorization: `Bearer ${token}` } });
+    call(config.supabaseUrl + path, {
+      ...options,
+      headers: token ? { apikey: key, Authorization: `Bearer ${token}` } : { apikey: key },
+    });
 
   async function signIn() {
-    const account = await supabase(`/auth/v1/admin/users/${config.userId}`, config.serviceKey, config.serviceKey);
+    const account = await supabase(`/auth/v1/admin/users/${config.userId}`, config.secretKey, null);
     check(account.status === 200 && account.data?.id === config.userId, `QA account lookup: HTTP ${account.status}`);
-    const link = await supabase('/auth/v1/admin/generate_link', config.serviceKey, config.serviceKey,
+    const link = await supabase('/auth/v1/admin/generate_link', config.secretKey, null,
       { method: 'POST', body: { type: 'magiclink', email: account.data.email } });
     check(link.status === 200 && link.data?.hashed_token, `magic link: HTTP ${link.status}`);
-    const session = await supabase('/auth/v1/verify', config.anonKey, config.anonKey,
+    const session = await supabase('/auth/v1/verify', config.publishableKey, null,
       { method: 'POST', body: { type: link.data.verification_type, token_hash: link.data.hashed_token } });
     check(session.status === 200 && session.data?.user?.id === config.userId && session.data?.access_token,
       `sign in: HTTP ${session.status}`);
@@ -328,13 +337,13 @@ function production(config, fetch) {
   return {
     query,
     signIn,
-    signOut: token => supabase('/auth/v1/logout?scope=local', config.anonKey, token, { method: 'POST' }),
+    signOut: token => supabase('/auth/v1/logout?scope=local', config.publishableKey, token, { method: 'POST' }),
     s12Workflow: () => n8n(`/api/v1/workflows/${encodeURIComponent(config.s12WorkflowId)}`),
     s12Runs,
     // The chat can take two attempts of 60 s; completion adds extraction retries and the recap.
-    chat: (token, body) => supabase('/functions/v1/marcus-audit-chat', config.anonKey, token,
+    chat: (token, body) => supabase('/functions/v1/marcus-audit-chat', config.publishableKey, token,
       { method: 'POST', body, timeoutMs: 150_000 }),
-    complete: (token, body) => supabase('/functions/v1/pricing-audit-complete', config.anonKey, token,
+    complete: (token, body) => supabase('/functions/v1/pricing-audit-complete', config.publishableKey, token,
       { method: 'POST', body, timeoutMs: 300_000 }),
   };
 }
