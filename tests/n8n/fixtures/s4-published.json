@@ -154,7 +154,7 @@
     },
     {
       "parameters": {
-        "jsCode": "return $input.all();"
+        "jsCode": "const raw = ($input.first().json?.content ?? [])\n  .filter(block => block && block.type === 'text' && typeof block.text === 'string')\n  .map(block => block.text)\n  .join('')\n  .trim();\nconst ctx = $('Build Digest Prompt').first().json;\n\n// Strip ```json fences if the model added them\nconst cleaned = raw.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '').trim();\n\nlet result;\nlet usedFallback = false;\ntry {\n  result = JSON.parse(cleaned);\n} catch (e) {\n  usedFallback = true;\n  result = {\n    actions: [\n      'Check your top priority from last session',\n      'Make one product decision',\n      'Reach out to one potential customer'\n    ],\n    opening: 'Here are your three actions for the week.'\n  };\n}\n\nconst actions = Array.isArray(result.actions) ? result.actions.slice(0, 3) : [];\n\nreturn [{ json: {\n  user_id:      ctx.user_id,\n  email:        ctx.email,\n  plan:         ctx.plan,\n  variant:      ctx.variant,\n  goal:         ctx.goal,\n  progress:     ctx.progress,\n  session_ids:  ctx.session_ids,\n  actions,\n  opening:      result.opening ?? '',\n  used_fallback: usedFallback\n} }];"
       },
       "id": "00000000-0000-4000-8000-000000000008",
       "name": "Parse Digest Response",
