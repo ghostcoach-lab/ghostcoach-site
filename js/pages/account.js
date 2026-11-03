@@ -563,7 +563,7 @@
       if (verdictCard) verdictCard.style.display = 'none';
       return;
     }
-    if (help && cta && cta.style.display !== 'none') help.style.display = 'block';
+    if (help) help.style.display = 'block';
     await renderLastVerdict();
   }
   renderPricingAudit();
