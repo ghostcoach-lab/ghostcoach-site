@@ -3,7 +3,7 @@
   <!-- Homepage -->
   <url>
     <loc>https://getghostcoach.com/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -273,7 +273,7 @@
   <!-- Hub pages -->
   <url>
     <loc>https://getghostcoach.com/guides/</loc>
-    <lastmod>2026-06-23</lastmod>
+    <lastmod>2026-10-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
