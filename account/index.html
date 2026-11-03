@@ -115,6 +115,17 @@
   .audit-date-row:last-child { border-bottom:none; }
   .audit-date-label { font-size:14px; color:var(--muted,#8B8A98); }
   .audit-date-value { font-size:14px; font-weight:500; color:var(--ink,#0F1117); }
+  .audit-verdict { background:var(--cream); border-left:3px solid var(--amber); border-radius:8px; padding:16px 18px; margin:14px 0; }
+  .audit-verdict-label { font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:1px; color:var(--amber); }
+  .audit-verdict-title { font-family:'Playfair Display',serif; font-size:22px; font-weight:500; margin:4px 0 6px; }
+  .audit-verdict-why { font-size:14px; color:rgba(15,17,23,0.7); margin:0 0 8px; }
+  .audit-verdict-meta { font-size:12px; color:var(--muted,#8B8A98); margin:0; }
+  .audit-locked-text { font-size:14px; color:rgba(15,17,23,0.7); margin:0 0 16px; }
+  .audit-help { margin-top:20px; padding-top:16px; border-top:1px solid rgba(15,17,23,0.06); }
+  .audit-help h3 { font-size:14px; font-weight:600; margin:0 0 6px; }
+  .audit-help p, .audit-help li { font-size:13px; color:rgba(15,17,23,0.6); line-height:1.6; }
+  .audit-help p { margin:0 0 10px; }
+  .audit-help ul { margin:6px 0 10px; padding-left:18px; }
   .pref-label { font-size:14px; color:var(--ink); }
   .pref-sub { font-size:12px; color:rgba(15,17,23,0.5); margin-top:2px; }
   .toggle { position:relative; width:44px; height:24px; flex-shrink:0; }
@@ -341,15 +352,31 @@
     <div id="gc-winback" class="winback" style="display:none;"></div>
   </section>
 
-  <!-- 4. QUARTERLY PRICING AUDIT (Operator / Lifetime only; shown by account.js) -->
+  <!-- 4. QUARTERLY PRICING AUDIT (shown by account.js: locked for Builder, full for Operator / Lifetime) -->
   <section class="acct-section" id="gc-audit-section" style="display:none;">
     <h2>Quarterly pricing audit</h2>
     <p class="section-hint">A focused pricing verdict from Marcus, once a quarter.</p>
 
+    <!-- Builder: the audit is part of Operator. The button reuses the Upgrade flow in Plan &amp; billing. -->
+    <div id="gc-audit-locked" style="display:none;">
+      <p class="audit-locked-text">The quarterly pricing audit comes with the Operator plan. Marcus runs a structured pricing review with you and ends with one verdict: raise, hold or restructure, with a deadline. You can run one every 90 days, and your first audit is available as soon as you upgrade.</p>
+      <div class="billing-actions">
+        <button type="button" class="btn btn-primary" id="gc-audit-upgrade">Upgrade to Operator</button>
+      </div>
+    </div>
+
+    <!-- Most recent saved verdict (read from the user's own pricing_audits rows) -->
+    <div id="gc-audit-verdict" class="audit-verdict" style="display:none;">
+      <div class="audit-verdict-label">Your last verdict</div>
+      <div class="audit-verdict-title" id="gc-audit-verdict-title"></div>
+      <p class="audit-verdict-why" id="gc-audit-verdict-why"></p>
+      <p class="audit-verdict-meta" id="gc-audit-verdict-meta"></p>
+    </div>
+
     <!-- State B (gated) informational note; shown by JS when not yet eligible -->
     <div id="gc-audit-gated" class="scheduled-notice" style="display:none;"></div>
 
-    <div class="audit-dates" style="margin:14px 0;">
+    <div class="audit-dates" id="gc-audit-dates" style="margin:14px 0;">
       <div class="audit-date-row">
         <span class="audit-date-label">Last audit</span>
         <span class="audit-date-value" id="gc-audit-last">—</span>
@@ -362,6 +389,19 @@
 
     <div class="billing-actions">
       <a href="/account/audit/" class="btn btn-primary" id="gc-audit-cta">Start pricing audit</a>
+    </div>
+
+    <div id="gc-audit-help" class="audit-help" style="display:none;">
+      <h3>Before you start</h3>
+      <p>The audit works best once you have paying customers and a few months of numbers. It is more useful the more of these you can answer:</p>
+      <ul>
+        <li>Monthly revenue (MRR) and number of customers</li>
+        <li>Monthly churn, and roughly when people leave: the first 14 days, weeks 2 to 8, or later</li>
+        <li>Your current price and plans, and when you last changed them</li>
+        <li>What happens at your pricing page: hesitation, discount requests, or people paying without pushback</li>
+        <li>Your checkout conversion rate, if you track it</li>
+      </ul>
+      <p>No paying customers yet? A regular session with Marcus covers the same ground without using your quarterly audit.</p>
     </div>
   </section>
 
