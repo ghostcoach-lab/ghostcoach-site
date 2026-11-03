@@ -474,10 +474,78 @@
   // ── 5b. Quarterly pricing audit ─────────────────────────────────────────────
   // The backend is authoritative for entitlement and cooldown timing. The
   // adapter keeps this section hidden until it receives a valid visible state.
+  // Builder users never reach the adapter: the audit is not on their plan, so
+  // they see a locked explanation with an Upgrade button instead.
+  const auditUpgradeBtn = document.getElementById('gc-audit-upgrade');
+  // The button only forwards to the existing Upgrade button, so the confirm
+  // prompt and the plan-change request stay in exactly one place.
+  if (auditUpgradeBtn) auditUpgradeBtn.addEventListener('click', () => { if (upBtn) upBtn.click(); });
+
+  function isBuilderPlan() {
+    // Read from the plan pill: the Upgrade handler updates it, so this stays
+    // right after an in-page upgrade without any change to billing code.
+    const pill = document.getElementById('gc-plan-pill');
+    return !!pill && pill.textContent.trim() === 'Builder';
+  }
+
+  function dateOnlyToLocal(value) {
+    const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(typeof value === 'string' ? value : '');
+    return m ? new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])) : null;
+  }
+
+  // Shows the most recent saved Verdict. Reads only this user's own rows
+  // (RLS: pricing_audits_select_own). Text goes in via textContent only.
+  async function renderLastVerdict() {
+    const card = document.getElementById('gc-audit-verdict');
+    if (!card) return;
+    card.style.display = 'none';
+    try {
+      const { data, error } = await gcSupabase
+        .from('pricing_audits')
+        .select('verdict_action, verdict_number, verdict_deadline, verdict_reasoning, completed_at')
+        .eq('user_id', userId)
+        .order('completed_at', { ascending: false })
+        .limit(1);
+      if (error || !Array.isArray(data) || data.length === 0) return;
+      const v = data[0];
+      const label = { raise: 'Raise', hold: 'Hold', restructure: 'Restructure' }[v.verdict_action];
+      if (!label || !v.verdict_reasoning) return;
+
+      document.getElementById('gc-audit-verdict-title').textContent =
+        v.verdict_number ? label + ': ' + v.verdict_number : label;
+      document.getElementById('gc-audit-verdict-why').textContent = v.verdict_reasoning;
+      const deadline = dateOnlyToLocal(v.verdict_deadline);
+      document.getElementById('gc-audit-verdict-meta').textContent =
+        'Given on ' + fmtDate(v.completed_at) + (deadline ? ' · Act by ' + fmtDate(deadline) : '');
+      card.style.display = 'block';
+    } catch (e) {
+      console.warn('Last pricing verdict unavailable:', e && e.message ? e.message : e);
+    }
+  }
+
   async function renderPricingAudit() {
     const section = document.getElementById('gc-audit-section');
     if (!section) return;
+    const locked = document.getElementById('gc-audit-locked');
+    const help = document.getElementById('gc-audit-help');
+    const dates = document.getElementById('gc-audit-dates');
+    const cta = document.getElementById('gc-audit-cta');
+    const gated = document.getElementById('gc-audit-gated');
+    if (locked) locked.style.display = 'none';
+    if (help) help.style.display = 'none';
 
+    if (GC.PRICING_AUDIT_ENABLED === true && isBuilderPlan()) {
+      if (cta) cta.style.display = 'none';
+      if (gated) gated.style.display = 'none';
+      if (dates) dates.style.display = 'none';
+      section.style.display = 'block';
+      if (locked) locked.style.display = 'block';
+      if (help) help.style.display = 'block';
+      await renderLastVerdict();
+      return;
+    }
+
+    if (dates) dates.style.display = '';
     await GCPricingAudit.loadAndRender({
       enabled: GC.PRICING_AUDIT_ENABLED,
       supabase: gcSupabase,
@@ -486,10 +554,17 @@
         section,
         last: document.getElementById('gc-audit-last'),
         next: document.getElementById('gc-audit-next'),
-        cta: document.getElementById('gc-audit-cta'),
-        gated: document.getElementById('gc-audit-gated')
+        cta,
+        gated
       }
     });
+    const verdictCard = document.getElementById('gc-audit-verdict');
+    if (section.style.display === 'none') {
+      if (verdictCard) verdictCard.style.display = 'none';
+      return;
+    }
+    if (help && cta && cta.style.display !== 'none') help.style.display = 'block';
+    await renderLastVerdict();
   }
   renderPricingAudit();
 
