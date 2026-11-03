@@ -4,6 +4,12 @@ export type TextReply =
   | { ok: true; text: string }
   | { ok: false; problem: "refusal" | "incomplete" | "no_text"; detail: string };
 
+export function readTextBlocks(content: ReadonlyArray<{ type?: string; text?: string } | null> = []): string {
+  return content
+    .flatMap((block) => block?.type === "text" && typeof block.text === "string" ? [block.text] : [])
+    .join("");
+}
+
 // Reads a Messages API response by block type. Thinking blocks come first and are skipped;
 // nothing assumes the first block is text.
 export function readTextReply(message: Anthropic.Message): TextReply {
@@ -13,10 +19,7 @@ export function readTextReply(message: Anthropic.Message): TextReply {
   if (message.stop_reason !== "end_turn" && message.stop_reason !== "stop_sequence") {
     return { ok: false, problem: "incomplete", detail: `stop_reason: ${message.stop_reason}` };
   }
-  const text = message.content
-    .flatMap((block) => block.type === "text" ? [block.text] : [])
-    .join("")
-    .trim();
+  const text = readTextBlocks(message.content).trim();
   if (!text) return { ok: false, problem: "no_text", detail: "response has no text blocks" };
   return { ok: true, text };
 }

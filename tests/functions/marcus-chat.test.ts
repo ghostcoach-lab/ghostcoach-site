@@ -398,3 +398,21 @@ test("a successful call logs only the rendered prompt hash and audit-block flag"
   ]]);
   assert.equal(JSON.stringify(calls.logs).includes("Coach the founder"), false);
 });
+
+for (const [name, content, expected] of [
+  ["thinking before text", [
+    { type: "thinking" },
+    { type: "text", text: "Hello " },
+    { type: "text", text: "there." },
+  ], "Hello there."],
+  ["text only", [{ type: "text", text: "Welcome." }], "Welcome."],
+  ["empty text", [{ type: "text", text: "" }], "I had trouble responding. Try again."],
+  ["no text", [{ type: "thinking" }], "I had trouble responding. Try again."],
+] as const) {
+  test("reply extraction: " + name, async () => {
+    const { handler } = setup({ createMessage: async () => ({ content }) });
+    const response = await handler(post({ messages: [], session_id: "session-1" }));
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { reply: expected });
+  });
+}

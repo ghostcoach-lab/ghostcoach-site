@@ -1,3 +1,4 @@
+import { readTextBlocks } from "../_shared/anthropic-response.ts";
 import { latestAudit, type LatestAuditRow, renderAuditBlock } from "./audit-block.ts";
 import { renderMarcusChatPrompt } from "./prompt.ts";
 
@@ -141,7 +142,7 @@ export function createMarcusChatHandler(
         system,
         messages,
       });
-      const reply = result.content?.[0]?.text ?? "I had trouble responding. Try again.";
+      const reply = readTextBlocks(result.content) || "I had trouble responding. Try again.";
       return json({ reply });
     } catch (error) {
       return internalError(error);
