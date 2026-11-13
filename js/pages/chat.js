@@ -53,6 +53,22 @@
     return data.id;
   }
 
+  // ── GA4 first_session_started ────────────────────────────────────────────────
+  // Every visit to /chat/ creates a session row, so "first" means: no other session
+  // row exists for this user. Fire-and-forget; analytics must never affect the chat.
+  async function trackFirstSession() {
+    try {
+      if (!window.GCTrack) return;
+      const { count, error } = await gcSupabase
+        .from('sessions')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .neq('id', sessionId);
+      if (error || count !== 0) return;
+      GCTrack.trackFirstSession(GCTrack.getSrc(session.user));
+    } catch (e) { /* ignore */ }
+  }
+
   // ── Markdown rendering for Marcus messages ───────────────────────────────────
   // SECURITY: Marcus's text is model-generated. We escape ALL HTML first, then
   // apply a deliberately tiny Markdown pass over the escaped string. Raw model
@@ -321,6 +337,7 @@
     ]);
     sessionId = sessionIdResult;
     setupGoalBar();
+    trackFirstSession();
 
     // Ask the Edge Function for a context-aware opener (empty messages = opener).
     // First-timers: opener reflects onboarding. Regulars: opener reflects history.

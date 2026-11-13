@@ -5,7 +5,11 @@ const GCAuth = {
 
   // Sign up with email + password.
   // Supabase sends a confirmation email. User must click before they can log in.
-  async signUp(email, password, plan) {
+  async signUp(email, password, plan, src) {
+    // src (optional) is the already-validated acquisition source from /signup/?src=.
+    // Stored on the account only when present; never invented.
+    const metadata = { plan: plan || 'builder' };
+    if (src) metadata.src = src;
     const { data, error } = await gcSupabase.auth.signUp({
       email,
       password,
@@ -13,7 +17,7 @@ const GCAuth = {
         // Redirect here after clicking the confirmation link in the email
         emailRedirectTo: window.location.origin + '/payment/',
         // Record the chosen plan on the account — read later by onboarding + n8n S1
-        data: { plan: plan || 'builder' }
+        data: metadata
       }
     });
     if (error) throw error;
