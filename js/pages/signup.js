@@ -17,6 +17,10 @@ function gcGetPlan() {
 
 const GC_SELECTED_PLAN = gcGetPlan();
 
+// Acquisition source from ?src= (validated, or null). Saved to sessionStorage so it
+// survives the Google OAuth redirect, and stored on the account at signup.
+const GC_SRC = (window.GCTrack && GCTrack.captureSrcFromUrl()) || null;
+
 // ── Render the chosen plan into the left column + step indicator ────
 function gcApplyPlan(plan) {
   const cfg = GC_PLANS[plan];
@@ -105,7 +109,11 @@ async function handleSocial(provider) {
     btnEl.textContent = 'Creating account…';
 
     try {
-      await GCAuth.signUp(emailEl.value.trim(), passEl.value, GC_SELECTED_PLAN);
+      const signUpResult = await GCAuth.signUp(emailEl.value.trim(), passEl.value, GC_SELECTED_PLAN, GC_SRC);
+      // GA4 sign_up. Supabase answers an already-registered email with a user that has
+      // no identities; that is not a new account, so it is not counted.
+      const existingEmail = !!(signUpResult && signUpResult.user && Array.isArray(signUpResult.user.identities) && signUpResult.user.identities.length === 0);
+      if (!existingEmail && window.GCTrack) GCTrack.trackSignUp('email', GC_SRC);
       form.innerHTML =
         '<p style="color:#0F1117;text-align:center;line-height:1.6">' +
           '<strong style="color:#C8861E">Check your inbox.</strong><br>' +

@@ -326,6 +326,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
   <script src="/js/supabase-client.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/webhooks.js"></script>
+  <script src="/js/analytics.js"></script>
   <script src="/js/pages/newsletter.js"></script>
 
 <script>
@@ -380,6 +381,15 @@ selectPlan(currentPlan);
       selectPlan(currentPlan);
     }
   } catch (e) { /* no session yet — keep the fallback plan already rendered */ }
+})();
+
+// GA4 + src: save the src captured on /signup/ to the account (Google flow) and fire
+// sign_up once for a newly created Google account. Never blocks the page.
+(async () => {
+  try {
+    const user = await GCAuth.getUser();
+    if (user && window.GCTrack) await GCTrack.onPaymentLanding(user);
+  } catch (e) { /* analytics must never break the payment page */ }
 })();
 
 // ── Phone field filter: digits, +, spaces, hyphens, parens only ───
@@ -585,8 +595,15 @@ async function handleStart(){
       // Non-blocking — keep going to /onboarding/. User can re-enter on /account/.
     }
 
-    // 4. Redirect to onboarding
-    window.location.href = '/onboarding/';
+    // 4. GA4 trial_started (Builder/Operator only; Lifetime is a separate purchase),
+    //    then redirect to onboarding. When analytics is accepted the redirect waits
+    //    up to 300 ms for the hit to go out; otherwise it redirects immediately.
+    const goOnboarding = () => { window.location.href = '/onboarding/'; };
+    if (window.GCTrack && (currentPlan === 'builder' || currentPlan === 'operator')) {
+      GCTrack.trackTrialStarted(currentPlan, GCTrack.getSrc(session && session.user)).then(goOnboarding, goOnboarding);
+    } else {
+      goOnboarding();
+    }
 
   } catch (err) {
     cardErrEl.textContent = err.message || 'Something went wrong. Please try again.';
