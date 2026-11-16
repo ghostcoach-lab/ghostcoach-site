@@ -27,11 +27,11 @@ const GC = {
   PRICING_AUDIT_ENABLED: true,
 
   // Stripe publishable key — safe for frontend
-  STRIPE_KEY: 'pk_test_51TTgErCwJBxjKaPH3yZRNzRYJBUTLOpTFNwn2IyA6jTwjji8aCr9kqER9dmoHSfCCMvnozznJeFxx1YNyANbgEnf00C3rGkj8j',
+  STRIPE_KEY: 'pk_live_51TVXLDB9jjODOg4lRu9v53PWpwuziCFILIeMk0fjVmWKtIh5GdS6Iosrp2f75JtlJ71uJlmYLaXkPBpQluNe3dai00ibEptsp7',
 
-  // Stripe price IDs (fill in after creating prices in Stripe dashboard)
-  STRIPE_PRICE_BUILDER:  'price_1TXNfhCwJBxjKaPH83K906vP',   // e.g. price_xxx
-  STRIPE_PRICE_OPERATOR: 'price_1Tnb9dCwJBxjKaPHEvMu7HKp',
+  // Stripe price IDs (LIVE mode)
+  STRIPE_PRICE_BUILDER:  'price_1URY0KB9jjODOg4lYde3nM8M',   // live Builder $79/mo
+  STRIPE_PRICE_OPERATOR: 'price_1URY0KB9jjODOg4lxCy2x3GL',   // live Operator
 
   // Webhook paths
   WEBHOOK: {
