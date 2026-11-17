@@ -316,7 +316,7 @@
     showOnly([]);
     const restartBtn = document.getElementById('gc-restart');
     if (restartBtn) {
-      restartBtn.href = '/payment/?plan=' + (plan === 'operator' ? 'operator' : 'builder');
+      restartBtn.href = '/payment/?plan=builder';   // Builder is the default; they can switch on the next page
       restartBtn.style.display = '';
     }
     const endedNote = document.getElementById('gc-scheduled-notice');
