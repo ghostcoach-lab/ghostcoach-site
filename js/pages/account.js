@@ -276,9 +276,9 @@
   const PLAN_LABELS = { builder:'Builder', operator:'Operator', lifetime:'Lifetime' };
   document.getElementById('gc-plan-pill').textContent = PLAN_LABELS[plan] || 'Builder';
   // An ended subscription has nothing left to upgrade, downgrade or cancel.
-  const isEnded = status === 'canceled' || status === 'cancelled';
+  const isEnded = ['canceled', 'cancelled', 'incomplete', 'incomplete_expired'].includes(status);
   let statusText = status;
-  if (isEnded) statusText = 'Subscription ended';
+  if (isEnded) statusText = status.startsWith('incomplete') ? 'Payment not completed' : 'Subscription ended';
   else if (subscription.cancel_at_period_end) statusText = 'Cancels at period end';
   else if (status === 'trialing' || status === 'trial') statusText = '14-day trial';
   else if (status === 'active') statusText = 'Active';
@@ -321,7 +321,9 @@
     }
     const endedNote = document.getElementById('gc-scheduled-notice');
     if (endedNote) {
-      endedNote.textContent = 'Your subscription has ended. Restart your plan to keep coaching with Marcus.';
+      endedNote.textContent = status.startsWith('incomplete')
+        ? 'Your last payment was not completed, so your plan is not active yet. Restart your plan to continue.'
+        : 'Your subscription has ended. Restart your plan to keep coaching with Marcus.';
       endedNote.style.display = 'block';
     }
   }
