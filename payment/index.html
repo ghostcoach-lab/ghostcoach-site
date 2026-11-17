@@ -598,11 +598,12 @@ async function handleStart(){
     // 4. GA4 trial_started (Builder/Operator only; Lifetime is a separate purchase),
     //    then redirect to onboarding. When analytics is accepted the redirect waits
     //    up to 300 ms for the hit to go out; otherwise it redirects immediately.
-    // One-time flag so /onboarding/ can confirm "trial started". Trial plans only:
-    // Lifetime is a one-time charge and must not say "you won't be charged".
+    // One-time flag so /onboarding/ can confirm the purchase with the right wording:
+    // trial plans -> "trial started"; Lifetime -> "payment received" (it is a one-time
+    // charge, so it must never say "you won't be charged").
     try {
-      if (currentPlan === 'builder' || currentPlan === 'operator') {
-        sessionStorage.setItem('gc_trial_started', currentPlan);
+      if (currentPlan === 'builder' || currentPlan === 'operator' || currentPlan === 'lifetime') {
+        sessionStorage.setItem('gc_checkout_done', currentPlan);
       }
     } catch (e) { /* storage unavailable — the banner is optional */ }
     const goOnboarding = () => { window.location.href = '/onboarding/'; };

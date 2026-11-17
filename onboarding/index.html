@@ -404,7 +404,7 @@
     <div class="wizard-header">
       <div class="trial-banner" id="trial-banner" role="status" hidden>
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M4.8 8.3l2.2 2.2 4.2-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        <span>Card verified. Your 14-day free trial has started. You won’t be charged until it ends.</span>
+        <span id="trial-banner-text">Card verified. Your 14-day free trial has started. You won’t be charged until it ends.</span>
       </div>
       <div class="eyebrow">Welcome to GhostCoach</div>
       <h1 class="wizard-title">Let's get <em>Marcus</em> ready for your first session</h1>
@@ -650,14 +650,21 @@
     // v24: no need to recreate the client — supabase-client.js already created window.gcSupabase
     gcUser = { id: session.user.id, email: session.user.email };
 
-    // Trial confirmation: /payment/ leaves a one-time flag after a successful
-    // Builder/Operator trial start. Shown only for those plans; cleared when the
-    // form is submitted. Purely informational — never blocks the form.
+    // Purchase confirmation: /payment/ leaves a one-time flag after a successful
+    // checkout. Trial plans (Builder/Operator) and Lifetime get different wording.
+    // Cleared when the form is submitted. Purely informational — never blocks the form.
     try {
-      const startedPlan = sessionStorage.getItem('gc_trial_started');
-      if (startedPlan === 'builder' || startedPlan === 'operator') {
-        const banner = document.getElementById('trial-banner');
-        if (banner) banner.hidden = false;
+      const donePlan = sessionStorage.getItem('gc_checkout_done');
+      const bannerText = {
+        builder:  'Card verified. Your 14-day free trial has started. You won\u2019t be charged until it ends.',
+        operator: 'Card verified. Your 14-day free trial has started. You won\u2019t be charged until it ends.',
+        lifetime: 'Payment received. Your Lifetime access is active.'
+      }[donePlan];
+      const banner = document.getElementById('trial-banner');
+      const textEl = document.getElementById('trial-banner-text');
+      if (bannerText && banner && textEl) {
+        textEl.textContent = bannerText;
+        banner.hidden = false;
       }
     } catch (e) { /* sessionStorage unavailable — no banner, no harm */ }
 
@@ -963,7 +970,7 @@
 
     // Clear partial state
     try { sessionStorage.removeItem('gc_onboarding_partial'); } catch (e) {}
-    try { sessionStorage.removeItem('gc_trial_started'); } catch (e) {}
+    try { sessionStorage.removeItem('gc_checkout_done'); } catch (e) {}
 
     // Show success overlay, then redirect to chat
     document.getElementById('successOverlay').classList.add('visible');
