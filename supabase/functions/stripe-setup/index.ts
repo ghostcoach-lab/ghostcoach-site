@@ -4,7 +4,8 @@
 //   builder / operator -> 14-day trialing subscription
 //   lifetime           -> one-time $499 charge (no trial, no subscription)
 // Returning customer (users.status = 'canceled', had builder/operator):
-//   -> new subscription on the SAME plan, NO trial, charged immediately.
+//   -> new subscription on the plan they choose (Builder default), NO trial, charged
+//      immediately. Lifetime stays a one-time charge.
 //      If the bank asks for 3-D Secure the function answers requires_action
 //      with a client_secret and the page finishes the payment.
 // For trials, the customer.subscription.created Stripe
@@ -65,19 +66,18 @@ serve(async (req) => {
     if (userRecord.status !== 'pending' && !isReturning) {
       return json({ error: 'Trial already activated', status: userRecord.status }, 409);
     }
-    if (isReturning && userRecord.plan !== 'builder' && userRecord.plan !== 'operator') {
-      return json({ error: 'This account has no plan to restart.' }, 400);
-    }
 
     // Plan: the page may let the visitor switch plan on /payment/, so accept it
     // (whitelisted) and fall back to the plan stored at signup.
     const ALLOWED = ['builder', 'operator', 'lifetime'];
-    // A returning customer always restarts the plan they had: the requested plan is ignored.
-    const plan: string = isReturning ? userRecord.plan
-                       : ALLOWED.includes(requestedPlan) ? requestedPlan
+    // A returning customer picks their plan on the page (Builder by default).
+    const plan: string = ALLOWED.includes(requestedPlan) ? requestedPlan
+                       : isReturning ? 'builder'
                        : ALLOWED.includes(userRecord.plan) ? userRecord.plan
                        : 'builder';
-    if (plan !== userRecord.plan) {
+    // For a returning customer the stored plan is only changed after payment succeeds,
+    // so a declined card never leaves the account on a plan they did not get.
+    if (plan !== userRecord.plan && !isReturning) {
       await supabase.from('users').update({ plan }).eq('id', user.id);
     }
 
@@ -161,6 +161,7 @@ serve(async (req) => {
 
       if (sub.status === 'active') {
         await supabase.from('users').update({
+          plan,
           status:                 'active',
           stripe_subscription_id: sub.id,
         }).eq('id', user.id);

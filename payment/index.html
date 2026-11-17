@@ -387,7 +387,7 @@ const planResolved = (async () => {
       const { data: row } = await gcSupabase.from('users').select('plan, status').eq('id', user.id).maybeSingle();
       if (row && ['canceled', 'incomplete', 'incomplete_expired'].includes(row.status) && (row.plan === 'builder' || row.plan === 'operator')) {
         isReturning = true;
-        currentPlan = row.plan;
+        currentPlan = 'builder';   // returning customers start on Builder; they can switch below
         selectPlan(currentPlan);
         // Their details are already saved: prefill so the button can enable.
         const { data: prof } = await gcSupabase.from('profiles').select('firstname, lastname, phone, country').eq('user_id', user.id).maybeSingle();
@@ -461,6 +461,7 @@ function selectPlan(plan){
 // No free trial the second time: the card is charged today. The page must say so.
 const RETURN_PRICE = { builder: '$79', operator: '$99' };
 function applyReturningCopy(plan){
+  if (plan === 'lifetime') { applyReturningLifetimeCopy(); return; }
   const price = RETURN_PRICE[plan] || RETURN_PRICE.builder;
   const name = plan === 'operator' ? 'Operator' : 'Builder';
   const trialNote = document.querySelector('.trial-note');
@@ -477,13 +478,30 @@ function applyReturningCopy(plan){
   }
   const whyBox = document.querySelector('.why-box');
   if (whyBox) whyBox.style.display = 'none';
-  const planField = document.getElementById('plan-field');
-  if (planField) planField.style.display = 'none';
   const cta = document.getElementById('cta-btn');
   if (cta) cta.textContent = 'Restart my plan \u2014 pay ' + price + ' \u2192';
   const step3 = document.getElementById('step3-label');
   if (step3) step3.textContent = 'Restart plan';
   document.getElementById('profile-plan-label').textContent = name + ' plan \u00B7 restart';
+}
+function applyReturningLifetimeCopy(){
+  const trialNote = document.querySelector('.trial-note');
+  if (trialNote) {
+    trialNote.style.display = '';
+    trialNote.textContent = '';
+    const strong = document.createElement('strong');
+    strong.textContent = 'Welcome back.';
+    trialNote.appendChild(strong);
+    trialNote.appendChild(document.createTextNode(
+      ' Lifetime is a one-time payment of $499, with no monthly fee. Your card is charged today.'
+    ));
+  }
+  const whyBox = document.querySelector('.why-box');
+  if (whyBox) whyBox.style.display = 'none';
+  const cta = document.getElementById('cta-btn');
+  if (cta) cta.textContent = 'Get lifetime access \u2014 pay $499 \u2192';
+  const step3 = document.getElementById('step3-label');
+  if (step3) step3.textContent = 'Restart plan';
 }
 
 // ── Stripe Elements (v28) ─────────────────────────────────────
@@ -638,7 +656,11 @@ async function handleStart(){
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.access_token}`
       },
-      body: JSON.stringify({ payment_method_id: paymentMethod.id })
+      // New customers: the server uses the plan stored on the account (unchanged).
+      // Returning customers choose their plan on this page, so it is sent along.
+      body: JSON.stringify(isReturning
+        ? { payment_method_id: paymentMethod.id, plan: currentPlan }
+        : { payment_method_id: paymentMethod.id })
     });
     // 401 = the server did not accept the login: same clear message + way forward.
     if (res.status === 401) {
