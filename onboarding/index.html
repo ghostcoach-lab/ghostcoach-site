@@ -51,6 +51,26 @@
     letter-spacing: 1.4px;
     margin-bottom: 14px;
   }
+  /* One-time confirmation shown right after a trial starts (set by /payment/). */
+  .trial-banner {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: 10px;
+    max-width: 100%;
+    margin: 0 auto 26px auto;
+    padding: 12px 18px;
+    background: rgba(11,122,96,0.08);
+    border: 1px solid rgba(11,122,96,0.28);
+    border-radius: 12px;
+    color: var(--teal);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .trial-banner[hidden] { display: none; }
+  .trial-banner svg { flex: 0 0 auto; margin-top: 3px; }
   .wizard-title {
     font-family: 'Playfair Display', serif;
     font-size: 42px;
@@ -382,6 +402,10 @@
 <main>
   <div class="wizard">
     <div class="wizard-header">
+      <div class="trial-banner" id="trial-banner" role="status" hidden>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="7.25" stroke="currentColor" stroke-width="1.5"/><path d="M4.8 8.3l2.2 2.2 4.2-4.6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span id="trial-banner-text">Card verified. Your 14-day free trial has started. You won’t be charged until it ends.</span>
+      </div>
       <div class="eyebrow">Welcome to GhostCoach</div>
       <h1 class="wizard-title">Let's get <em>Marcus</em> ready for your first session</h1>
       <p class="wizard-subtitle">Two short steps. The more honest you are here, the more specific Marcus can be from your very first message.</p>
@@ -625,6 +649,24 @@
     if (!session) return;
     // v24: no need to recreate the client — supabase-client.js already created window.gcSupabase
     gcUser = { id: session.user.id, email: session.user.email };
+
+    // Purchase confirmation: /payment/ leaves a one-time flag after a successful
+    // checkout. Trial plans (Builder/Operator) and Lifetime get different wording.
+    // Cleared when the form is submitted. Purely informational — never blocks the form.
+    try {
+      const donePlan = sessionStorage.getItem('gc_checkout_done');
+      const bannerText = {
+        builder:  'Card verified. Your 14-day free trial has started. You won\u2019t be charged until it ends.',
+        operator: 'Card verified. Your 14-day free trial has started. You won\u2019t be charged until it ends.',
+        lifetime: 'Payment received. Your Lifetime access is active.'
+      }[donePlan];
+      const banner = document.getElementById('trial-banner');
+      const textEl = document.getElementById('trial-banner-text');
+      if (bannerText && banner && textEl) {
+        textEl.textContent = bannerText;
+        banner.hidden = false;
+      }
+    } catch (e) { /* sessionStorage unavailable — no banner, no harm */ }
 
     // If the user has already completed onboarding, they shouldn't see the form
     // again (e.g. they followed a "set up your business" email link or hit back).
@@ -928,6 +970,7 @@
 
     // Clear partial state
     try { sessionStorage.removeItem('gc_onboarding_partial'); } catch (e) {}
+    try { sessionStorage.removeItem('gc_checkout_done'); } catch (e) {}
 
     // Show success overlay, then redirect to chat
     document.getElementById('successOverlay').classList.add('visible');
