@@ -275,8 +275,11 @@
   const status = userRow.status || subscription.status || 'trial';
   const PLAN_LABELS = { builder:'Builder', operator:'Operator', lifetime:'Lifetime' };
   document.getElementById('gc-plan-pill').textContent = PLAN_LABELS[plan] || 'Builder';
+  // An ended subscription has nothing left to upgrade, downgrade or cancel.
+  const isEnded = ['canceled', 'cancelled', 'incomplete', 'incomplete_expired'].includes(status);
   let statusText = status;
-  if (subscription.cancel_at_period_end) statusText = 'Cancels at period end';
+  if (isEnded) statusText = status.startsWith('incomplete') ? 'Payment not completed' : 'Subscription ended';
+  else if (subscription.cancel_at_period_end) statusText = 'Cancels at period end';
   else if (status === 'trialing' || status === 'trial') statusText = '14-day trial';
   else if (status === 'active') statusText = 'Active';
   else if (status === 'past_due') statusText = 'Payment past due';
@@ -306,8 +309,27 @@
     showOnly([upBtn, lifeBtn, cancelBtn]);
   }
 
+  // Ended subscription: hide every plan-change action (they would act on a
+  // subscription that no longer exists) and offer a restart through the card page.
+  // Restarting is a new paid subscription — no second free trial.
+  if (isEnded && plan !== 'lifetime') {
+    showOnly([]);
+    const restartBtn = document.getElementById('gc-restart');
+    if (restartBtn) {
+      restartBtn.href = '/payment/?plan=' + (plan === 'operator' ? 'operator' : 'builder');
+      restartBtn.style.display = '';
+    }
+    const endedNote = document.getElementById('gc-scheduled-notice');
+    if (endedNote) {
+      endedNote.textContent = status.startsWith('incomplete')
+        ? 'Your last payment was not completed, so your plan is not active yet. Restart your plan to continue.'
+        : 'Your subscription has ended. Restart your plan to keep coaching with Marcus.';
+      endedNote.style.display = 'block';
+    }
+  }
+
   // If a downgrade is already scheduled, surface the persistent notice
-  if (subscription.cancel_at_period_end) {
+  if (!isEnded && subscription.cancel_at_period_end) {
     const note = document.getElementById('gc-scheduled-notice');
     if (note) {
       note.textContent = 'Your subscription ends ' + fmtDate(periodEnd) + '. Access continues until then.';

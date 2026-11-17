@@ -152,7 +152,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
     <div class="step-line"></div>
     <div class="step-col">
       <div class="step-dot dot-idle">3</div>
-      <div class="step-label label-idle">Start trial</div>
+      <div class="step-label label-idle" id="step3-label">Start trial</div>
     </div>
   </div>
 
@@ -204,7 +204,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,17,23,0.9
         <input type="text" id="p-referral-source" placeholder="Optional — I read every one of these" autocomplete="off" maxlength="200">
       </div>
 
-      <div class="field">
+      <div class="field" id="plan-field">
         <label>Your plan</label>
         <div class="plan-row">
           <div class="plan-opt sel" id="opt-builder" onclick="selectPlan('builder')">
@@ -369,16 +369,37 @@ if(saved.firstname){
 //   2. ?plan= URL param — present on the direct OAuth redirect, absent after email confirm.
 //   3. gc_signup sessionStorage — last-ditch, same-tab only.
 // Render Builder immediately so the page isn't blank, then upgrade once metadata loads.
+let isReturning = false;   // true when the subscription has ended and the customer is restarting
 if(saved.plan) currentPlan = saved.plan;
 selectPlan(currentPlan);
 
-(async () => {
+const planResolved = (async () => {
   try {
     const user = await GCAuth.getUser();
     const metaPlan = user && user.user_metadata && user.user_metadata.plan;
     if (metaPlan && metaPlan !== currentPlan) {
       currentPlan = metaPlan;
       selectPlan(currentPlan);
+    }
+    // Returning customer: their subscription ended. The plan then comes from the
+    // account itself (what they had), not from signup metadata or the URL.
+    if (user) {
+      const { data: row } = await gcSupabase.from('users').select('plan, status').eq('id', user.id).maybeSingle();
+      if (row && ['canceled', 'incomplete', 'incomplete_expired'].includes(row.status) && (row.plan === 'builder' || row.plan === 'operator')) {
+        isReturning = true;
+        currentPlan = row.plan;
+        selectPlan(currentPlan);
+        // Their details are already saved: prefill so the button can enable.
+        const { data: prof } = await gcSupabase.from('profiles').select('firstname, lastname, phone, country').eq('user_id', user.id).maybeSingle();
+        if (prof) {
+          if (prof.firstname) document.getElementById('p-firstname').value = prof.firstname;
+          if (prof.lastname)  document.getElementById('p-lastname').value  = prof.lastname;
+          if (prof.phone)     document.getElementById('p-phone').value     = prof.phone;
+          if (prof.country)   document.getElementById('p-country').value   = prof.country;
+          updateAvatar();
+          validateCard();
+        }
+      }
     }
   } catch (e) { /* no session yet — keep the fallback plan already rendered */ }
 })();
@@ -433,6 +454,36 @@ function selectPlan(plan){
   else if(plan === 'operator') label = 'Operator plan · 14-day trial';
   else label = 'Builder plan · 14-day trial';
   document.getElementById('profile-plan-label').textContent = label;
+  if (isReturning) applyReturningCopy(plan);
+}
+
+// ── Returning customer (subscription ended, restarting) ──────
+// No free trial the second time: the card is charged today. The page must say so.
+const RETURN_PRICE = { builder: '$79', operator: '$99' };
+function applyReturningCopy(plan){
+  const price = RETURN_PRICE[plan] || RETURN_PRICE.builder;
+  const name = plan === 'operator' ? 'Operator' : 'Builder';
+  const trialNote = document.querySelector('.trial-note');
+  if (trialNote) {
+    trialNote.style.display = '';
+    trialNote.textContent = '';
+    const strong = document.createElement('strong');
+    strong.textContent = 'Welcome back.';
+    trialNote.appendChild(strong);
+    trialNote.appendChild(document.createTextNode(
+      ' Your card is charged ' + price + ' today for your first month of ' + name + ', then ' + price +
+      ' a month until you cancel. The 14-day free trial is for new accounts only.'
+    ));
+  }
+  const whyBox = document.querySelector('.why-box');
+  if (whyBox) whyBox.style.display = 'none';
+  const planField = document.getElementById('plan-field');
+  if (planField) planField.style.display = 'none';
+  const cta = document.getElementById('cta-btn');
+  if (cta) cta.textContent = 'Restart my plan \u2014 pay ' + price + ' \u2192';
+  const step3 = document.getElementById('step3-label');
+  if (step3) step3.textContent = 'Restart plan';
+  document.getElementById('profile-plan-label').textContent = name + ' plan \u00B7 restart';
 }
 
 // ── Stripe Elements (v28) ─────────────────────────────────────
@@ -503,7 +554,7 @@ async function getUsableSession(){
 function showSessionExpired(){
   cardErrEl.textContent = '';
   cardErrEl.appendChild(document.createTextNode(
-    'We couldn’t confirm your sign-in, so your trial has not started and your card has not been charged. '
+    'We couldn’t confirm your sign-in, so your ' + (isReturning ? 'plan has not restarted' : 'trial has not started') + ' and your card has not been charged. '
   ));
   const link = document.createElement('a');
   link.href = '/login/?next=' + encodeURIComponent('/payment/?plan=' + currentPlan);
@@ -521,6 +572,7 @@ async function handleStart(){
   const originalText = btn.textContent;
   btn.disabled = true;
   btn.textContent = 'Processing…';
+  await planResolved;   // plan + returning-customer check must be settled first
 
   // Save profile fields for onboarding continuity
   const profile = {
@@ -598,6 +650,13 @@ async function handleStart(){
     const resData = await res.json();
     if (!res.ok) throw new Error(resData.error || 'Could not start. Please try again.');
 
+    // Returning customer whose bank asks for extra confirmation (3-D Secure):
+    // the server hands back a secret and we finish the payment here.
+    if (resData.requires_action && resData.client_secret) {
+      const { error: confirmError } = await stripe.confirmCardPayment(resData.client_secret);
+      if (confirmError) throw new Error(confirmError.message || 'The bank did not confirm the payment. Please try again.');
+    }
+
     // Re-resolve userId from the session we just confirmed works (used above for
     // stripe-setup). The earlier getSession() at the top of handleStart() can
     // return null if the session hadn't finished hydrating on page load — common
@@ -616,7 +675,7 @@ async function handleStart(){
     //    name/phone/country live in sessionStorage only and never reach /account/.
     //    n8n S2 (onboarding) later UPDATEs the same row with business fields.
     try {
-      if (userId) {
+      if (userId && !isReturning) {   // returning customers already have their details saved
         // Core personal fields — these must always save.
         const corePayload = {
           user_id:    userId,
@@ -655,6 +714,22 @@ async function handleStart(){
     // 4. GA4 trial_started (Builder/Operator only; Lifetime is a separate purchase),
     //    then redirect to onboarding. When analytics is accepted the redirect waits
     //    up to 300 ms for the hit to go out; otherwise it redirects immediately.
+    // Returning customer (plan restarted, no trial): no trial banner, no trial analytics.
+    // They have already onboarded, so go straight to their account.
+    if (isReturning) {
+      // After a 3-D Secure confirmation the account turns active a moment later (Stripe
+      // webhook). Wait up to ~15 s so /account/ does not show the old status.
+      for (let i = 0; i < 10; i++) {
+        try {
+          const { data: st } = await gcSupabase.from('users').select('status').eq('id', userId).maybeSingle();
+          if (st && st.status === 'active') break;
+        } catch (e) { /* keep waiting */ }
+        await new Promise(r => setTimeout(r, 1500));
+      }
+      window.location.href = '/account/';
+      return;
+    }
+
     // One-time flag so /onboarding/ can confirm the purchase with the right wording:
     // trial plans -> "trial started"; Lifetime -> "payment received" (it is a one-time
     // charge, so it must never say "you won't be charged").
