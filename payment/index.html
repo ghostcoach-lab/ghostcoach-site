@@ -656,11 +656,9 @@ async function handleStart(){
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${session.access_token}`
       },
-      // New customers: the server uses the plan stored on the account (unchanged).
-      // Returning customers choose their plan on this page, so it is sent along.
-      body: JSON.stringify(isReturning
-        ? { payment_method_id: paymentMethod.id, plan: currentPlan }
-        : { payment_method_id: paymentMethod.id })
+      // The plan chosen on this page. The server only accepts builder/operator/lifetime
+      // and stores it on the account, so the switcher decides what is charged.
+      body: JSON.stringify({ payment_method_id: paymentMethod.id, plan: currentPlan })
     });
     // 401 = the server did not accept the login: same clear message + way forward.
     if (res.status === 401) {
