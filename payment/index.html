@@ -473,6 +473,48 @@ function validateCard(){
   btn.disabled = !(cardComplete && firstname && country);
 }
 
+// ── Login check before taking a payment ───────────────────────
+// The payment function only accepts a signed-in user. If the login on this
+// page has gone stale (page left open, token expired, session revoked) the
+// function answers "Unauthorized". Check and renew the login BEFORE we ask
+// Stripe to tokenise the card, so the customer never sees that bare word.
+async function getUsableSession(){
+  const renew = async () => {
+    const { data, error } = await gcSupabase.auth.refreshSession();
+    return error ? null : ((data && data.session) || null);
+  };
+  let session = await GCAuth.getSession();
+  const nowSec = Math.floor(Date.now() / 1000);
+  // No session, or the token expires within 2 minutes: renew it now.
+  if (!session || !session.access_token || (session.expires_at && session.expires_at - nowSec < 120)) {
+    session = await renew();
+  }
+  if (!session || !session.access_token) return null;
+  // Ask Supabase Auth whether it still accepts this token; if not, renew once.
+  const { data: checked, error: checkError } = await gcSupabase.auth.getUser(session.access_token);
+  if (checkError || !checked || !checked.user) {
+    session = await renew();
+    if (!session || !session.access_token) return null;
+  }
+  return session;
+}
+
+// Plain-language message with a way forward. Built with DOM nodes, not innerHTML.
+function showSessionExpired(){
+  cardErrEl.textContent = '';
+  cardErrEl.appendChild(document.createTextNode(
+    'We couldn’t confirm your sign-in, so your trial has not started and your card has not been charged. '
+  ));
+  const link = document.createElement('a');
+  link.href = '/login/?next=' + encodeURIComponent('/payment/?plan=' + currentPlan);
+  link.textContent = 'Sign in again to continue';
+  link.style.color = 'inherit';
+  link.style.textDecoration = 'underline';
+  cardErrEl.appendChild(link);
+  cardErrEl.appendChild(document.createTextNode('.'));
+  cardErrEl.style.display = 'block';
+}
+
 // ── Start trial (v28: Stripe createPaymentMethod → n8n S5) ─────
 async function handleStart(){
   const btn = document.getElementById('cta-btn');
@@ -514,6 +556,15 @@ async function handleStart(){
     : (currentPlan === 'lifetime' ? (GC.STRIPE_PRICE_LIFETIME || null) : GC.STRIPE_PRICE_BUILDER);
 
   try {
+    // 0. Make sure the login is still valid before touching the card
+    const session = await getUsableSession();
+    if (!session) {
+      showSessionExpired();
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return;
+    }
+
     // 1. Tokenise card via Stripe.js — card data never touches our code
     const { paymentMethod, error } = await stripe.createPaymentMethod({
       type: 'card',
@@ -529,15 +580,21 @@ async function handleStart(){
     }
 
     // 2. Call Supabase Edge Function to create the Stripe subscription
-    const session = await GCAuth.getSession();
     const res = await fetch(`${GC.SUPABASE_URL}/functions/v1/stripe-setup`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token}`
+        'Authorization': `Bearer ${session.access_token}`
       },
       body: JSON.stringify({ payment_method_id: paymentMethod.id })
     });
+    // 401 = the server did not accept the login: same clear message + way forward.
+    if (res.status === 401) {
+      showSessionExpired();
+      btn.disabled = false;
+      btn.textContent = originalText;
+      return;
+    }
     const resData = await res.json();
     if (!res.ok) throw new Error(resData.error || 'Could not start. Please try again.');
 
