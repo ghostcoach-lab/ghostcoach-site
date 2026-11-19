@@ -83,7 +83,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "Can I use Claude for business coaching?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes, and for many solo founders it is enough. Claude reasons well about strategy, holds long context, and Projects let you store a business brief that persists across conversations. The gaps are that stored context is not automatically applied, the default answer is balanced rather than committed, and nothing follows up between sessions."
+        "text": "Yes. Claude reasons well about strategy, and a Project can hold a business brief that loads into every chat in it. The gap is structure: nothing makes Claude commit to one recommendation, and the brief stays current only if you update it."
       }
     },
     {
@@ -91,7 +91,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "Do Claude Projects give it memory of my business?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Projects store context and make it available, which solves the problem of re-explaining your business each session. They do not force that context into the shape of a decision - whether the brief gets used still depends on how you phrase each question."
+        "text": "Partly. A Project loads the brief you wrote into every chat in it, and Claude’s memory feature can recall details from past chats, depending on your plan and settings. Both are free-form. Claude works from what you wrote and what it recalls, not from a structured profile."
       }
     },
     {
@@ -99,7 +99,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "How much does Claude cost compared to a business coach?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Claude Pro is $20 a month. Purpose-built AI coaching tools generally run $20 to $150 a month, and human business coaching typically costs $500 to $2,000 a month. The three do different jobs, so the cost comparison only matters once you know which job you need."
+        "text": "Claude Pro is $20 a month billed monthly, or $17 a month billed annually ($200 up front). Purpose-built AI coaching tools run $29–$149 a month. Human business coaching is priced by each coach and varies widely."
       }
     },
     {
@@ -107,7 +107,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "Is Claude better than ChatGPT for business coaching?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Both are strong general models with the same structural limits for coaching. Claude Projects offer somewhat better context persistence for this use case. Neither commits to a single recommendation by default, and neither follows up between sessions."
+        "text": "Neither is better overall. Both are strong general models with Projects and memory features. Both share the same structural limit for coaching: nothing makes them apply a framework or commit to one recommendation unless you instruct them each time."
       }
     },
     {
@@ -129,17 +129,17 @@ footer{background:#0F1117;padding:32px 0;}
   </a>
   <a href="https://getghostcoach.com/" style="font-size:13px;color:rgba(247,245,240,0.6);text-decoration:none;border:0.5px solid rgba(247,245,240,0.2);border-radius:8px;padding:7px 16px;flex-shrink:0;font-family:'DM Sans',sans-serif;">← Back to home</a>
 </nav><section class="hero"><div class="hg"></div><div class="container" style="position:relative;z-index:1;"><div class="eyebrow">AI Self-Coaching · Claude</div><h1>Using Claude as a <em>Business Coach</em></h1><p class="hero-sub">Claude is one of the most capable AI models available. Using it as a business coach requires more than a good prompt — here is the setup that makes it work, and what a purpose-built coaching tool adds.</p></div></section><section class="article"><div class="container"><div class="toc"><div class="toc-title">In this guide</div><a href="#works">What makes Claude useful for business coaching</a><a href="#setup">The setup that makes it work</a><a href="#prompts">The prompts that get specific answers</a><a href="#limitations">What Claude cannot do without a framework</a><a href="#ghostcoach">What GhostCoach adds on top of Claude</a><a href="#breaks">Where Claude alone breaks down</a><a href="#faq">Claude for business coaching FAQ</a></div>
-<p>Claude is one of the best underlying AI models for business coaching. It is capable of nuanced analysis, comfortable with specific business decisions, and produces output that is meaningfully better than generic advice when prompted correctly. The question is how to prompt it in a way that produces specific recommendations rather than balanced overviews.</p>
+<p>Claude can coach a solo founder on business strategy if you give it a written business brief and a framework. A dedicated tool applies both automatically. It is capable of nuanced analysis, comfortable with specific business decisions, and produces output that is meaningfully better than generic advice when prompted correctly. The question is how to prompt it in a way that produces specific recommendations rather than balanced overviews.</p>
 <p>This guide covers how to use Claude effectively as a business coach — and what a purpose-built tool built on the Claude API (like GhostCoach) adds on top of the raw model.</p>
 
 <h2 id="works">What makes Claude useful for business coaching</h2>
 <p>Claude's particular strength for business coaching is its willingness to make specific recommendations when explicitly asked. Unlike models that default to balanced overviews, Claude responds well to instructions that say "give me one recommendation, not a list of options." This makes it more useful than most AI tools for the type of advice founders actually need.</p>
 <p>Claude is also good at applying a framework if you give it one. If you paste in a structured approach to pricing decisions or churn diagnosis, it will apply that framework consistently to your specific situation. The limitation is that you have to provide the framework — and know what framework to use.</p>
 
-<div class="marcus-says"><div class="ml">Marcus · GhostCoach's AI coach</div><div class="mq">"Claude is the model I am built on. The difference between talking to Claude and talking to me is not the underlying capability — it is what happens before and around the conversation. The Ghost OS framework I apply is built from decades of expertise from SaaS founders, operators, and advisors — not just AI training data. I know your product, your stage, your bottleneck, and your 90-day goal before you say a word. And I remember what we worked on last time."</div></div>
+<div class="marcus-says"><div class="ml">Marcus · GhostCoach's AI coach</div><div class="mq">"I start every session from your saved business profile: your product, your stage and your bottleneck. A summary of your recent sessions loads with it, so I build on what you decided last time."</div></div>
 
 <h2 id="setup">The setup that makes it work</h2>
-<p>To use Claude effectively as a business coach, set up a Claude Project with a detailed system prompt before you start any business coaching conversation. The system prompt should include:</p>
+<p>Set up a Claude Project once, before your first coaching conversation, and update it when your business changes. The Project’s instructions should include:</p>
 <ul>
 <li>Your product description (what it does, who it is for, what it replaces)</li>
 <li>Your current stage (pre-launch, just launched, or growing with specific MRR)</li>
@@ -152,17 +152,17 @@ footer{background:#0F1117;padding:32px 0;}
 
 <h2 id="prompts">Claude business coach prompts that work</h2>
 <p>The most effective Claude prompts for business coaching share three characteristics: they provide specific context, they ask for a specific recommendation, and they include the constraint "not a list of options."</p>
-<div class="callout"><p>Example prompt: "I'm a solopreneur building a scheduling tool for independent therapists. I've had 4 paying customers at $29/month for 6 weeks and 340 free signups who never converted. My 90-day goal is $2,000 MRR. What is the single most important thing I should diagnose first — and what action does that diagnosis suggest? Give me one specific recommendation, not a list of options."</p></div>
+<div class="callout"><p>Illustrative example prompt (the numbers are invented): "I'm a solopreneur building a scheduling tool for independent therapists. I've had 4 paying customers at $29/month for 6 weeks and 340 free signups who never converted. My 90-day goal is $2,000 MRR. What is the single most important thing I should diagnose first — and what action does that diagnosis suggest? Give me one specific recommendation, not a list of options."</p></div>
 <p>The prompt structure that consistently works: situation → specific metric → goal → explicit request for one recommendation. This format forces Claude to commit to an answer rather than providing options.</p>
 <p><a href="/ai-self-coaching/prompts/">See the full AI business coaching prompt library →</a></p>
 
 <h2 id="limitations">What Claude cannot do without a framework</h2>
 <p>Without a built-in SaaS framework, Claude applies general business knowledge to your situation. This produces advice that is often correct in the abstract but may not account for the specific economics of subscription software — what a healthy trial-to-paid conversion rate looks like at your price point, what monthly churn percentage indicates a structural problem vs expected attrition, how to anchor pricing against the alternative rather than the competition. Pasting in <a href="/frameworks/">SaaS frameworks for solo founders</a> before you ask closes some of that gap.</p>
-<p>The other limitation: Claude does not remember your business between conversations in Claude.ai's standard interface without Claude Projects, and even within Projects the memory is unstructured. It cannot systematically track your session history, reference specific commitments from past conversations, or proactively send you a weekly digest of what you should work on.</p>
+<p>The other limitation: Claude’s memory feature can carry details from past chats, depending on your plan and settings. Like a Project, it is free-form: Claude recalls what came up, not a structured profile. It cannot systematically track your session history, reference specific commitments from past conversations, or proactively send you a weekly digest of what you should work on.</p>
 <p><a href="/ai-business-coach/vs-human-coach/">Compare AI tools for business coaching →</a></p>
 
 <h2 id="ghostcoach">What GhostCoach adds on top of Claude</h2>
-<p>GhostCoach is built on the Anthropic API — the same underlying model as Claude. The difference is everything around the model: the Ghost OS framework (a structured methodology for solopreneur SaaS decisions), structured memory (your product, stage, bottleneck, and goal injected into every session), and the accountability mechanisms (session recap emails, weekly Monday digest for Operator users).</p>
+<p>GhostCoach is built on Claude, through the Anthropic API. The difference is everything around the model: the Ghost OS framework (a structured methodology for solopreneur SaaS decisions), structured memory (your product, stage and bottleneck loaded into every session), and the accountability mechanisms (session recap emails, weekly Monday digest for Operator users).</p>
 <p>If you are willing to build and maintain your own system prompt, Claude Projects gives you a self-service version of this setup. GhostCoach is the version where the setup is done for you, the framework is included, and the memory is maintained automatically.</p>
 <p>For the technically capable founder who enjoys building systems: Claude Projects with a well-crafted system prompt is a viable alternative. For the founder who wants the framework without the setup overhead: GhostCoach is the purpose-built version of what you would build.</p>
 
@@ -172,11 +172,11 @@ footer{background:#0F1117;padding:32px 0;}
 
 <p>Three gaps remain, and they are structural rather than fixable with a better prompt. They sit inside a wider pattern — see <a href="/ai-business-coach/limitations/">where AI coaching genuinely falls short</a> across AI coaching tools generally, not just Claude.</p>
 
-<h3>1. Projects store context. They do not apply it.</h3>
+<h3>1. Stored context is not structured context.</h3>
 
-<p>A Claude Project keeps your business brief available, which solves the re-explaining problem. What it does not do is force that context into the shape of a decision. The brief sits there; whether it gets used depends on how you phrase the question that day.</p>
+<p>A Claude Project loads the business brief you wrote into every chat in that Project, so you do not re-explain your business each session. What it holds is what you wrote, in the form you wrote it. Nothing makes Claude commit to one recommendation, and nothing updates the brief unless you edit it.</p>
 
-<p>Structured memory is different from stored memory. A stage, a bottleneck and a 90-day goal held as fields get applied to every session whether you reference them or not.</p>
+<p>Structured memory is different from stored memory. Product, stage and bottleneck held as fields are loaded into every GhostCoach session.</p>
 
 <h3>2. It will give you the balanced answer</h3>
 
@@ -196,15 +196,15 @@ footer{background:#0F1117;padding:32px 0;}
 
 <table>
   <tr><th></th><th>Claude</th><th>A coaching tool</th></tr>
-  <tr><td>Cost</td><td class="win">$20/mo for Pro</td><td>Typically $20–$150/mo</td></tr>
+  <tr><td>Cost</td><td class="win">$20/mo billed monthly, $17/mo billed annually ($200 up front)</td><td>$29–$149/mo</td></tr>
   <tr><td>Reasoning quality</td><td class="win">Excellent</td><td>Depends on the underlying model</td></tr>
-  <tr><td>Context persistence</td><td>Projects — stored, manually applied</td><td class="win">Structured, applied automatically</td></tr>
+  <tr><td>Context persistence</td><td>Projects and memory: free-form, depends on what you wrote and what Claude recalls</td><td class="win">A structured profile of product, stage and bottleneck, loaded every session</td></tr>
   <tr><td>Commits to one answer</td><td>Only if instructed each time</td><td class="win">By design</td></tr>
   <tr><td>Between-session follow-up</td><td class="lose">None</td><td>Varies by tool</td></tr>
   <tr><td>Best at</td><td class="win">Thinking, analysis, drafting</td><td class="win">Deciding and sequencing</td></tr>
 </table>
 
-<p>Claude wins three of six rows outright, and the cost row makes it the correct default for most founders. The question is whether your recurring problem is thinking or deciding — those are different bottlenecks and only one of them is solved by a better model. If you're weighing Claude against the alternative, <a href="/guides/chatgpt-business-coach/">the same comparison for ChatGPT</a> covers where it lands.</p>
+<p>Claude wins two of six rows outright and shares a third, and the cost row makes it the correct default for most founders. The question is whether your recurring problem is thinking or deciding — those are different bottlenecks and only one of them is solved by a better model. If you're weighing Claude against the alternative, <a href="/guides/chatgpt-business-coach/">the same comparison for ChatGPT</a> covers where it lands.</p>
 
 <div class="marcus-says">
   <div class="ml">Marcus · GhostCoach's AI coach</div>
@@ -221,22 +221,22 @@ footer{background:#0F1117;padding:32px 0;}
 
 <div class="faq-item">
   <h3>Can I use Claude for business coaching?</h3>
-  <p>Yes, and for many solo founders it is enough. Claude reasons well about strategy, holds long context, and Projects let you store a business brief that persists across conversations. The gaps are that stored context is not automatically applied, the default answer is balanced rather than committed, and nothing follows up between sessions.</p>
+  <p>Yes. Claude reasons well about strategy, and a Project can hold a business brief that loads into every chat in it. The gap is structure: nothing makes Claude commit to one recommendation, and the brief stays current only if you update it.</p>
 </div>
 
 <div class="faq-item">
   <h3>Do Claude Projects give it memory of my business?</h3>
-  <p>Projects store context and make it available, which solves the problem of re-explaining your business each session. They do not force that context into the shape of a decision — whether the brief gets used still depends on how you phrase each question.</p>
+  <p>Partly. A Project loads the brief you wrote into every chat in it, and Claude’s memory feature can recall details from past chats, depending on your plan and settings. Both are free-form. Claude works from what you wrote and what it recalls, not from a structured profile.</p>
 </div>
 
 <div class="faq-item">
   <h3>How much does Claude cost compared to a business coach?</h3>
-  <p>Claude Pro is $20 a month. Purpose-built AI coaching tools generally run $20 to $150 a month, and human business coaching typically costs $500 to $2,000 a month. The three do different jobs, so the cost comparison only matters once you know which job you need.</p>
+  <p>Claude Pro is $20 a month billed monthly, or $17 a month billed annually ($200 up front). Purpose-built AI coaching tools run $29–$149 a month. Human business coaching is priced by each coach and varies widely.</p>
 </div>
 
 <div class="faq-item">
   <h3>Is Claude better than ChatGPT for business coaching?</h3>
-  <p>Both are strong general models with the same structural limits for coaching. Claude Projects offer somewhat better context persistence for this use case. Neither commits to a single recommendation by default, and neither follows up between sessions.</p>
+  <p>Neither is better overall. Both are strong general models with Projects and memory features. Both share the same structural limit for coaching: nothing makes them apply a framework or commit to one recommendation unless you instruct them each time.</p>
 </div>
 
 <div class="faq-item">
@@ -244,7 +244,7 @@ footer{background:#0F1117;padding:32px 0;}
   <p>When the same decision resurfaces for three consecutive weeks without resolving. That pattern indicates a memory and commitment problem rather than a reasoning one, and a better model will not fix it. Below roughly $1k MRR, self-coaching is almost always sufficient.</p>
 </div>
 
-<div class="cta-box"><h3>Try GhostCoach — Claude with a framework</h3><p>Marcus uses the same underlying model as Claude, with the Ghost OS framework and structured memory already built in. 14-day free trial, no setup required.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Try GhostCoach free →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · card required · cancel before day 15 and pay nothing</p></div>
+<div class="cta-box"><h3>Try GhostCoach: a business coach built on Claude</h3><p>Marcus is GhostCoach’s AI coach. GhostCoach is built on Claude, through the Anthropic API, with the Ghost OS framework and structured memory added. 14-day free trial, no setup required.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Start 14-day trial →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · card required · cancel before day 15 and pay nothing</p></div>
 <div class="related-box"><div class="related-label">Related guides</div><div class="related-links"><a href="/ai-self-coaching/prompts/">AI Business Coaching Prompt Library →</a><a href="/ai-self-coaching/frameworks/">AI Self-Coaching Frameworks That Work →</a><a href="/ai-self-coaching/strategy-and-goals/">Using AI for Business Strategy & Goals →</a><a href="/ai-business-coach/vs-human-coach/">AI Business Coach vs Human Coach →</a><a href="/ai-self-coaching/free-coaching/">Free Business Coaching →</a></div></div></div></section>
 <!-- v10: Cross-link to /ai-business-coach/ cluster for Google discovery -->
 <div style="max-width:720px;margin:48px auto 0;padding:0 20px;">
