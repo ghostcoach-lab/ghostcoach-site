@@ -11,6 +11,8 @@ https://www.getghostcoach.com/guides/ai-coach-vs-human-coach/  https://getghostc
 https://www.getghostcoach.com/guides/ai-business-coach/pricing/  https://getghostcoach.com/ai-business-coach/pricing/  301!
 https://www.getghostcoach.com/card/  https://getghostcoach.com/payment/  301!
 https://www.getghostcoach.com/dashboard/  https://getghostcoach.com/payment/  301!
+https://www.getghostcoach.com/guides/coachvox-alternatives/  https://getghostcoach.com/ai-business-coach/comparison/  301!
+https://www.getghostcoach.com/guides/rocky-ai-alternatives/  https://getghostcoach.com/ai-business-coach/comparison/  301!
 http://www.getghostcoach.com/guides/vibe-coding-saas-pricing/  https://getghostcoach.com/vibe/saas-pricing/  301!
 http://www.getghostcoach.com/guides/how-to-get-customers-vibe-coded-app/  https://getghostcoach.com/vibe/get-customers/  301!
 http://www.getghostcoach.com/guides/how-to-monetize-vibe-coded-app/  https://getghostcoach.com/vibe/make-money/  301!
@@ -19,6 +21,8 @@ http://www.getghostcoach.com/guides/ai-coach-vs-human-coach/  https://getghostco
 http://www.getghostcoach.com/guides/ai-business-coach/pricing/  https://getghostcoach.com/ai-business-coach/pricing/  301!
 http://www.getghostcoach.com/card/  https://getghostcoach.com/payment/  301!
 http://www.getghostcoach.com/dashboard/  https://getghostcoach.com/payment/  301!
+http://www.getghostcoach.com/guides/coachvox-alternatives/  https://getghostcoach.com/ai-business-coach/comparison/  301!
+http://www.getghostcoach.com/guides/rocky-ai-alternatives/  https://getghostcoach.com/ai-business-coach/comparison/  301!
 https://www.getghostcoach.com/*  https://getghostcoach.com/:splat  301!
 http://www.getghostcoach.com/*  https://getghostcoach.com/:splat  301!
 
@@ -61,3 +65,7 @@ http://www.getghostcoach.com/*  https://getghostcoach.com/:splat  301!
 
 # v48 — /dashboard/ renamed to /payment/ — keep legacy bookmarks working
 /dashboard/    /payment/    301!
+
+# Removed 19 Nov 2026 (no impressions in 16 months): alternatives pages for Coachvox and Rocky.ai
+/guides/coachvox-alternatives/    /ai-business-coach/comparison/    301!
+/guides/rocky-ai-alternatives/    /ai-business-coach/comparison/    301!
