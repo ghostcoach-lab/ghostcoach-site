@@ -113,7 +113,7 @@ footer{background:#0F1117;padding:32px 0;}
     "name": "GhostCoach"
   },
   "datePublished": "2026-08-25",
-  "dateModified": "2026-08-25",
+  "dateModified": "2026-11-20",
   "inLanguage": "en",
   "mainEntityOfPage": "https://getghostcoach.com/tools/ltv-cac-calculator/"
 }
@@ -154,7 +154,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "How do you calculate LTV:CAC?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "LTV is ARPU divided by monthly churn rate, multiplied by gross margin. CAC is cash acquisition spend divided by customers acquired. The ratio is LTV divided by CAC, and the commonly quoted benchmark is 3:1."
+        "text": "LTV is ARPU divided by monthly churn rate, multiplied by gross margin. CAC is cash acquisition spend divided by customers acquired. The ratio is LTV divided by CAC, and the commonly quoted rule of thumb is 3:1."
       }
     },
     {
@@ -178,7 +178,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "Does gross margin matter for LTV?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Yes. A customer paying $79 against $12 of hosting, fees and inference contributes $67, so using the gross figure overstates LTV. For conventional SaaS at 80\u201390% margin the adjustment is small; for AI products with real inference cost it can be substantial."
+        "text": "Yes. For example, a customer paying $79 a month against $12 of hosting, payment fees and AI inference contributes $67, so using the gross figure overstates LTV. For software with low delivery cost the adjustment is small; for AI products with real inference cost it can be substantial."
       }
     },
     {
@@ -186,7 +186,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "What is a good payback period for a bootstrapped SaaS?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Under three months is strong and lets you recycle cash quickly. Three to twelve is workable. Over twelve months means you are funding growth from savings for more than a year per customer, which most bootstrapped products cannot sustain."
+        "text": "As a rule of thumb (ours, not a published benchmark), under three months is strong and lets you recycle cash quickly. Three to twelve is workable. Over twelve months means you are funding growth from savings for more than a year per customer, which is hard for a bootstrapped product to sustain."
       }
     }
   ]
@@ -248,7 +248,7 @@ footer{background:#0F1117;padding:32px 0;}
     <div class="co-row"><span>Months to payback</span><strong id="l5">—</strong></div>
   </div>
   <div id="lv" class="calc-verdict cv-ok">Enter your numbers above.</div>
-  <p class="calc-note">Runs in your browser. Nothing is stored or sent.</p>
+  <p class="calc-note">Your inputs are not sent anywhere. The calculation runs in your browser.</p>
 </div>
 
 <div class="answer-box">
@@ -256,7 +256,7 @@ footer{background:#0F1117;padding:32px 0;}
   <ul>
     <li><strong>LTV</strong> = ARPU ÷ monthly churn, multiplied by gross margin</li>
     <li><strong>CAC</strong> = real cash spend ÷ customers acquired. Your own time does not belong in it.</li>
-    <li><strong>3:1 is the quoted benchmark</strong>, and it comes from funded companies with paid channels</li>
+    <li><strong>3:1 is a commonly quoted rule of thumb</strong>, not a benchmark measured on solo products</li>
     <li><strong>Months to payback is the more useful number</strong> at solo scale</li>
   </ul>
 </div>
@@ -279,7 +279,7 @@ footer{background:#0F1117;padding:32px 0;}
 <p>How many months of a customer's subscription it takes to earn back what you spent acquiring them. It uses the same inputs and makes fewer assumptions, because it does not require projecting a lifetime.</p>
 
 <table>
-  <tr><th>Payback period</th><th>Reading</th></tr>
+  <tr><th>Payback period</th><th>Reading (our rule of thumb)</th></tr>
   <tr><td class="win">Under 3 months</td><td class="win">Strong. You can reinvest quickly.</td></tr>
   <tr><td>3–12 months</td><td>Workable for a bootstrapped product</td></tr>
   <tr><td class="lose">Over 12 months</td><td class="lose">You are funding growth from savings</td></tr>
@@ -289,9 +289,9 @@ footer{background:#0F1117;padding:32px 0;}
 
 <h2 id="margin">Gross margin belongs in LTV</h2>
 
-<p>Revenue is not profit. A customer paying $79 a month against $12 of hosting, payment fees and AI inference contributes $67, and using the gross figure overstates LTV by roughly the margin gap.</p>
+<p>Revenue is not profit. For example, a customer paying $79 a month against $12 of hosting, payment fees and AI inference contributes $67, and using the gross figure overstates LTV by roughly the margin gap.</p>
 
-<p>For conventional SaaS, margins of 80–90% mean the adjustment is small. For AI products with real inference cost it can be substantial, which is one reason AI pricing needs a usage-linked unit — <a href="/frameworks/value-metric-saas/">the value metric framework</a> covers that decision.</p>
+<p>For software with low delivery cost, margins are high and the adjustment is small. For AI products with real inference cost it can be substantial, which is one reason AI pricing needs a usage-linked unit — <a href="/frameworks/value-metric-saas/">the value metric framework</a> covers that decision.</p>
 
 <div class="callout">
   <p>If your CAC comes out at zero because you have never spent money on acquisition, that is useful information rather than a gap. It means your constraint is hours, not cash, and a metric denominated in money cannot see the constraint that binds you.</p>
@@ -301,7 +301,7 @@ footer{background:#0F1117;padding:32px 0;}
 
 <p>Deciding whether to spend more on a channel that already works. If you know that $600 reliably produces six customers, the ratio tells you whether $1,200 would be a good idea.</p>
 
-<p>It is not for judging whether your business is healthy, and it is not a benchmark to hit. Plenty of profitable solo products have never computed it, because they have never bought a customer.</p>
+<p>It is not for judging whether your business is healthy, and it is not a benchmark to hit. A solo product can be profitable without ever computing it, if it has never bought a customer.</p>
 
 <p>Once you are spending, it becomes genuinely useful alongside a stable churn figure — <a href="/tools/churn-benchmark-check/">the churn benchmark check</a> covers whether your rate is stable enough to build on, and <a href="/tools/mrr-projection-calculator/">the MRR projection calculator</a> covers the ceiling your churn rate implies.</p>
 
@@ -324,7 +324,7 @@ footer{background:#0F1117;padding:32px 0;}
     var v=document.getElementById('lv'), t='', k='cv-ok';
     if(a<=0||c<=0){t='Enter your ARPU and churn rate above.';}
     else if(cac===0){t='No cash acquisition spend, so CAC is zero and the ratio does not apply. That is the correct answer, not a gap — your constraint is hours rather than money. Use months-to-payback once you start spending.';k='cv-ok';}
-    else if(tot>0&&tot<50){t='With '+tot+' customers your churn rate is too unstable for LTV to mean much. Treat the ratio as directional and watch months-to-payback ('+(Math.round(pay*10)/10)+') instead.';k='cv-ok';}
+    else if(tot>0&&tot<40){t='With '+tot+' customers your churn rate is too unstable for LTV to mean much. Treat the ratio as directional and watch months-to-payback ('+(Math.round(pay*10)/10)+') instead.';k='cv-ok';}
     else if(pay>12){t='Payback of '+(Math.round(pay*10)/10)+' months means you are funding growth from savings for over a year per customer. The ratio of '+(Math.round(ratio*10)/10)+':1 looks fine and the cash flow does not.';k='cv-bad';}
     else if(ratio<1){t='You are spending more to acquire a customer than they will ever be worth. Stop the spend and diagnose before continuing.';k='cv-bad';}
     else if(ratio<3){t='Below the commonly quoted 3:1. Workable if payback is short, but there is little room to increase spend.';k='cv-ok';}
@@ -341,7 +341,7 @@ footer{background:#0F1117;padding:32px 0;}
 
 <div class="faq-item">
   <h3>How do you calculate LTV:CAC?</h3>
-  <p>LTV is ARPU divided by monthly churn rate, multiplied by gross margin. CAC is cash acquisition spend divided by customers acquired. The ratio is LTV divided by CAC, and the commonly quoted benchmark is 3:1.</p>
+  <p>LTV is ARPU divided by monthly churn rate, multiplied by gross margin. CAC is cash acquisition spend divided by customers acquired. The ratio is LTV divided by CAC, and the commonly quoted rule of thumb is 3:1.</p>
 </div>
 <div class="faq-item">
   <h3>Should I include my own time in CAC?</h3>
@@ -353,14 +353,14 @@ footer{background:#0F1117;padding:32px 0;}
 </div>
 <div class="faq-item">
   <h3>Does gross margin matter for LTV?</h3>
-  <p>Yes. A customer paying $79 against $12 of hosting, fees and inference contributes $67, so using the gross figure overstates LTV. For conventional SaaS at 80–90% margin the adjustment is small; for AI products with real inference cost it can be substantial.</p>
+  <p>Yes. For example, a customer paying $79 a month against $12 of hosting, payment fees and AI inference contributes $67, so using the gross figure overstates LTV. For software with low delivery cost the adjustment is small; for AI products with real inference cost it can be substantial.</p>
 </div>
 <div class="faq-item">
   <h3>What is a good payback period for a bootstrapped SaaS?</h3>
-  <p>Under three months is strong and lets you recycle cash quickly. Three to twelve is workable. Over twelve months means you are funding growth from savings for more than a year per customer, which most bootstrapped products cannot sustain.</p>
+  <p>As a rule of thumb (ours, not a published benchmark), under three months is strong and lets you recycle cash quickly. Three to twelve is workable. Over twelve months means you are funding growth from savings for more than a year per customer, which is hard for a bootstrapped product to sustain.</p>
 </div>
 
-<div class="cta-box"><h3>Find out whether the ratio applies to you yet</h3><p>Bring your churn, ARPU and what you actually spend. Marcus tells you which number to steer by at your stage.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Try GhostCoach free →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · card required · cancel before day 15 and pay nothing · 30-day money-back on Lifetime</p></div>
+<div class="cta-box"><h3>Find out whether the ratio applies to you yet</h3><p>Bring your churn, ARPU and what you actually spend. Marcus tells you which number to steer by at your stage.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Start 14-day trial →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · card required · cancel before day 15 and pay nothing · 30-day money-back on Lifetime</p></div>
 
 <div class="related-box"><div class="related-label">Related guides</div><div class="related-links"><a href="/tools/churn-rate-calculator/">Churn rate calculator →</a><a href="/tools/trial-conversion-benchmark/">Trial-to-paid conversion benchmarks →</a><a href="/tools/solo-saas-benchmarks/">Solo SaaS benchmarks →</a><a href="/frameworks/saas-metrics-solopreneur/">The four metrics that matter →</a><a href="/guides/retention-vs-acquisition-saas/">Retention vs acquisition →</a><a href="/frameworks/">All SaaS frameworks →</a></div></div></div></section>
 <footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
