@@ -171,7 +171,7 @@ footer{background:#0F1117;padding:32px 0;}
       <tr>
         <td>2</td>
         <td>Dunning (failed payment recovery)</td>
-        <td>20–40% of total churn is involuntary; this fixes most of it</td>
+        <td>Involuntary churn averaged 22% of all churn for SaaS in <a href="https://churnkey.co/blog/involuntary-churn-benchmarks" rel="nofollow">Churnkey’s benchmarks</a>, based on Stripe data. A dunning sequence recovers part of it.</td>
       </tr>
       <tr>
         <td>3</td>
@@ -203,7 +203,7 @@ footer{background:#0F1117;padding:32px 0;}
 
   <p>Dunning is the recovery process for failed payments. A customer's card expires. Their bank flags the charge as suspicious. The card is declined for insufficient funds. In each case, the customer wants to keep paying, but the payment failed. Without dunning, they churn silently.</p>
 
-  <p>Industry research consistently shows involuntary churn — churn from failed payments — represents somewhere between 20 percent and 40 percent of total churn for typical SaaS businesses. For a solo founder at $5,000 MRR with 5 percent monthly churn, that is $250 in lost MRR every month, half of which is recoverable by a billing system that retries the card a few times and sends an email.</p>
+  <p>Involuntary churn averaged 22% of all churn for SaaS in <a href="https://churnkey.co/blog/involuntary-churn-benchmarks" rel="nofollow">Churnkey’s benchmarks</a>, based on Stripe data. Your share depends on your customers and billing setup. A billing system that retries the card a few times and sends an email recovers part of it.</p>
 
   <p>The fix is mostly automatic if you use a modern billing platform. Stripe Billing has Smart Retries built in. Paddle handles this natively. Configure the retry schedule (Stripe defaults are reasonable), set up the failed payment email sequence (3 emails over 7 days is the typical pattern), and add a recovery URL the customer can click to update their card.</p>
 
