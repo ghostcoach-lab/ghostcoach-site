@@ -113,7 +113,7 @@ footer{background:#0F1117;padding:32px 0;}
     "name": "GhostCoach"
   },
   "datePublished": "2026-08-25",
-  "dateModified": "2026-08-25",
+  "dateModified": "2026-11-20",
   "inLanguage": "en",
   "mainEntityOfPage": "https://getghostcoach.com/tools/saas-pricing-calculator/"
 }
@@ -154,7 +154,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "How do I calculate what to charge for my SaaS?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Anchor on the customer's alternative: hours the task costs them each month, multiplied by what an hour is worth to them, multiplied by the share of the job you replace. Software typically captures a tenth to a third of the value it creates."
+        "text": "Anchor on the customer's alternative: hours the task costs them each month, multiplied by what an hour is worth to them, multiplied by the share of the job you replace. This calculator assumes software captures a tenth to a third of the value it creates."
       }
     },
     {
@@ -162,7 +162,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "Is a SaaS pricing calculator accurate?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "It produces a confident number from inputs you estimated, so treat the output as the shape of the answer rather than the answer. It is useful for order of magnitude and for showing the direction of your error, which is almost always too cheap."
+        "text": "It produces a confident number from inputs you estimated, so treat the output as the shape of the answer rather than the answer. It is useful for order of magnitude and for showing the direction of your error, which is usually too cheap."
       }
     },
     {
@@ -170,7 +170,7 @@ footer{background:#0F1117;padding:32px 0;}
       "name": "What is a typical price for a solo B2B SaaS?",
       "acceptedAnswer": {
         "@type": "Answer",
-        "text": "Between $30 and $150 a month covers most solo B2B products. Below $20 rarely sustains a business, because the customer count required becomes impractical for one person to acquire and support."
+        "text": "$30\u2013$150 a month is a common range for solo B2B products, as a rule of thumb. Below $20 is hard for one person to sustain, because the customer count required becomes impractical to acquire and support."
       }
     },
     {
@@ -256,9 +256,9 @@ footer{background:#0F1117;padding:32px 0;}
   <div class="answer-label">The short answer</div>
   <ul>
     <li><strong>Anchor on the alternative:</strong> hours × what an hour is worth to them × share of the job you replace</li>
-    <li><strong>Software captures a tenth to a third</strong> of the value it creates</li>
+    <li><strong>This calculator assumes software captures a tenth to a third</strong> of the value it creates (our rule of thumb)</li>
     <li><strong>Existing tool spend is a floor</strong> — it proves budget exists</li>
-    <li><strong>$30–$150/month</strong> covers most solo B2B SaaS. Under $20 rarely sustains a business.</li>
+    <li><strong>$30–$150/month</strong> is a common range for solo B2B SaaS. A rule of thumb, not a measured benchmark.</li>
   </ul>
 </div>
 
@@ -268,13 +268,13 @@ footer{background:#0F1117;padding:32px 0;}
 
 <p>It anchors on the customer's alternative. Hours spent on the task, multiplied by what an hour is worth to them, gives the cost of the status quo. The share of that job you replace gives the value you deliver.</p>
 
-<p>Software typically captures somewhere between a tenth and a third of the value it creates — enough that the buyer keeps a clear surplus, which is what makes the purchase obvious to them. The range reflects that, and existing tool spend sets a floor because it proves budget already exists.</p>
+<p>The calculator assumes software captures between a tenth and a third of the value it creates. That is a rule of thumb, not a measured figure. It leaves the buyer a clear surplus. The range reflects that, and existing tool spend sets a floor because it proves budget already exists.</p>
 
 <p>What it does not do is tell you what people will pay. Only conversations do that — <a href="/playbooks/price-before-launch/">pricing with no customers</a> covers the ten questions that produce these inputs honestly.</p>
 
 <div class="marcus-says">
   <div class="ml">Marcus · GhostCoach's AI coach</div>
-  <div class="mq">"I recommend treating any calculator output as the floor of your range rather than the answer. Nearly every solo founder underestimates the hours input and the hourly value, and both errors push in the same direction — too cheap."</div>
+  <div class="mq">"I recommend treating any calculator output as the floor of your range rather than the answer. Many solo founders underestimate the hours input and the hourly value, and both errors push in the same direction — too cheap."</div>
 </div>
 
 <h2 id="wrong">Where the inputs go wrong</h2>
@@ -291,8 +291,8 @@ footer{background:#0F1117;padding:32px 0;}
 
 <table>
   <tr><th>If the result says</th><th>Check</th></tr>
-  <tr><td class="lose">Under $20/month</td><td>Your inputs, or your segment. B2B below $20 rarely sustains a business.</td></tr>
-  <tr><td class="win">$30–$150/month</td><td>Typical range for solo B2B SaaS. Proceed.</td></tr>
+  <tr><td class="lose">Under $20/month</td><td>Check your inputs, or your segment. Below $20 is hard for one person to sustain, because it takes many customers.</td></tr>
+  <tr><td class="win">$30–$150/month</td><td>A common range (rule of thumb). Proceed.</td></tr>
   <tr><td>Over $300/month</td><td>Plausible for high-value niches, but expect a longer sales cycle</td></tr>
   <tr><td class="lose">Below what they already pay for related tools</td><td>Something is wrong. That floor should hold.</td></tr>
 </table>
@@ -328,8 +328,8 @@ footer{background:#0F1117;padding:32px 0;}
     document.getElementById('s4').textContent=mid>0?Math.ceil(5000/mid)+' customers':'—';
     var d=document.getElementById('sv2'), t='', k='cv-ok';
     if(value<=0){t='Enter your numbers above.';}
-    else if(mid<20){t='Under $20/month. Check your inputs — founders routinely underestimate the hours and the hourly value. If the inputs are right, this segment may not sustain a business.';k='cv-bad';}
-    else if(mid<=150){t='Within the typical range for solo B2B SaaS. Pick a number in the upper half of the range and commit to it.';k='cv-good';}
+    else if(mid<20){t='Under $20/month. Check your inputs — many founders underestimate the hours and the hourly value. If the inputs are right, a price this low is hard for one person to sustain.';k='cv-bad';}
+    else if(mid<=150){t='Within a common range for solo B2B SaaS (a rule of thumb). Pick a number in the upper half of the range and commit to it.';k='cv-good';}
     else if(mid<=300){t='Higher than typical but plausible for a high-value niche. Expect a longer sales cycle and more questions before purchase.';k='cv-ok';}
     else {t='Well above typical self-serve pricing. Defensible for high-value work, but this usually needs conversations rather than a pricing page.';k='cv-ok';}
     if(value>0&&mid<p){t+=' Note: this sits below what they already pay for related tools, which suggests the value inputs are understated.';k='cv-bad';}
@@ -346,15 +346,15 @@ footer{background:#0F1117;padding:32px 0;}
 
 <div class="faq-item">
   <h3>How do I calculate what to charge for my SaaS?</h3>
-  <p>Anchor on the customer's alternative: hours the task costs them each month, multiplied by what an hour is worth to them, multiplied by the share of the job you replace. Software typically captures a tenth to a third of the value it creates.</p>
+  <p>Anchor on the customer's alternative: hours the task costs them each month, multiplied by what an hour is worth to them, multiplied by the share of the job you replace. This calculator assumes software captures a tenth to a third of the value it creates.</p>
 </div>
 <div class="faq-item">
   <h3>Is a SaaS pricing calculator accurate?</h3>
-  <p>It produces a confident number from inputs you estimated, so treat the output as the shape of the answer rather than the answer. It is useful for order of magnitude and for showing the direction of your error, which is almost always too cheap.</p>
+  <p>It produces a confident number from inputs you estimated, so treat the output as the shape of the answer rather than the answer. It is useful for order of magnitude and for showing the direction of your error, which is usually too cheap.</p>
 </div>
 <div class="faq-item">
   <h3>What is a typical price for a solo B2B SaaS?</h3>
-  <p>Between $30 and $150 a month covers most solo B2B products. Below $20 rarely sustains a business, because the customer count required becomes impractical for one person to acquire and support.</p>
+  <p>$30–$150 a month is a common range for solo B2B products, as a rule of thumb. Below $20 is hard for one person to sustain, because the customer count required becomes impractical to acquire and support.</p>
 </div>
 <div class="faq-item">
   <h3>Why do founders underprice?</h3>
@@ -365,7 +365,7 @@ footer{background:#0F1117;padding:32px 0;}
   <p>Something is wrong with the inputs. Existing spend on adjacent tools is a floor, because it proves budget exists. A result below that floor usually means the value inputs are understated.</p>
 </div>
 
-<div class="cta-box"><h3>Pressure-test the number before you commit</h3><p>Bring the range and who it is for. Marcus tells you where in it to land and what evidence would move it.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Try GhostCoach free →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · card required · cancel before day 15 and pay nothing · 30-day money-back on Lifetime</p></div>
+<div class="cta-box"><h3>Pressure-test the number before you commit</h3><p>Bring the range and who it is for. Marcus tells you where in it to land and what evidence would move it.</p><a href="https://getghostcoach.com/#pricing" class="cta-btn">Start 14-day trial →</a><p style="margin-top:10px;font-size:11px;color:#8B8A98;">14-day free trial · card required · cancel before day 15 and pay nothing · 30-day money-back on Lifetime</p></div>
 
 <div class="related-box"><div class="related-label">Related guides</div><div class="related-links"><a href="/frameworks/saas-pricing-framework/">SaaS pricing framework →</a><a href="/playbooks/saas-pricing-page/">SaaS pricing page playbook →</a><a href="/playbooks/raise-saas-prices/">Raise your SaaS prices →</a><a href="/vibe/saas-pricing/">Pricing a vibe-coded SaaS →</a><a href="/playbooks/launch-annual-plans/">Launch annual plans →</a><a href="/frameworks/">All SaaS frameworks →</a><a href="/tools/">All tools →</a></div></div></div></section>
 <footer style="background:#0A0C12;color:#F7F5F0;border-top:0.5px solid rgba(247,245,240,0.06);padding:64px 40px 32px;font-family:'DM Sans',sans-serif;">
