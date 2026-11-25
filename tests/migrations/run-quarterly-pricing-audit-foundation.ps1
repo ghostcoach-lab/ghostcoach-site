@@ -145,6 +145,25 @@ try {
   if ($LASTEXITCODE -ne 0) {
     throw "Completion-limit migration contract test failed with exit code $LASTEXITCODE."
   }
+
+  docker exec `
+    --env PGPASSWORD=postgres `
+    $containerName `
+    createdb --username postgres gdpr_delete_by_email_contract
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Could not create the delete-by-email test database (exit code $LASTEXITCODE)."
+  }
+
+  docker exec `
+    --env PGPASSWORD=postgres `
+    $containerName `
+    psql --set ON_ERROR_STOP=1 --username postgres --dbname gdpr_delete_by_email_contract `
+    --file /workspace/tests/migrations/gdpr-delete-by-email.sql
+
+  if ($LASTEXITCODE -ne 0) {
+    throw "Delete-by-email migration contract test failed with exit code $LASTEXITCODE."
+  }
 }
 finally {
   # Cleanup judges the exit code: stderr alone must not fail a run whose checks passed.
